@@ -4,6 +4,9 @@ return {
   include = {
     "**/*.tl"
   },
+  include_dir = {
+    "src"
+  },
   exclude = {
 
   }

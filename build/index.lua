@@ -1,1 +1,2 @@
-require("src/letsmod-api")
+require("letsmod-api")
+require("foo/foo")
