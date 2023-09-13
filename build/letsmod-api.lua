@@ -1,3 +1,16 @@
+require("three_interop/Math/Vector3")
+
+BodyView = {}
 
 
-print("i am a banana")
+
+function BodyView.new(position)
+   return setmetatable({
+      position = position,
+   }, BodyView)
+end
+
+function BodyView:setPosition(position)
+   self.position = position
+   return self
+end

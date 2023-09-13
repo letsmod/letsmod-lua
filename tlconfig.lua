@@ -9,5 +9,6 @@ return {
   },
   exclude = {
 
-  }
+  },
+  global_env_def = "src/types"
 }
