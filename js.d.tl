@@ -3,8 +3,12 @@ local record _js
   
   record global
     record THREE
-      Quaternion: function(x: number, y: number, z: number, w: number) : any
-      Vector3: function(x: number, y: number, z: number) : any
+      Quaternion: function() : any
+      Vector3: function() : any
+      Matrix3: function() : any
+      Matrix4: function() : any
+      Color: function(r: number, g: number, b: number) : any
+      Object3D: function() : any
     end
   end
 

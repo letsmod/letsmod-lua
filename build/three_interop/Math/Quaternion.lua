@@ -1,5 +1,6 @@
 
 
+
 local _quaternion = {}
 
 Quaternion = {}
@@ -40,12 +41,7 @@ Quaternion = {}
 
 
 
-
-
-
-
-
-function Quaternion.new(x, y, z, w)
-   local self = js.new(js.global.THREE.Quaternion, x, y, z, w)
+function Quaternion.new()
+   local self = js.new(js.global.THREE.Quaternion)
    return self
 end
