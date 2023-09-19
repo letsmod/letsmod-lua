@@ -1,2 +1,2 @@
 rm -r build
-tl build
+npx tstl

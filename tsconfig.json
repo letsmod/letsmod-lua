@@ -1,0 +1,23 @@
+{
+  "$schema": "https://raw.githubusercontent.com/TypeScriptToLua/TypeScriptToLua/master/tsconfig-schema.json",
+  "compilerOptions": {
+    "target": "ESNext",
+    "lib": ["ESNext", "dom"],
+    "moduleResolution": "Node",
+    "outDir": "build",
+    "types": [],
+    "strict": true,
+    "baseUrl": "./src"
+  },
+  "tstl": {
+    "luaTarget": "5.3",
+    "noResolvePaths": [
+      "js",
+      "three",
+      "ammojs3"
+    ]
+  },
+  "include": [
+    "src/**/*"
+  ]
+}
