@@ -17,7 +17,6 @@ export class BodyHandle
 
   getElement <U extends Element> (T : new (...args: any[]) => U ) : U | null
   {
-    console.log("typeof T ", T);
     for (let i = 0; i < this.elements.length; i++)
     {
       if (this.elements[i] instanceof T)
@@ -29,37 +28,32 @@ export class BodyHandle
     return null;
   }
 
-  // getElementOfClass <U extends typeof Element> (T : U) : Element | null
-  // {
-  //   console.log("typeof T ", T);
-  //   for (let i = 0; i < this.elements.length; i++)
-  //   {
-  //     if (this.elements[i] instanceof T)
-  //     {
-  //       return this.elements[i];
-  //     }
-  //   }
-
-  //   return null;
-  // }
-}
-
-console.log("beep");
-
-export class blarg extends Element
-{
-  onInit(): void {
-    
+  addElement(elem : Element)
+  {
+    this.elements.push(elem);
   }
-  onStart(): void {
+
+  initializeElements()
+  {
+    for (var elem of this.elements)
+    {
+      if (!elem.initialized)
+      {
+        elem.onInit();
+        elem.initialized = true;
+      }
+    }
+  }
+
+  startElements()
+  {
+    for (var elem of this.elements)
+    {
+      if (!elem.started)
+      {
+        elem.onStart();
+        elem.started = true;
+      }
+    }
   }
 }
-
-let boo = new BodyHandle(<any>null, <any>null);
-let blargo = new blarg(boo);
-
-let boop = boo.getElement(blarg);
-
-console.log("boop ", boop);
-
-console.log("beep ", boo.getElement(<any>BodyHandle));
