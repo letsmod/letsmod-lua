@@ -1,13 +1,12 @@
-import { BodyHandle } from "./bodyHandle";
-import Ammo from "ammojs3";
-import { Object3D } from "three";
-import { MessageDispatcher } from "./messageDispatcher";
+import { BodyPointer, BodyHandle } from "./BodyHandle";
+import { MessageDispatcher } from "engine/MessageDispatcher";
+import { GameplayMemory } from "engine/GameplayMemory";
 
 export class GameplayScene
 {
   static _instance : GameplayScene;
   static get instance() {
-    if (this._instance == null)
+    if (this._instance == undefined)
     {
       this._instance = new GameplayScene();
     }
@@ -15,19 +14,29 @@ export class GameplayScene
   }
 
   bodies: BodyHandle[] = [];
+  prefabs: BodyHandle[] = [];
   bodyIdMap : Map<number, BodyHandle> = new Map<number, BodyHandle>();
-  dispatcher : MessageDispatcher = new MessageDispatcher();
+  dispatcher : MessageDispatcher = new MessageDispatcher(this);
+  memory : GameplayMemory = new GameplayMemory();
 
   private constructor()
   {
-
   }
 
-  addBody (bodyNode: Object3D, physicsBody: Ammo.btRigidBody)
+  addBody (bodyNode: BodyPointer)
   {
-    let handle = new BodyHandle(bodyNode, physicsBody)
+    let handle = new BodyHandle(bodyNode);
     this.bodies.push(handle);
     this.bodyIdMap.set(bodyNode.id, handle);
+    return handle;
+  }
+
+  addPrefab (bodyNode: BodyPointer)
+  {
+    let handle = new BodyHandle(bodyNode);
+    this.prefabs.push(handle);
+    this.bodyIdMap.set(bodyNode.id, handle);
+    return handle;
   }
 
   getBodyById(id : number) : BodyHandle | undefined
@@ -40,21 +49,46 @@ export class GameplayScene
     this.bodies = [];
   }
 
+  initialize(memoryOverride : Partial<GameplayMemory>)
+  {
+    this.memory = {...new GameplayMemory(), ...memoryOverride};
+  }
+
   preUpdate()
   {
-    for (var body of this.bodies)
+    for (let body of this.bodies)
     {
       body.initializeElements();
     }
     
-    for (var body of this.bodies)
+    for (let body of this.bodies)
     {
       body.startElements();
     }
   }
 
-  update()
+  update(dt : number)
   {
+    this.memory.timeSinceStart += dt;
     this.dispatcher.onUpdate();
+  }
+
+  cloneBody(body: BodyHandle)
+  {
+    let clonePointer = body.body.cloneBody();{
+    return this.addBody(clonePointer);}
+  }
+
+  destroyBody(body: BodyHandle)
+  {
+    let index = this.bodies.indexOf(body);
+    if (index >= 0)
+    {
+      this.dispatcher.onActorDestroyed(body);
+      this.dispatcher.removeAllListenersFromBody(body);
+
+      this.bodies.splice(index, 1);
+      body.body.destroyBody();
+    }
   }
 }

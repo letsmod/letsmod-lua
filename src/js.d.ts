@@ -1,9 +1,10 @@
 import * as THREE from "three";
+// import * as ElementTypes from "elements/ElementTypes";
 
 /** @noSelf */
-declare function js_new<T> (constructor: T, ...args : any[]) : T;
+export declare function js_new<T> (constructor: T, ...args : any[]) : T;
 
-declare var global : {
+export declare const global : {
   THREE: {
     Quaternion: THREE.Quaternion,
     Vector3: THREE.Vector3,

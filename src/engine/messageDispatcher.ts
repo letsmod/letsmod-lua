@@ -1,76 +1,107 @@
-import { Element } from "./element";
+
+import { js_new, global } from "js";
 import {
-  UpdateHandler,
-  CollisionHandler,
-  ButtonHandler,
-  DragGestureHandler,
-  TapGestureHandler,
-  SwipeGestureHandler,
-  HoldGestureHandler,
-  AimGetstureHandler,
-  InteractHandler,
-  SelfDestructionHandler,
-  ActorDestructionHandler,
-  HitPointChangeHandler
-} from "./messageHandlers";
-import { Vector3, Object3D } from "three";
-import { BodyHandle } from "./bodyHandle";
-import { GameplayScene } from "./gameplayScene";
+  HandlerTypeMap,
+  HandlerTypes
+  // UpdateHandler,
+  // CollisionHandler,
+  // ButtonHandler,
+  // DragGestureHandler,
+  // TapGestureHandler,
+  // SwipeGestureHandler,
+  // HoldGestureHandler,
+  // AimGetstureHandler,
+  // InteractHandler,
+  // SelfDestructionHandler,
+  // ActorDestructionHandler,
+  // HitPointChangeHandler
+} from "./MessageHandlers";
+import { BodyHandle } from "./BodyHandle";
+import { GameplayScene } from "./GameplayScene";
+
+export type ListenerDict = {
+  [key in keyof HandlerTypeMap]: HandlerTypeMap[key][]
+}
+
+export function MakeListenerDict()
+{
+  let dict : Partial<ListenerDict> = {};
+
+  for (let key of HandlerTypes)
+  {
+    dict[key] = [];
+  }
+
+  return dict as ListenerDict;
+}
 
 export class MessageDispatcher
 {
-  updateListeners : UpdateHandler[] = [];
-  collisionListeners : CollisionHandler[] = [];
-  buttonListeners : ButtonHandler[] = [];
-  dragGestureListeners : DragGestureHandler[] = [];
-  tapGestureListeners : TapGestureHandler[] = [];
-  swipeGestureListeners : SwipeGestureHandler[] = [];
-  holdGestureListeners : HoldGestureHandler[] = [];
-  aimGestureListeners : AimGetstureHandler[] = [];
-  interactListeners : InteractHandler[] = [];
-  selfDestructionListeners : SelfDestructionHandler[] = [];
-  actorDestructionListeners : ActorDestructionHandler[] = [];
-  hitpointChangeListeners : HitPointChangeHandler[] = [];
+  scene: GameplayScene;
+  listeners : ListenerDict = MakeListenerDict();
 
-  constructor()
+  constructor(scene: GameplayScene)
   {
+    this.scene = scene;
   }
 
-  clear()
+  clearListeners()
   {
-    this.updateListeners = [];
-    this.collisionListeners = [];
-    this.buttonListeners = [];
-    this.dragGestureListeners = [];
-    this.tapGestureListeners = [];
-    this.swipeGestureListeners = [];
-    this.holdGestureListeners = [];
-    this.aimGestureListeners = [];
-    this.interactListeners = [];
-    this.selfDestructionListeners = [];
-    this.actorDestructionListeners = [];
-    this.hitpointChangeListeners = [];
+    this.listeners = MakeListenerDict();
+  }
+
+  removeAllListenersFromBody(body: BodyHandle)
+  {
+    for (let key in this.listeners)
+    {
+      let listeners = this.listeners[key as keyof HandlerTypeMap];
+      for (let i = 0; i < listeners.length; i++)
+      {
+        if (listeners[i].body == body)
+        {
+          listeners.splice(i, 1);
+          i--;
+        }
+      }
+    }
+  }
+  
+  removeAllListenersFromElement(elem : Element)
+  {
+    for (let key in this.listeners)
+    {
+      let listeners = this.listeners[key as keyof HandlerTypeMap];
+      for (let i = 0; i < listeners.length; i++)
+      {
+        if (listeners[i] === elem as any)
+        {
+          listeners.splice(i, 1);
+          i--;
+        }
+      }
+    } 
+  }
+
+  removeListener<T extends keyof HandlerTypeMap>(type: T, listener: HandlerTypeMap[T])
+  {
+    let listeners = this.listeners[type];
+    let index = listeners.indexOf(listener);
+    if (index >= 0)
+    {
+      listeners.splice(index, 1);
+    }
+  }
+
+  addListener<T extends keyof HandlerTypeMap>(type: T, listener: HandlerTypeMap[T])
+  {
+    this.listeners[type].push(listener);
   }
 
   // UpdateHandler
 
-  addUpdateListener(listener : UpdateHandler)
-  {
-    this.updateListeners.push(listener);
-  }
-  
-  removeUpdateListener(listener : UpdateHandler)
-  {
-    let index = this.updateListeners.indexOf(listener);
-    if (index >= 0)
-    {
-      this.updateListeners.splice(index, 1);
-    }
-  }
-
   onUpdate()
   {
-    for (var listener of this.updateListeners)
+    for (let listener of this.listeners["update"])
     {
       listener.onUpdate();
     }
@@ -78,31 +109,17 @@ export class MessageDispatcher
 
   // CollisionHandler
 
-  addCollisionListener(listener : CollisionHandler)
-  {
-    this.collisionListeners.push(listener);
-  }
-
-  removeCollisionListener(listener : CollisionHandler)
-  {
-    let index = this.collisionListeners.indexOf(listener);
-    if (index >= 0)
-    {
-      this.collisionListeners.splice(index, 1);
-    }
-  }
-
   onCollision = (() =>
   {
-    let dummyVector3 = new Vector3();
+    let dummyVector3 = js_new(global.THREE.Vector3);
 
-    return (a: Object3D, b : Object3D, contactPointOnA: Vector3, contactPointOnB: Vector3, contactImpulse : Vector3) =>
+    return (a: THREE.Object3D, b : THREE.Object3D, contactPointOnA: THREE.Vector3, contactPointOnB: THREE.Vector3, contactImpulse : THREE.Vector3) =>
     {
-      for (var listener of this.collisionListeners)
+      for (let listener of this.listeners["collision"])
       {
         if (listener.body.body.id == a.id)
         {
-          let bBody = GameplayScene.instance.getBodyById(b.id);
+          let bBody = this.scene.getBodyById(b.id);
           if (bBody)
           {
             listener.onCollision(bBody, contactPointOnA, dummyVector3.copy(contactImpulse));
@@ -110,7 +127,7 @@ export class MessageDispatcher
         }
         else if (listener.body.body.id == b.id)
         {
-          let aBody = GameplayScene.instance.getBodyById(b.id);
+          let aBody = this.scene.getBodyById(b.id);
           if (aBody)
           {
             listener.onCollision(aBody, contactPointOnB, dummyVector3.copy(contactImpulse).multiplyScalar(-1));
@@ -122,23 +139,9 @@ export class MessageDispatcher
 
   // ButtonHandler
 
-  addButtonListener(listener : ButtonHandler)
-  {
-    this.buttonListeners.push(listener);
-  }
-  
-  removeButtonListener(listener : ButtonHandler)
-  {
-    let index = this.buttonListeners.indexOf(listener);
-    if (index >= 0)
-    {
-      this.buttonListeners.splice(index, 1);
-    }
-  }
-
   onButtonPress(button: string)
   {
-    for (var listener of this.buttonListeners)
+    for (let listener of this.listeners["button"])
     {
       listener.onButtonPress(button);
     }
@@ -146,7 +149,7 @@ export class MessageDispatcher
 
   onButtonHold(button: string)
   {
-    for (var listener of this.buttonListeners)
+    for (let listener of this.listeners["button"])
     {
       listener.onButtonHold(button);
     }
@@ -154,7 +157,7 @@ export class MessageDispatcher
 
   onButtonRelease(button: string)
   {
-    for (var listener of this.buttonListeners)
+    for (let listener of this.listeners["button"])
     {
       listener.onButtonRelease(button);
     }
@@ -162,23 +165,9 @@ export class MessageDispatcher
 
   // DragGestureHandler
 
-  addDragGestureListener(listener : DragGestureHandler)
-  {
-    this.dragGestureListeners.push(listener);
-  }
-
-  removeDragGestureListener(listener : DragGestureHandler)
-  {
-    let index = this.dragGestureListeners.indexOf(listener);
-    if (index >= 0)
-    {
-      this.dragGestureListeners.splice(index, 1);
-    }
-  }
-
   onDragStart(dx: number, dy: number)
   {
-    for (var listener of this.dragGestureListeners)
+    for (let listener of this.listeners["drag"])
     {
       listener.onDragStart(dx, dy);
     }
@@ -186,7 +175,7 @@ export class MessageDispatcher
 
   onDrag(dx: number, dy: number)
   {
-    for (var listener of this.dragGestureListeners)
+    for (let listener of this.listeners["drag"])
     {
       listener.onDrag(dx, dy);
     }
@@ -194,7 +183,7 @@ export class MessageDispatcher
 
   onDragRelease(dx: number, dy: number)
   {
-    for (var listener of this.dragGestureListeners)
+    for (let listener of this.listeners["drag"])
     {
       listener.onDragRelease(dx, dy);
     }
@@ -202,47 +191,32 @@ export class MessageDispatcher
 
   // TapGestureHandler
 
-  addTapGestureListener(listener : TapGestureHandler)
-  {
-    this.tapGestureListeners.push(listener);
-  }
-
-  removeTapGestureListener(listener : TapGestureHandler)
-  {
-    let index = this.tapGestureListeners.indexOf(listener);
-    if (index >= 0)
-    {
-      this.tapGestureListeners.splice(index, 1);
-    }
-  }
-
   onTap()
   {
-    for (var listener of this.tapGestureListeners)
+    // working under the model that interaction events override tap events.
+    // if we change to a button-based interaction model, this will need to be reworked
+
+    let didInteract = false;
+    if (this.scene.memory.player)
     {
-      listener.onTap();
+      didInteract = this.onInteract(this.scene.memory.player);
     }
+
+    if (!didInteract)
+    {
+      for (let listener of this.listeners["tap"])
+      {
+        listener.onTap();
+      }
+    }
+
   }
 
   // SwipeGestureHandler
 
-  addSwipeGestureListener(listener : SwipeGestureHandler)
-  {
-    this.swipeGestureListeners.push(listener);
-  }
-
-  removeSwipeGestureListener(listener : SwipeGestureHandler)
-  {
-    let index = this.swipeGestureListeners.indexOf(listener);
-    if (index >= 0)
-    {
-      this.swipeGestureListeners.splice(index, 1);
-    }
-  }
-
   onSwipe(dx: number, dy: number)
   {
-    for (var listener of this.swipeGestureListeners)
+    for (let listener of this.listeners["swipe"])
     {
       listener.onSwipe(dx, dy);
     }
@@ -250,23 +224,9 @@ export class MessageDispatcher
 
   // HoldGestureHandler
 
-  addHoldGestureListener(listener : HoldGestureHandler)
-  {
-    this.holdGestureListeners.push(listener);
-  }
-
-  removeHoldGestureListener(listener : HoldGestureHandler)
-  {
-    let index = this.holdGestureListeners.indexOf(listener);
-    if (index >= 0)
-    {
-      this.holdGestureListeners.splice(index, 1);
-    }
-  }
-
   onHoldStart()
   {
-    for (var listener of this.holdGestureListeners)
+    for (let listener of this.listeners["hold"])
     {
       listener.onHoldStart();
     }
@@ -274,7 +234,7 @@ export class MessageDispatcher
 
   onHoldRelease()
   {
-    for (var listener of this.holdGestureListeners)
+    for (let listener of this.listeners["hold"])
     {
       listener.onHoldRelease();
     }
@@ -282,23 +242,9 @@ export class MessageDispatcher
 
   // AimGestureHandler
 
-  addAimGestureListener(listener : AimGetstureHandler)
-  {
-    this.aimGestureListeners.push(listener);
-  }
-
-  removeAimGestureListener(listener : AimGetstureHandler)
-  {
-    let index = this.aimGestureListeners.indexOf(listener);
-    if (index >= 0)
-    {
-      this.aimGestureListeners.splice(index, 1);
-    }
-  }
-
   onAimStart()
   {
-    for (var listener of this.aimGestureListeners)
+    for (let listener of this.listeners["aim"])
     {
       listener.onAimStart();
     }
@@ -306,7 +252,7 @@ export class MessageDispatcher
 
   onAim(dx: number, dy: number)
   {
-    for (var listener of this.aimGestureListeners)
+    for (let listener of this.listeners["aim"])
     {
       listener.onAim(dx, dy);
     }
@@ -314,7 +260,7 @@ export class MessageDispatcher
 
   onAimRelease(dx: number, dy: number)
   {
-    for (var listener of this.aimGestureListeners)
+    for (let listener of this.listeners["aim"])
     {
       listener.onAimRelease(dx, dy);
     }
@@ -322,100 +268,41 @@ export class MessageDispatcher
 
   // InteractHandler
 
-  addInteractListener(listener : InteractHandler)
-  {
-    this.interactListeners.push(listener);
-  }
-
-  removeInteractListener(listener : InteractHandler)
-  {
-    let index = this.interactListeners.indexOf(listener);
-    if (index >= 0)
-    {
-      this.interactListeners.splice(index, 1);
-    }
-  }
-
   // TBD: determine how to assign interactors to interactables such that the highest priority one in range is chosen
 
   onInteract(interactor : BodyHandle)
   {
-    for (var listener of this.interactListeners)
+    for (let listener of this.listeners["interact"])
     {
       if (listener.isInInteractionRange(interactor))
       {
-        listener.onInteract(interactor);
+        let didInteract = listener.onInteract(interactor);
+
+        if (didInteract)
+        {
+          return didInteract;
+        }
       }
     }
-  }
 
-  // SelfDestructionHandler
-
-  addSelfDestructionListener(listener : SelfDestructionHandler)
-  {
-    this.selfDestructionListeners.push(listener);
-  }
-
-  removeSelfDestructionListener(listener : SelfDestructionHandler)
-  {
-    let index = this.selfDestructionListeners.indexOf(listener);
-    if (index >= 0)
-    {
-      this.selfDestructionListeners.splice(index, 1);
-    }
-  }
-
-  onSelfDestruction()
-  {
-    for (var listener of this.selfDestructionListeners)
-    {
-      listener.onSelfDestruct();
-    }
+    return false;
   }
 
   // ActorDestructionHandler
 
-  addActorDestructionListener(listener : ActorDestructionHandler)
+  onActorDestroyed(actor : BodyHandle)
   {
-    this.actorDestructionListeners.push(listener);
-  }
-
-  removeActorDestructionListener(listener : ActorDestructionHandler)
-  {
-    let index = this.actorDestructionListeners.indexOf(listener);
-    if (index >= 0)
+    for (let listener of this.listeners["actorDestroyed"])
     {
-      this.actorDestructionListeners.splice(index, 1);
-    }
-  }
-
-  onActorDestruction(actor : BodyHandle)
-  {
-    for (var listener of this.actorDestructionListeners)
-    {
-      listener.onActorDestruct(actor);
+      listener.onActorDestroyed(actor);
     }
   }
 
   // HitPointChangeHandler
 
-  addHitPointChangeListener(listener : HitPointChangeHandler)
-  {
-    this.hitpointChangeListeners.push(listener);
-  }
-
-  removeHitPointChangeListener(listener : HitPointChangeHandler)
-  {
-    let index = this.hitpointChangeListeners.indexOf(listener);
-    if (index >= 0)
-    {
-      this.hitpointChangeListeners.splice(index, 1);
-    }
-  }
-
   onHitPointChange(source: BodyHandle, previousHP: number, currentHP: number)
   {
-    for (var listener of this.hitpointChangeListeners)
+    for (let listener of this.listeners["hitPointsChanged"])
     {
       listener.onHitPointChange(source, previousHP, currentHP);
     }

@@ -1,15 +1,24 @@
-import { js_new, global } from "js";
-import { BodyHandle } from "engine/bodyHandle";
+import { GameplayScene } from "engine/GameplayScene";
 
-console.log("Hello World");
+export * as Elements from "elements/ElementTypes";
 
-let q = js_new(global.THREE.Quaternion);
-q.set(1, 2, 3, 4);
-q.normalize();
+export const scene = GameplayScene.instance;
 
-console.log(q.x, q.y, q.z, q.w);
+console.log(scene.bodies.length);
 
-let c = js_new(global.THREE.Color, 0x00ff00);
-console.log(c.r, c.g, c.b);
+console.log("loaded lua engine");
 
-let bh = new BodyHandle(<any>null, <any>null);
+
+// import { js_new, global } from "js";
+// console.log("Hello World");
+
+// let q = js_new(global.THREE.Quaternion);
+// q.set(1, 2, 3, 4);
+// q.normalize();
+
+// console.log(q.x, q.y, q.z, q.w);
+
+// let c = js_new(global.THREE.Color, 0x00ff00);
+// console.log(c.r, c.g, c.b);
+
+// let bh = new BodyHandle(<any>undefined, <any>undefined);

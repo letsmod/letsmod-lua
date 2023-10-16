@@ -1,21 +1,46 @@
-import { global, js_new } from "js";
-import { Object3D } from "three";
-import { Element } from "./element";
-import Ammo from "ammojs3";
+import { Element } from "./Element";
 
+export enum PhysicsBodyType {
+  physical = 0,
+  kinematic = 1,
+  hologram = 2,
+}
+
+// interface to a javascript object which provides a lua-compatible interface for the js BodyView scene node
+export interface BodyPointer extends THREE.Object3D
+{
+  getMass() : number;
+
+  getVelocity() : THREE.Vector3;
+  setVelocity(velocity: THREE.Vector3) : void;
+  applyCentralForce(force: THREE.Vector3) : void;
+  
+  getAngularVelocity() : THREE.Vector3;
+  setAngularVelocity(angularVelocity: THREE.Vector3) : void;
+  applyTorque(torque: THREE.Vector3) : void;
+
+  lockRotation(xAxis: boolean, yAxis: boolean, zAxis: boolean) : void;
+
+  // internal use; use gameplayScene.destroyBody instead
+  destroyBody() : void;
+  // internal use; use gameplayScene.cloneBody instead
+  cloneBody() : BodyPointer;
+
+  getPhysicsBodyType() : PhysicsBodyType;
+}
+
+// lua object
 export class BodyHandle
 {
-  readonly body: Object3D;
-  readonly physicsBody: Ammo.btRigidBody;
+  readonly body: BodyPointer;
   elements: Element[] = [];
 
-  constructor(bodyNode: Object3D, physicsBody: Ammo.btRigidBody)
+  constructor(bodyNode: BodyPointer)
   {
     this.body = bodyNode;
-    this.physicsBody = physicsBody;
   }
 
-  getElement <U extends Element> (T : new (...args: any[]) => U ) : U | null
+  getElement <U extends Element> (T : new (...args: any[]) => U ) : U | undefined
   {
     for (let i = 0; i < this.elements.length; i++)
     {
@@ -25,7 +50,7 @@ export class BodyHandle
       }
     }
 
-    return null;
+    return undefined;
   }
 
   addElement(elem : Element)
@@ -33,9 +58,15 @@ export class BodyHandle
     this.elements.push(elem);
   }
 
+  // createElement <U extends Element> (T : new (body: BodyHandle, params: Partial<U>) => U, params: Partial<U>) : U
+  // {
+  //   let elem = new T(this, params);
+  //   return elem;
+  // }
+
   initializeElements()
   {
-    for (var elem of this.elements)
+    for (let elem of this.elements)
     {
       if (!elem.initialized)
       {
@@ -47,7 +78,7 @@ export class BodyHandle
 
   startElements()
   {
-    for (var elem of this.elements)
+    for (let elem of this.elements)
     {
       if (!elem.started)
       {

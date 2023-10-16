@@ -1,17 +1,17 @@
-import { BodyHandle } from "engine/bodyHandle";
-import { Element } from "../element";
-import { GameplayScene } from "engine/gameplayScene";
+import { BodyHandle } from "engine/BodyHandle";
+import { Element } from "engine/Element";
+import { GameplayScene } from "engine/GameplayScene";
 
-export class HitpointsElement extends Element
+export class HitPointsElement extends Element
 {
   maxHitpoints : number;
   hitpoints : number;
 
-  constructor(body: BodyHandle, maxHitpoints : number)
+  constructor(body: BodyHandle, params: Partial<HitPointsElement> = {})
   {
     super(body);
-    this.maxHitpoints = maxHitpoints;
-    this.hitpoints = maxHitpoints;
+    this.maxHitpoints = params.maxHitpoints === undefined? 1: params.maxHitpoints;
+    this.hitpoints = params.hitpoints === undefined? this.maxHitpoints : params.hitpoints;
   }
 
   onInit()

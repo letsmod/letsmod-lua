@@ -1,6 +1,5 @@
-import { Element } from "./element";
-import { Vector3 } from "three";
-import { BodyHandle } from "./bodyHandle";
+import { Element } from "./Element";
+import { BodyHandle } from "./BodyHandle";
 
 export interface UpdateHandler extends Element
 {
@@ -9,7 +8,7 @@ export interface UpdateHandler extends Element
 
 export interface CollisionHandler extends Element
 {
-  onCollision(other : BodyHandle, contactPoint: Vector3, contactImpulse : Vector3) : void;
+  onCollision(other : BodyHandle, contactPoint: THREE.Vector3, contactImpulse : THREE.Vector3) : void;
 }
 
 export interface ButtonHandler extends Element
@@ -56,20 +55,45 @@ export interface InteractHandler extends Element
 
   isInInteractionRange(interactor : BodyHandle) : boolean;
 
-  onInteract(interactor : BodyHandle) : void;
-}
-
-export interface SelfDestructionHandler extends Element
-{
-  onSelfDestruct() : void;
+  onInteract(interactor : BodyHandle) : boolean;
 }
 
 export interface ActorDestructionHandler extends Element
 {
-  onActorDestruct(actor: BodyHandle) : void;
+  onActorDestroyed(actor: BodyHandle) : void;
 }
 
 export interface HitPointChangeHandler extends Element
 {
   onHitPointChange(source: BodyHandle, previousHP: number, currentHP: number) : void;
 }
+
+export type HandlerTypeMap = {
+  update: UpdateHandler,
+  collision: CollisionHandler,
+  button: ButtonHandler,
+  drag: DragGestureHandler,
+  tap: TapGestureHandler,
+  swipe: SwipeGestureHandler,
+  hold: HoldGestureHandler,
+  aim: AimGetstureHandler,
+  interact: InteractHandler,
+  actorDestroyed: ActorDestructionHandler,
+  hitPointsChanged: HitPointChangeHandler,
+}
+
+export type HandlerKey = keyof HandlerTypeMap;
+
+export const HandlerTypes : HandlerKey[] = [
+  "update",
+  "collision",
+  "button",
+  "drag",
+  "tap",
+  "swipe",
+  "hold",
+  "aim",
+  "interact",
+  "actorDestroyed",
+  "hitPointsChanged",
+]

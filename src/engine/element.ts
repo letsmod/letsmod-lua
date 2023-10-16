@@ -1,4 +1,4 @@
-import { BodyHandle } from "./bodyHandle";
+import { BodyHandle } from "./BodyHandle";
 
 export abstract class Element
 {
@@ -19,6 +19,7 @@ export abstract class Element
 
   /*
     Called immediately when the body this element belongs to is created, after the constructors of all elements have been called.
+    Any event listeners associated with this element should be added to GameplayScene.dispatcher here.
   */
   abstract onInit() : void;
 
