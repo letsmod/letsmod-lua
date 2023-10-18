@@ -2,9 +2,17 @@ import { GameplayScene } from "engine/GameplayScene";
 
 export * as Elements from "elements/ElementTypes";
 
+export { BodyHandle } from "engine/BodyHandle";
+
 export const scene = GameplayScene.instance;
 
-console.log(scene.bodies.length);
+// export const testArray = [1, 2, 3];
+
+// console.log(scene);
+
+// console.log(scene.bodies);
+
+// console.log(scene.bodies.length);
 
 console.log("loaded lua engine");
 
