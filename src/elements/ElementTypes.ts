@@ -1,1 +1,0 @@
-export { HitPointsElement } from "./HitPointsElement";

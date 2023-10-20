@@ -113,25 +113,19 @@ export class MessageDispatcher
   {
     let dummyVector3 = js_new(global.THREE.Vector3);
 
-    return (a: THREE.Object3D, b : THREE.Object3D, contactPointOnA: THREE.Vector3, contactPointOnB: THREE.Vector3, contactImpulse : THREE.Vector3) =>
+    return (a: THREE.Object3D | undefined, b : THREE.Object3D | undefined, contactPointOnA: THREE.Vector3, contactPointOnB: THREE.Vector3, contactDeltaV : THREE.Vector3) =>
     {
       for (let listener of this.listeners["collision"])
       {
-        if (listener.body.body.id == a.id)
+        if (a !== undefined && listener.body.body.id == a.id)
         {
-          let bBody = this.scene.getBodyById(b.id);
-          if (bBody)
-          {
-            listener.onCollision(bBody, contactPointOnA, dummyVector3.copy(contactImpulse));
-          }
+          let bBody = b === undefined? undefined : this.scene.getBodyById(b.id);
+          listener.onCollision(bBody, contactPointOnA, dummyVector3.copy(contactDeltaV).multiplyScalar(-1));
         }
-        else if (listener.body.body.id == b.id)
+        else if (b !== undefined && listener.body.body.id == b.id)
         {
-          let aBody = this.scene.getBodyById(b.id);
-          if (aBody)
-          {
-            listener.onCollision(aBody, contactPointOnB, dummyVector3.copy(contactImpulse).multiplyScalar(-1));
-          }
+          let aBody = a === undefined? undefined : this.scene.getBodyById(a.id);
+          listener.onCollision(aBody, contactPointOnB, dummyVector3.copy(contactDeltaV));
         }
       }
     }

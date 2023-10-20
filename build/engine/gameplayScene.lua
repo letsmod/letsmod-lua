@@ -34,7 +34,6 @@ function GameplayScene.prototype.addPrefab(self, bodyNode)
     local handle = __TS__New(BodyHandle, bodyNode)
     local ____self_prefabs_1 = self.prefabs
     ____self_prefabs_1[#____self_prefabs_1 + 1] = handle
-    self.bodyIdMap:set(bodyNode.id, handle)
     return handle
 end
 function GameplayScene.prototype.getBodyById(self, id)
@@ -42,15 +41,20 @@ function GameplayScene.prototype.getBodyById(self, id)
 end
 function GameplayScene.prototype.clear(self)
     self.bodies = {}
+    self.bodyIdMap:clear()
+    self.prefabs = {}
+    self.dispatcher:clearListeners()
 end
-function GameplayScene.prototype.initialize(self, memoryOverride)
+function GameplayScene.prototype.initializeMemory(self, memoryOverride)
     self.memory = __TS__ObjectAssign(
         {},
         __TS__New(GameplayMemory),
         memoryOverride
     )
 end
-function GameplayScene.prototype.preUpdate(self)
+function GameplayScene.prototype.preUpdate(self, dt)
+    local ____self_memory_2, ____timeSinceStart_3 = self.memory, "timeSinceStart"
+    ____self_memory_2[____timeSinceStart_3] = ____self_memory_2[____timeSinceStart_3] + dt
     for ____, body in ipairs(self.bodies) do
         body:initializeElements()
     end
@@ -58,9 +62,7 @@ function GameplayScene.prototype.preUpdate(self)
         body:startElements()
     end
 end
-function GameplayScene.prototype.update(self, dt)
-    local ____self_memory_2, ____timeSinceStart_3 = self.memory, "timeSinceStart"
-    ____self_memory_2[____timeSinceStart_3] = ____self_memory_2[____timeSinceStart_3] + dt
+function GameplayScene.prototype.update(self)
     self.dispatcher:onUpdate()
 end
 function GameplayScene.prototype.cloneBody(self, body)
@@ -68,6 +70,14 @@ function GameplayScene.prototype.cloneBody(self, body)
     do
         return self:addBody(clonePointer)
     end
+end
+function GameplayScene.prototype.clonePrefab(self, prefabName)
+    for ____, prefab in ipairs(self.prefabs) do
+        if prefab.body.name == prefabName then
+            return self:cloneBody(prefab)
+        end
+    end
+    return nil
 end
 function GameplayScene.prototype.destroyBody(self, body)
     local index = __TS__ArrayIndexOf(self.bodies, body)

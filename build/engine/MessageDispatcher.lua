@@ -22,26 +22,34 @@ function MessageDispatcher.prototype.____constructor(self, scene)
     self.listeners = ____exports.MakeListenerDict(nil)
     self.onCollision = (function()
         local dummyVector3 = js_new(global.THREE.Vector3)
-        return function(____, a, b, contactPointOnA, contactPointOnB, contactImpulse)
+        return function(____, a, b, contactPointOnA, contactPointOnB, contactDeltaV)
             for ____, listener in ipairs(self.listeners.collision) do
-                if listener.body.body.id == a.id then
-                    local bBody = self.scene:getBodyById(b.id)
-                    if bBody then
-                        listener:onCollision(
-                            bBody,
-                            contactPointOnA,
-                            dummyVector3:copy(contactImpulse)
-                        )
+                if a ~= nil and listener.body.body.id == a.id then
+                    local ____temp_0
+                    if b == nil then
+                        ____temp_0 = nil
+                    else
+                        ____temp_0 = self.scene:getBodyById(b.id)
                     end
-                elseif listener.body.body.id == b.id then
-                    local aBody = self.scene:getBodyById(b.id)
-                    if aBody then
-                        listener:onCollision(
-                            aBody,
-                            contactPointOnB,
-                            dummyVector3:copy(contactImpulse):multiplyScalar(-1)
-                        )
+                    local bBody = ____temp_0
+                    listener:onCollision(
+                        bBody,
+                        contactPointOnA,
+                        dummyVector3:copy(contactDeltaV):multiplyScalar(-1)
+                    )
+                elseif b ~= nil and listener.body.body.id == b.id then
+                    local ____temp_1
+                    if a == nil then
+                        ____temp_1 = nil
+                    else
+                        ____temp_1 = self.scene:getBodyById(a.id)
                     end
+                    local aBody = ____temp_1
+                    listener:onCollision(
+                        aBody,
+                        contactPointOnB,
+                        dummyVector3:copy(contactDeltaV)
+                    )
                 end
             end
         end
@@ -89,8 +97,8 @@ function MessageDispatcher.prototype.removeListener(self, ____type, listener)
     end
 end
 function MessageDispatcher.prototype.addListener(self, ____type, listener)
-    local ____self_listeners_____type_0 = self.listeners[____type]
-    ____self_listeners_____type_0[#____self_listeners_____type_0 + 1] = listener
+    local ____self_listeners_____type_2 = self.listeners[____type]
+    ____self_listeners_____type_2[#____self_listeners_____type_2 + 1] = listener
 end
 function MessageDispatcher.prototype.onUpdate(self)
     for ____, listener in ipairs(self.listeners.update) do

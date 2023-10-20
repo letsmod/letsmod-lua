@@ -35,7 +35,6 @@ export class GameplayScene
   {
     let handle = new BodyHandle(bodyNode);
     this.prefabs.push(handle);
-    this.bodyIdMap.set(bodyNode.id, handle);
     return handle;
   }
 
@@ -47,15 +46,19 @@ export class GameplayScene
   clear()
   {
     this.bodies = [];
+    this.bodyIdMap.clear();
+    this.prefabs = [];
+    this.dispatcher.clearListeners();
   }
 
-  initialize(memoryOverride : Partial<GameplayMemory>)
+  initializeMemory(memoryOverride : Partial<GameplayMemory>)
   {
     this.memory = {...new GameplayMemory(), ...memoryOverride};
   }
 
-  preUpdate()
+  preUpdate(dt : number)
   {
+    this.memory.timeSinceStart += dt;
     for (let body of this.bodies)
     {
       body.initializeElements();
@@ -67,9 +70,8 @@ export class GameplayScene
     }
   }
 
-  update(dt : number)
+  update()
   {
-    this.memory.timeSinceStart += dt;
     this.dispatcher.onUpdate();
   }
 
@@ -77,6 +79,18 @@ export class GameplayScene
   {
     let clonePointer = body.body.cloneBody();{
     return this.addBody(clonePointer);}
+  }
+
+  clonePrefab(prefabName: string)
+  {
+    for (let prefab of this.prefabs)
+    {
+      if (prefab.body.name == prefabName)
+      {
+        return this.cloneBody(prefab);
+      }
+    }
+    return undefined;
   }
 
   destroyBody(body: BodyHandle)

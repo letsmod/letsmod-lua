@@ -1,6 +1,6 @@
 import { GameplayScene } from "engine/GameplayScene";
 
-export * as Elements from "elements/ElementTypes";
+export * as Elements from "elements/_ElementTypes";
 
 export { BodyHandle } from "engine/BodyHandle";
 

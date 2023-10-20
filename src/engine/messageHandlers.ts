@@ -8,7 +8,7 @@ export interface UpdateHandler extends Element
 
 export interface CollisionHandler extends Element
 {
-  onCollision(other : BodyHandle, contactPoint: THREE.Vector3, contactImpulse : THREE.Vector3) : void;
+  onCollision(other : BodyHandle | undefined, contactPoint: THREE.Vector3, contactDeltaV : THREE.Vector3) : void;
 }
 
 export interface ButtonHandler extends Element

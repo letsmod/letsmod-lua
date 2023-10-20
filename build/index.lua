@@ -2,7 +2,7 @@
 local ____exports = {}
 local ____GameplayScene = require("engine.GameplayScene")
 local GameplayScene = ____GameplayScene.GameplayScene
-____exports.Elements = require("elements.ElementTypes")
+____exports.Elements = require("elements._ElementTypes")
 do
     local ____BodyHandle = require("engine.BodyHandle")
     local BodyHandle = ____BodyHandle.BodyHandle
