@@ -3,19 +3,8 @@ import { js_new, global } from "js";
 import {
   HandlerTypeMap,
   HandlerTypes
-  // UpdateHandler,
-  // CollisionHandler,
-  // ButtonHandler,
-  // DragGestureHandler,
-  // TapGestureHandler,
-  // SwipeGestureHandler,
-  // HoldGestureHandler,
-  // AimGetstureHandler,
-  // InteractHandler,
-  // SelfDestructionHandler,
-  // ActorDestructionHandler,
-  // HitPointChangeHandler
 } from "./MessageHandlers";
+import { LMent } from "./LMent";
 import { BodyHandle } from "./BodyHandle";
 import { GameplayScene } from "./GameplayScene";
 
@@ -35,10 +24,18 @@ export function MakeListenerDict()
   return dict as ListenerDict;
 }
 
+export type DelayedFunction <T extends (...args: any[]) => any> = {
+  element: LMent | undefined,
+  func: T,
+  delay: number,
+  args: Parameters<T>
+}
+
 export class MessageDispatcher
 {
   scene: GameplayScene;
   listeners : ListenerDict = MakeListenerDict();
+  functionQueue : DelayedFunction<any>[] = [];
 
   constructor(scene: GameplayScene)
   {
@@ -48,25 +45,18 @@ export class MessageDispatcher
   clearListeners()
   {
     this.listeners = MakeListenerDict();
+    this.functionQueue = [];
   }
 
   removeAllListenersFromBody(body: BodyHandle)
   {
-    for (let key in this.listeners)
+    for (let elem of body.elements)
     {
-      let listeners = this.listeners[key as keyof HandlerTypeMap];
-      for (let i = 0; i < listeners.length; i++)
-      {
-        if (listeners[i].body == body)
-        {
-          listeners.splice(i, 1);
-          i--;
-        }
-      }
+      this.removeAllListenersFromElement(elem);
     }
   }
   
-  removeAllListenersFromElement(elem : Element)
+  removeAllListenersFromElement(elem : LMent)
   {
     for (let key in this.listeners)
     {
@@ -79,7 +69,15 @@ export class MessageDispatcher
           i--;
         }
       }
-    } 
+    }
+    for (let i = 0; i < this.functionQueue.length; i++)
+    {
+      if (this.functionQueue[i].element === elem)
+      {
+        this.functionQueue.splice(i, 1);
+        i--;
+      }
+    }
   }
 
   removeListener<T extends keyof HandlerTypeMap>(type: T, listener: HandlerTypeMap[T])
@@ -97,11 +95,59 @@ export class MessageDispatcher
     this.listeners[type].push(listener);
   }
 
+  hasListenerOfType<T extends keyof HandlerTypeMap>(type: T) : boolean
+  {
+    return this.listeners[type]?.length > 0;
+  }
+
+  queueDelayedFunction<T extends (...args: any[]) => any> (element: LMent | undefined, func: T, delay: number, ...args: Parameters<T>) : DelayedFunction<T>
+  {
+    let fq = {
+      element: element,
+      func: func,
+      delay: delay,
+      args: args
+    }
+    this.functionQueue.push(fq);
+    return fq;
+  }
+
+  removeQueuedFunction(fq: DelayedFunction<any>)
+  {
+    let index = this.functionQueue.indexOf(fq);
+    if (index >= 0)
+    {
+      this.functionQueue.splice(index, 1);
+    }
+  }
+
+  updateFunctionQueue(dt: number)
+  {
+    let funcsToCall: DelayedFunction<any>[] = [];
+    for (let i = 0; i < this.functionQueue.length; i++)
+    {
+      let fq = this.functionQueue[i];
+      fq.delay -= dt;
+      if (fq.delay <= 0)
+      {
+        funcsToCall.push(fq);
+        this.functionQueue.splice(i, 1);
+        i--;
+      }
+    }
+
+    for (let fq of funcsToCall)
+    {
+      fq.func(...fq.args);
+    }
+  }
+
   // UpdateHandler
 
   onUpdate()
   {
-    for (let listener of this.listeners["update"])
+    // iterate over copy of listeners in case onUpdate adds/removes listeners
+    for (let listener of this.listeners["update"].slice())
     {
       listener.onUpdate();
     }
@@ -115,7 +161,8 @@ export class MessageDispatcher
 
     return (a: THREE.Object3D | undefined, b : THREE.Object3D | undefined, contactPointOnA: THREE.Vector3, contactPointOnB: THREE.Vector3, contactDeltaV : THREE.Vector3) =>
     {
-      for (let listener of this.listeners["collision"])
+      // iterate over copy of listeners in case onCollision adds/removes listeners
+      for (let listener of this.listeners["collision"].slice())
       {
         if (a !== undefined && listener.body.body.id == a.id)
         {
@@ -135,7 +182,8 @@ export class MessageDispatcher
 
   onButtonPress(button: string)
   {
-    for (let listener of this.listeners["button"])
+    // iterate over copy of listeners in case onButtonPress adds/removes listeners
+    for (let listener of this.listeners["button"].slice())
     {
       listener.onButtonPress(button);
     }
@@ -143,7 +191,8 @@ export class MessageDispatcher
 
   onButtonHold(button: string)
   {
-    for (let listener of this.listeners["button"])
+    // iterate over copy of listeners in case onButtonHold adds/removes listeners
+    for (let listener of this.listeners["button"].slice())
     {
       listener.onButtonHold(button);
     }
@@ -151,7 +200,8 @@ export class MessageDispatcher
 
   onButtonRelease(button: string)
   {
-    for (let listener of this.listeners["button"])
+    // iterate over copy of listeners in case onButtonRelease adds/removes listeners
+    for (let listener of this.listeners["button"].slice())
     {
       listener.onButtonRelease(button);
     }
@@ -161,7 +211,8 @@ export class MessageDispatcher
 
   onDragStart(dx: number, dy: number)
   {
-    for (let listener of this.listeners["drag"])
+    // iterate over copy of listeners in case onDragStart adds/removes listeners
+    for (let listener of this.listeners["drag"].slice())
     {
       listener.onDragStart(dx, dy);
     }
@@ -198,19 +249,19 @@ export class MessageDispatcher
 
     if (!didInteract)
     {
-      for (let listener of this.listeners["tap"])
+      // iterate over copy of listeners in case onTap adds/removes listeners
+      for (let listener of this.listeners["tap"].slice())
       {
         listener.onTap();
       }
     }
-
   }
 
   // SwipeGestureHandler
 
   onSwipe(dx: number, dy: number)
   {
-    for (let listener of this.listeners["swipe"])
+    for (let listener of this.listeners["swipe"].slice())
     {
       listener.onSwipe(dx, dy);
     }
@@ -220,7 +271,7 @@ export class MessageDispatcher
 
   onHoldStart()
   {
-    for (let listener of this.listeners["hold"])
+    for (let listener of this.listeners["hold"].slice())
     {
       listener.onHoldStart();
     }
@@ -228,7 +279,7 @@ export class MessageDispatcher
 
   onHoldRelease()
   {
-    for (let listener of this.listeners["hold"])
+    for (let listener of this.listeners["hold"].slice())
     {
       listener.onHoldRelease();
     }
@@ -238,7 +289,7 @@ export class MessageDispatcher
 
   onAimStart()
   {
-    for (let listener of this.listeners["aim"])
+    for (let listener of this.listeners["aim"].slice())
     {
       listener.onAimStart();
     }
@@ -246,7 +297,7 @@ export class MessageDispatcher
 
   onAim(dx: number, dy: number)
   {
-    for (let listener of this.listeners["aim"])
+    for (let listener of this.listeners["aim"].slice())
     {
       listener.onAim(dx, dy);
     }
@@ -254,7 +305,7 @@ export class MessageDispatcher
 
   onAimRelease(dx: number, dy: number)
   {
-    for (let listener of this.listeners["aim"])
+    for (let listener of this.listeners["aim"].slice())
     {
       listener.onAimRelease(dx, dy);
     }
@@ -266,7 +317,7 @@ export class MessageDispatcher
 
   onInteract(interactor : BodyHandle)
   {
-    for (let listener of this.listeners["interact"])
+    for (let listener of this.listeners["interact"].slice())
     {
       if (listener.isInInteractionRange(interactor))
       {
@@ -286,7 +337,7 @@ export class MessageDispatcher
 
   onActorDestroyed(actor : BodyHandle)
   {
-    for (let listener of this.listeners["actorDestroyed"])
+    for (let listener of this.listeners["actorDestroyed"].slice())
     {
       listener.onActorDestroyed(actor);
     }
@@ -296,7 +347,7 @@ export class MessageDispatcher
 
   onHitPointChange(source: BodyHandle, previousHP: number, currentHP: number)
   {
-    for (let listener of this.listeners["hitPointsChanged"])
+    for (let listener of this.listeners["hitPointsChanged"].slice())
     {
       listener.onHitPointChange(source, previousHP, currentHP);
     }

@@ -1,16 +1,18 @@
 import { BodyHandle } from "engine/BodyHandle";
-import { Element } from "engine/Element";
+import { LMent } from "engine/LMent";
 import { GameplayScene } from "engine/GameplayScene";
 import { HitPointChangeHandler } from "engine/MessageHandlers";
 
-export class DestroyOnZeroHP extends Element implements HitPointChangeHandler
+export class DestroyOnZeroHP extends LMent implements HitPointChangeHandler
 {
-  destroyed: boolean;
+  private destroyed: boolean;
+  destructionDelay: number;
 
-  constructor(body: BodyHandle)
+  constructor(body: BodyHandle, params: Partial<DestroyOnZeroHP> = {})
   {
     super(body);
     this.destroyed = false;
+    this.destructionDelay = params.destructionDelay === undefined? 0 : params.destructionDelay;
   }
 
   onInit(): void {
@@ -21,10 +23,24 @@ export class DestroyOnZeroHP extends Element implements HitPointChangeHandler
     
   }
 
+  doDestroy()
+  {
+    GameplayScene.instance.destroyBody(this.body);
+  }
+
   onHitPointChange(source: BodyHandle, previousHP: number, currentHP: number): void {
     if (source == this.body && currentHP <= 0 && !this.destroyed)
     {
-      GameplayScene.instance.destroyBody(this.body);
+      if (this.destructionDelay <= 0)
+      {
+        this.doDestroy();
+      }
+      else
+      {
+        // GameplayScene.instance.dispatcher.queueDelayedFunction(undefined, this.doDestroy.bind(this), this.destructionDelay);
+
+        GameplayScene.instance.dispatcher.queueDelayedFunction(undefined, () => this.doDestroy(), this.destructionDelay);
+      }
       this.destroyed = true;
     }
   }

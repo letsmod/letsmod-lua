@@ -1,4 +1,4 @@
-import { Element } from "./Element";
+import { LMent } from "./LMent";
 
 export enum PhysicsBodyType {
   physical = 0,
@@ -68,7 +68,7 @@ export interface BodyPointer
 export class BodyHandle
 {
   readonly body: BodyPointer;
-  elements: Element[] = [];
+  elements: LMent[] = [];
 
   // do not use directly; use gameplayScene.addBody / addPrefab instead
   constructor(bodyNode: BodyPointer)
@@ -76,7 +76,7 @@ export class BodyHandle
     this.body = bodyNode;
   }
 
-  getElement <U extends Element> (T : new (...args: any[]) => U ) : U | undefined
+  getElement <U extends LMent> (T : new (...args: any[]) => U ) : U | undefined
   {
     for (let i = 0; i < this.elements.length; i++)
     {
@@ -89,7 +89,7 @@ export class BodyHandle
     return undefined;
   }
 
-  addElement(elem : Element)
+  addElement(elem : LMent)
   {
     this.elements.push(elem);
   }

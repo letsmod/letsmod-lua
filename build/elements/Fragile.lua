@@ -2,8 +2,8 @@ local ____lualib = require("lualib_bundle")
 local __TS__Class = ____lualib.__TS__Class
 local __TS__ClassExtends = ____lualib.__TS__ClassExtends
 local ____exports = {}
-local ____Element = require("engine.Element")
-local Element = ____Element.Element
+local ____LMent = require("engine.LMent")
+local LMent = ____LMent.LMent
 local ____GameplayScene = require("engine.GameplayScene")
 local GameplayScene = ____GameplayScene.GameplayScene
 local ____HitPoints = require("elements.HitPoints")
@@ -11,12 +11,12 @@ local HitPoints = ____HitPoints.HitPoints
 ____exports.Fragile = __TS__Class()
 local Fragile = ____exports.Fragile
 Fragile.name = "Fragile"
-__TS__ClassExtends(Fragile, Element)
+__TS__ClassExtends(Fragile, LMent)
 function Fragile.prototype.____constructor(self, body, params)
     if params == nil then
         params = {}
     end
-    Element.prototype.____constructor(self, body)
+    LMent.prototype.____constructor(self, body)
     self.damageValue = params.damageValue == nil and 1 or params.damageValue
     self.damageType = params.damageType == nil and "blunt" or params.damageType
     self.cooldown = params.cooldown == nil and 0 or params.cooldown

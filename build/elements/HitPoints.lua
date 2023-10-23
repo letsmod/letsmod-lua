@@ -2,8 +2,8 @@ local ____lualib = require("lualib_bundle")
 local __TS__Class = ____lualib.__TS__Class
 local __TS__ClassExtends = ____lualib.__TS__ClassExtends
 local ____exports = {}
-local ____Element = require("engine.Element")
-local Element = ____Element.Element
+local ____LMent = require("engine.LMent")
+local LMent = ____LMent.LMent
 local ____GameplayScene = require("engine.GameplayScene")
 local GameplayScene = ____GameplayScene.GameplayScene
 ____exports.DamageTeam = DamageTeam or ({})
@@ -16,12 +16,12 @@ ____exports.DamageTeam[____exports.DamageTeam.enemy] = "enemy"
 ____exports.HitPoints = __TS__Class()
 local HitPoints = ____exports.HitPoints
 HitPoints.name = "HitPoints"
-__TS__ClassExtends(HitPoints, Element)
+__TS__ClassExtends(HitPoints, LMent)
 function HitPoints.prototype.____constructor(self, body, params)
     if params == nil then
         params = {}
     end
-    Element.prototype.____constructor(self, body)
+    LMent.prototype.____constructor(self, body)
     self.maxHitpoints = params.maxHitpoints == nil and 1 or params.maxHitpoints
     self.hitpoints = params.hitpoints == nil and self.maxHitpoints or params.hitpoints
     self.damageTypeMultipliers = params.damageTypeMultipliers == nil and ({}) or params.damageTypeMultipliers

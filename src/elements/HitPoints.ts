@@ -1,5 +1,5 @@
 import { BodyHandle } from "engine/BodyHandle";
-import { Element } from "engine/Element";
+import { LMent } from "engine/LMent";
 import { GameplayScene } from "engine/GameplayScene";
 
 export type DamageType = "blunt" | "slash" | "pierce" | "heat" | "cold" | "electric" | "poison";
@@ -9,7 +9,7 @@ export enum DamageTeam {
   enemy = 2
 }
 
-export class HitPoints extends Element
+export class HitPoints extends LMent
 {
   maxHitpoints : number;
   hitpoints : number;

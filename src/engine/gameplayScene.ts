@@ -68,6 +68,8 @@ export class GameplayScene
     {
       body.startElements();
     }
+
+    this.dispatcher.updateFunctionQueue(dt);
   }
 
   update()

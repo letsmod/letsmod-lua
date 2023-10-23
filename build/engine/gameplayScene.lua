@@ -61,6 +61,7 @@ function GameplayScene.prototype.preUpdate(self, dt)
     for ____, body in ipairs(self.bodies) do
         body:startElements()
     end
+    self.dispatcher:updateFunctionQueue(dt)
 end
 function GameplayScene.prototype.update(self)
     self.dispatcher:onUpdate()

@@ -1,11 +1,11 @@
 import { BodyHandle } from "engine/BodyHandle";
-import { Element } from "engine/Element";
+import { LMent } from "engine/LMent";
 import { GameplayScene } from "engine/GameplayScene";
 import { ActorDestructionHandler, HitPointChangeHandler } from "engine/MessageHandlers";
 
-export class CreatePrefabsOnDestroyed extends Element implements ActorDestructionHandler
+export class CreatePrefabsOnDestroyed extends LMent implements ActorDestructionHandler
 {
-  destroyed: boolean;
+  private destroyed: boolean;
   prefabNames: string[];
 
   constructor(body: BodyHandle, params: Partial<CreatePrefabsOnDestroyed> = {})
@@ -26,11 +26,9 @@ export class CreatePrefabsOnDestroyed extends Element implements ActorDestructio
   onActorDestroyed(actor: BodyHandle): void {
     if (!this.destroyed && actor == this.body)
     {
-      console.log("Creating prefabs", this.prefabNames, this.prefabNames.length);
       this.destroyed = true;
       for (let prefabName of this.prefabNames)
       {
-        console.log("name", prefabName);
         let prefab = GameplayScene.instance.clonePrefab(prefabName);
         if (prefab)
         {

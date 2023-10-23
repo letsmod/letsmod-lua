@@ -1,18 +1,18 @@
 import { BodyHandle, PhysicsBodyType } from "engine/BodyHandle";
-import { Element } from "engine/Element";
+import { LMent } from "engine/LMent";
 import { GameplayScene } from "engine/GameplayScene";
 import { HitPoints, DamageType } from "./HitPoints";
 import { CollisionHandler } from "engine/MessageHandlers";
 import { Vector3 } from "three";
 
-export class Fragile extends Element implements CollisionHandler
+export class Fragile extends LMent implements CollisionHandler
 {
   damageValue: number;
   damageType: DamageType | undefined;
   deltaVThreshold: number;
   cooldown: number;
 
-  lastDamagedTime: number;
+  private lastDamagedTime: number;
 
   constructor(body: BodyHandle, params: Partial<Fragile> = {})
   {

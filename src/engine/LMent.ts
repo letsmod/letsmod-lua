@@ -1,6 +1,6 @@
 import { BodyHandle } from "./BodyHandle";
 
-export abstract class Element
+export abstract class LMent
 {
   body : BodyHandle;
   enabled : boolean;
