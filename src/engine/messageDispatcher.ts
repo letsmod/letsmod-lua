@@ -95,9 +95,28 @@ export class MessageDispatcher
     this.listeners[type].push(listener);
   }
 
-  hasListenerOfType<T extends keyof HandlerTypeMap>(type: T) : boolean
+  hasListenerOfType<T extends keyof HandlerTypeMap>(type: T, subtype? : string) : boolean
   {
-    return this.listeners[type]?.length > 0;
+    if (this.listeners[type] === undefined)
+    {
+      return false;
+    }
+
+    if (subtype !== undefined)
+    {
+      for (let listener of this.listeners[type])
+      {
+        if (listener.hasSubtype !== undefined && listener.hasSubtype(subtype))
+        {
+          return true;
+        }
+      }
+      return false;
+    }
+    else
+    {
+      return (this.listeners[type] as unknown[]).length > 0;
+    }
   }
 
   queueDelayedFunction<T extends (...args: any[]) => any> (element: LMent | undefined, func: T, delay: number, ...args: Parameters<T>) : DelayedFunction<T>

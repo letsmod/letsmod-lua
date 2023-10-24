@@ -1,6 +1,7 @@
 local ____lualib = require("lualib_bundle")
 local __TS__Class = ____lualib.__TS__Class
 local __TS__ClassExtends = ____lualib.__TS__ClassExtends
+local __TS__FunctionBind = ____lualib.__TS__FunctionBind
 local ____exports = {}
 local ____LMent = require("engine.LMent")
 local LMent = ____LMent.LMent
@@ -33,7 +34,7 @@ function DestroyOnZeroHP.prototype.onHitPointChange(self, source, previousHP, cu
         else
             GameplayScene.instance.dispatcher:queueDelayedFunction(
                 nil,
-                function() return self:doDestroy() end,
+                __TS__FunctionBind(self.doDestroy, self),
                 self.destructionDelay
             )
         end

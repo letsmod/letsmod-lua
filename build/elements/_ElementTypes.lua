@@ -25,4 +25,9 @@ do
     local CreatePrefabsOnDestroyed = ____CreatePrefabsOnDestroyed.CreatePrefabsOnDestroyed
     ____exports.CreatePrefabsOnDestroyed = CreatePrefabsOnDestroyed
 end
+do
+    local ____ExamplePlayer = require("elements.ExamplePlayer")
+    local ExamplePlayer = ____ExamplePlayer.ExamplePlayer
+    ____exports.ExamplePlayer = ExamplePlayer
+end
 return ____exports

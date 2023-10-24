@@ -25,6 +25,7 @@ function GameplayScene.prototype.____constructor(self)
 end
 function GameplayScene.prototype.addBody(self, bodyNode)
     local handle = __TS__New(BodyHandle, bodyNode)
+    handle.isInScene = true
     local ____self_bodies_0 = self.bodies
     ____self_bodies_0[#____self_bodies_0 + 1] = handle
     self.bodyIdMap:set(bodyNode.id, handle)
@@ -68,9 +69,10 @@ function GameplayScene.prototype.update(self)
 end
 function GameplayScene.prototype.cloneBody(self, body)
     local clonePointer = body.body:cloneBody()
-    do
+    if clonePointer ~= nil then
         return self:addBody(clonePointer)
     end
+    return nil
 end
 function GameplayScene.prototype.clonePrefab(self, prefabName)
     for ____, prefab in ipairs(self.prefabs) do
@@ -87,6 +89,7 @@ function GameplayScene.prototype.destroyBody(self, body)
         self.dispatcher:removeAllListenersFromBody(body)
         __TS__ArraySplice(self.bodies, index, 1)
         body.body:destroyBody()
+        body.isInScene = false
     end
 end
 __TS__ObjectDefineProperty(

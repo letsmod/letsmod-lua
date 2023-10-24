@@ -26,6 +26,7 @@ export class GameplayScene
   addBody (bodyNode: BodyPointer)
   {
     let handle = new BodyHandle(bodyNode);
+    handle.isInScene = true;
     this.bodies.push(handle);
     this.bodyIdMap.set(bodyNode.id, handle);
     return handle;
@@ -77,10 +78,14 @@ export class GameplayScene
     this.dispatcher.onUpdate();
   }
 
-  cloneBody(body: BodyHandle)
+  cloneBody(body: BodyHandle) : BodyHandle | undefined
   {
-    let clonePointer = body.body.cloneBody();{
-    return this.addBody(clonePointer);}
+    let clonePointer = body.body.cloneBody();
+    if (clonePointer !== undefined)
+    {
+      return this.addBody(clonePointer);
+    }
+    return undefined;
   }
 
   clonePrefab(prefabName: string)
@@ -105,6 +110,7 @@ export class GameplayScene
 
       this.bodies.splice(index, 1);
       body.body.destroyBody();
+      body.isInScene = false;
     }
   }
 }

@@ -69,6 +69,7 @@ export class BodyHandle
 {
   readonly body: BodyPointer;
   elements: LMent[] = [];
+  isInScene: boolean = false;
 
   // do not use directly; use gameplayScene.addBody / addPrefab instead
   constructor(bodyNode: BodyPointer)

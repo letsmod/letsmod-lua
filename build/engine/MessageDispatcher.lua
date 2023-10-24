@@ -3,6 +3,7 @@ local __TS__Class = ____lualib.__TS__Class
 local __TS__ArraySlice = ____lualib.__TS__ArraySlice
 local __TS__ArraySplice = ____lualib.__TS__ArraySplice
 local __TS__ArrayIndexOf = ____lualib.__TS__ArrayIndexOf
+local __TS__Iterator = ____lualib.__TS__Iterator
 local ____exports = {}
 local ____js = require("js")
 local js_new = ____js.js_new
@@ -103,15 +104,26 @@ function MessageDispatcher.prototype.addListener(self, ____type, listener)
     local ____self_listeners_____type_2 = self.listeners[____type]
     ____self_listeners_____type_2[#____self_listeners_____type_2 + 1] = listener
 end
-function MessageDispatcher.prototype.hasListenerOfType(self, ____type)
-    local ____opt_3 = self.listeners[____type]
-    return (____opt_3 and ____opt_3.length) > 0
+function MessageDispatcher.prototype.hasListenerOfType(self, ____type, subtype)
+    if self.listeners[____type] == nil then
+        return false
+    end
+    if subtype ~= nil then
+        for ____, listener in __TS__Iterator(self.listeners[____type]) do
+            if listener.hasSubtype ~= nil and listener:hasSubtype(subtype) then
+                return true
+            end
+        end
+        return false
+    else
+        return #self.listeners[____type] > 0
+    end
 end
 function MessageDispatcher.prototype.queueDelayedFunction(self, element, func, delay, ...)
     local args = {...}
     local fq = {element = element, func = func, delay = delay, args = args}
-    local ____self_functionQueue_5 = self.functionQueue
-    ____self_functionQueue_5[#____self_functionQueue_5 + 1] = fq
+    local ____self_functionQueue_3 = self.functionQueue
+    ____self_functionQueue_3[#____self_functionQueue_3 + 1] = fq
     return fq
 end
 function MessageDispatcher.prototype.removeQueuedFunction(self, fq)

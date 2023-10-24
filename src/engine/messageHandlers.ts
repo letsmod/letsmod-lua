@@ -1,54 +1,61 @@
 import { LMent } from "./LMent";
 import { BodyHandle } from "./BodyHandle";
 
-export interface UpdateHandler extends LMent
+export interface GenericHandler extends LMent
+{
+  // override this function for listeners (such as button listeners) with subtypes
+  hasSubtype? (subtype : string) : boolean;
+}
+
+export interface UpdateHandler extends GenericHandler
 {
   onUpdate() : void;
 }
 
-export interface CollisionHandler extends LMent
+export interface CollisionHandler extends GenericHandler
 {
   onCollision(other : BodyHandle | undefined, contactPoint: THREE.Vector3, contactDeltaV : THREE.Vector3) : void;
 }
 
-export interface ButtonHandler extends LMent
+export interface ButtonHandler extends GenericHandler
 {
   onButtonPress(button: string) : void;
   onButtonHold(button: string) : void;
   onButtonRelease(button: string) : void;
+  hasSubtype(button: string) : boolean;
 }
 
-export interface DragGestureHandler extends LMent
+export interface DragGestureHandler extends GenericHandler
 {
   onDragStart(dx: number, dy: number) : void;
   onDrag(dx: number, dy: number) : void;
   onDragRelease(dx: number, dy: number) : void;
 }
 
-export interface TapGestureHandler extends LMent
+export interface TapGestureHandler extends GenericHandler
 {
   onTap() : void;
 }
 
-export interface SwipeGestureHandler extends LMent
+export interface SwipeGestureHandler extends GenericHandler
 {
   onSwipe(dx: number, dy: number) : void;
 }
 
-export interface HoldGestureHandler extends LMent
+export interface HoldGestureHandler extends GenericHandler
 {
   onHoldStart() : void;
   onHoldRelease() : void;
 }
 
-export interface AimGetstureHandler extends LMent
+export interface AimGetstureHandler extends GenericHandler
 {
   onAimStart() : void; // always starts with dx=0, dy=0
   onAim(dx: number, dy: number) : void;
   onAimRelease(dx: number, dy: number) : void;
 }
 
-export interface InteractHandler extends LMent
+export interface InteractHandler extends GenericHandler
 {
   interactionNameOrIcon : string;
   interactionPriority : number;
@@ -58,12 +65,12 @@ export interface InteractHandler extends LMent
   onInteract(interactor : BodyHandle) : boolean;
 }
 
-export interface ActorDestructionHandler extends LMent
+export interface ActorDestructionHandler extends GenericHandler
 {
   onActorDestroyed(actor: BodyHandle) : void;
 }
 
-export interface HitPointChangeHandler extends LMent
+export interface HitPointChangeHandler extends GenericHandler
 {
   onHitPointChange(source: BodyHandle, previousHP: number, currentHP: number) : void;
 }

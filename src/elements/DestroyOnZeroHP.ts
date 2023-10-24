@@ -37,9 +37,7 @@ export class DestroyOnZeroHP extends LMent implements HitPointChangeHandler
       }
       else
       {
-        // GameplayScene.instance.dispatcher.queueDelayedFunction(undefined, this.doDestroy.bind(this), this.destructionDelay);
-
-        GameplayScene.instance.dispatcher.queueDelayedFunction(undefined, () => this.doDestroy(), this.destructionDelay);
+        GameplayScene.instance.dispatcher.queueDelayedFunction(undefined, this.doDestroy.bind(this), this.destructionDelay);
       }
       this.destroyed = true;
     }

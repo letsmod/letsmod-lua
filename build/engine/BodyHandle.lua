@@ -14,6 +14,7 @@ local BodyHandle = ____exports.BodyHandle
 BodyHandle.name = "BodyHandle"
 function BodyHandle.prototype.____constructor(self, bodyNode)
     self.elements = {}
+    self.isInScene = false
     self.body = bodyNode
 end
 function BodyHandle.prototype.getElement(self, T)
