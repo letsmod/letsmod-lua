@@ -228,28 +228,11 @@ export class MessageDispatcher
 
   // DragGestureHandler
 
-  onDragStart(dx: number, dy: number)
-  {
-    // iterate over copy of listeners in case onDragStart adds/removes listeners
-    for (let listener of this.listeners["drag"].slice())
-    {
-      listener.onDragStart(dx, dy);
-    }
-  }
-
   onDrag(dx: number, dy: number)
   {
     for (let listener of this.listeners["drag"])
     {
       listener.onDrag(dx, dy);
-    }
-  }
-
-  onDragRelease(dx: number, dy: number)
-  {
-    for (let listener of this.listeners["drag"])
-    {
-      listener.onDragRelease(dx, dy);
     }
   }
 

@@ -171,19 +171,9 @@ function MessageDispatcher.prototype.onButtonRelease(self, button)
         listener:onButtonRelease(button)
     end
 end
-function MessageDispatcher.prototype.onDragStart(self, dx, dy)
-    for ____, listener in ipairs(__TS__ArraySlice(self.listeners.drag)) do
-        listener:onDragStart(dx, dy)
-    end
-end
 function MessageDispatcher.prototype.onDrag(self, dx, dy)
     for ____, listener in ipairs(self.listeners.drag) do
         listener:onDrag(dx, dy)
-    end
-end
-function MessageDispatcher.prototype.onDragRelease(self, dx, dy)
-    for ____, listener in ipairs(self.listeners.drag) do
-        listener:onDragRelease(dx, dy)
     end
 end
 function MessageDispatcher.prototype.onTap(self)

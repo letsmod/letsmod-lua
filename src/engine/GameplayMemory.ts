@@ -6,4 +6,5 @@ export class GameplayMemory
 {
   timeSinceStart = 0;
   player: BodyHandle | undefined = undefined;
+  frameRate = 30;
 }

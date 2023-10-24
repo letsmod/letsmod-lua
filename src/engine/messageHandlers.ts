@@ -27,9 +27,7 @@ export interface ButtonHandler extends GenericHandler
 
 export interface DragGestureHandler extends GenericHandler
 {
-  onDragStart(dx: number, dy: number) : void;
   onDrag(dx: number, dy: number) : void;
-  onDragRelease(dx: number, dy: number) : void;
 }
 
 export interface TapGestureHandler extends GenericHandler

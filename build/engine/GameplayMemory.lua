@@ -7,5 +7,6 @@ GameplayMemory.name = "GameplayMemory"
 function GameplayMemory.prototype.____constructor(self)
     self.timeSinceStart = 0
     self.player = nil
+    self.frameRate = 30
 end
 return ____exports
