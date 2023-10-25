@@ -70,7 +70,9 @@ end
 function GameplayScene.prototype.cloneBody(self, body)
     local clonePointer = body.body:cloneBody()
     if clonePointer ~= nil then
-        return self:addBody(clonePointer)
+        local handle = self:addBody(clonePointer)
+        handle:initializeElements()
+        return handle
     end
     return nil
 end

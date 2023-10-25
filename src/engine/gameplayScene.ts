@@ -83,7 +83,9 @@ export class GameplayScene
     let clonePointer = body.body.cloneBody();
     if (clonePointer !== undefined)
     {
-      return this.addBody(clonePointer);
+      let handle = this.addBody(clonePointer);
+      handle.initializeElements();
+      return handle;
     }
     return undefined;
   }
