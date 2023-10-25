@@ -2,7 +2,7 @@ import { BodyHandle } from "engine/BodyHandle";
 import { LMent } from "engine/LMent";
 import { GameplayScene } from "engine/GameplayScene";
 import { HitPoints, DamageType } from "./HitPoints";
-import { CollisionHandler } from "engine/MessageHandlers";
+import { CollisionHandler, CollisionInfo } from "engine/MessageHandlers";
 import { Vector3 } from "three";
 
 export class ContactDamage extends LMent implements CollisionHandler
@@ -34,8 +34,9 @@ export class ContactDamage extends LMent implements CollisionHandler
   {
   }
 
-  onCollision(other: BodyHandle | undefined, contactPoint: Vector3, contactDeltaV: Vector3)
+  onCollision(info: CollisionInfo)
   {
+    let other = GameplayScene.instance.getBodyById(info.getOtherObjectId());
     if (other !== undefined)
     {
       const now = GameplayScene.instance.memory.timeSinceStart;

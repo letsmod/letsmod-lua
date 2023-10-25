@@ -28,8 +28,9 @@ function Fragile.prototype.onInit(self)
 end
 function Fragile.prototype.onStart(self)
 end
-function Fragile.prototype.onCollision(self, other, contactPoint, contactDeltaV)
+function Fragile.prototype.onCollision(self, info)
     local now = GameplayScene.instance.memory.timeSinceStart
+    local contactDeltaV = info:getDeltaVRelative()
     if now - self.lastDamagedTime >= self.cooldown then
         if contactDeltaV:length() >= self.deltaVThreshold then
             local hpElement = self.body:getElement(HitPoints)

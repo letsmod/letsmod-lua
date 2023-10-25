@@ -115,4 +115,12 @@ export class GameplayScene
       body.isInScene = false;
     }
   }
+
+  testErrorHandler()
+  {
+    console.log("test error");
+    let foo : any = undefined;
+    foo.bar();
+    return 3;
+  }
 }

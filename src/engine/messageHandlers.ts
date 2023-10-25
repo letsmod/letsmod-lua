@@ -12,9 +12,30 @@ export interface UpdateHandler extends GenericHandler
   onUpdate() : void;
 }
 
+export interface CollisionInfo
+{
+  getOtherObjectId() : number;
+
+  getImpulse() : THREE.Vector3;
+  getDeltaVSelf() : THREE.Vector3;
+  getDeltaVOther() : THREE.Vector3;
+  getDeltaVRelative() : THREE.Vector3;
+
+  getContactPointOnSelf(): THREE.Vector3;
+  getContactPointOnOther(): THREE.Vector3;
+}
+
+export interface CollisionInfoFactory
+{
+  aId: number;
+  bId: number;
+
+  makeCollisionInfo(target: "a" | "b") : CollisionInfo;
+}
+
 export interface CollisionHandler extends GenericHandler
 {
-  onCollision(other : BodyHandle | undefined, contactPoint: THREE.Vector3, contactDeltaV : THREE.Vector3) : void;
+  onCollision(info: CollisionInfo) : void;
 }
 
 export interface ButtonHandler extends GenericHandler

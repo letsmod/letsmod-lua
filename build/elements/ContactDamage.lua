@@ -28,7 +28,8 @@ function ContactDamage.prototype.onInit(self)
 end
 function ContactDamage.prototype.onStart(self)
 end
-function ContactDamage.prototype.onCollision(self, other, contactPoint, contactDeltaV)
+function ContactDamage.prototype.onCollision(self, info)
+    local other = GameplayScene.instance:getBodyById(info:getOtherObjectId())
     if other ~= nil then
         local now = GameplayScene.instance.memory.timeSinceStart
         local hpElement = other:getElement(HitPoints)

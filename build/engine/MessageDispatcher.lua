@@ -1,13 +1,10 @@
 local ____lualib = require("lualib_bundle")
 local __TS__Class = ____lualib.__TS__Class
-local __TS__ArraySlice = ____lualib.__TS__ArraySlice
 local __TS__ArraySplice = ____lualib.__TS__ArraySplice
 local __TS__ArrayIndexOf = ____lualib.__TS__ArrayIndexOf
 local __TS__Iterator = ____lualib.__TS__Iterator
+local __TS__ArraySlice = ____lualib.__TS__ArraySlice
 local ____exports = {}
-local ____js = require("js")
-local js_new = ____js.js_new
-local global = ____js.global
 local ____MessageHandlers = require("engine.MessageHandlers")
 local HandlerTypes = ____MessageHandlers.HandlerTypes
 function ____exports.MakeListenerDict(self)
@@ -23,40 +20,6 @@ MessageDispatcher.name = "MessageDispatcher"
 function MessageDispatcher.prototype.____constructor(self, scene)
     self.listeners = ____exports.MakeListenerDict(nil)
     self.functionQueue = {}
-    self.onCollision = (function()
-        local dummyVector3 = js_new(global.THREE.Vector3)
-        return function(____, a, b, contactPointOnA, contactPointOnB, contactDeltaV)
-            for ____, listener in ipairs(__TS__ArraySlice(self.listeners.collision)) do
-                if a ~= nil and listener.body.body.id == a.id then
-                    local ____temp_0
-                    if b == nil then
-                        ____temp_0 = nil
-                    else
-                        ____temp_0 = self.scene:getBodyById(b.id)
-                    end
-                    local bBody = ____temp_0
-                    listener:onCollision(
-                        bBody,
-                        contactPointOnA,
-                        dummyVector3:copy(contactDeltaV):multiplyScalar(-1)
-                    )
-                elseif b ~= nil and listener.body.body.id == b.id then
-                    local ____temp_1
-                    if a == nil then
-                        ____temp_1 = nil
-                    else
-                        ____temp_1 = self.scene:getBodyById(a.id)
-                    end
-                    local aBody = ____temp_1
-                    listener:onCollision(
-                        aBody,
-                        contactPointOnB,
-                        dummyVector3:copy(contactDeltaV)
-                    )
-                end
-            end
-        end
-    end)(nil)
     self.scene = scene
 end
 function MessageDispatcher.prototype.clearListeners(self)
@@ -101,8 +64,8 @@ function MessageDispatcher.prototype.removeListener(self, ____type, listener)
     end
 end
 function MessageDispatcher.prototype.addListener(self, ____type, listener)
-    local ____self_listeners_____type_2 = self.listeners[____type]
-    ____self_listeners_____type_2[#____self_listeners_____type_2 + 1] = listener
+    local ____self_listeners_____type_0 = self.listeners[____type]
+    ____self_listeners_____type_0[#____self_listeners_____type_0 + 1] = listener
 end
 function MessageDispatcher.prototype.hasListenerOfType(self, ____type, subtype)
     if self.listeners[____type] == nil then
@@ -122,8 +85,8 @@ end
 function MessageDispatcher.prototype.queueDelayedFunction(self, element, func, delay, ...)
     local args = {...}
     local fq = {element = element, func = func, delay = delay, args = args}
-    local ____self_functionQueue_3 = self.functionQueue
-    ____self_functionQueue_3[#____self_functionQueue_3 + 1] = fq
+    local ____self_functionQueue_1 = self.functionQueue
+    ____self_functionQueue_1[#____self_functionQueue_1 + 1] = fq
     return fq
 end
 function MessageDispatcher.prototype.removeQueuedFunction(self, fq)
@@ -154,6 +117,15 @@ end
 function MessageDispatcher.prototype.onUpdate(self)
     for ____, listener in ipairs(__TS__ArraySlice(self.listeners.update)) do
         listener:onUpdate()
+    end
+end
+function MessageDispatcher.prototype.onCollision(self, infoFactory)
+    for ____, listener in ipairs(__TS__ArraySlice(self.listeners.collision)) do
+        if infoFactory.aId ~= nil and listener.body.body.id == infoFactory.aId then
+            listener:onCollision(infoFactory:makeCollisionInfo("a"))
+        elseif infoFactory.bId ~= nil and listener.body.body.id == infoFactory.bId then
+            listener:onCollision(infoFactory:makeCollisionInfo("b"))
+        end
     end
 end
 function MessageDispatcher.prototype.onButtonPress(self, button)

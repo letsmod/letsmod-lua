@@ -94,6 +94,12 @@ function GameplayScene.prototype.destroyBody(self, body)
         body.isInScene = false
     end
 end
+function GameplayScene.prototype.testErrorHandler(self)
+    print("test error")
+    local foo = nil
+    foo:bar()
+    return 3
+end
 __TS__ObjectDefineProperty(
     GameplayScene,
     "instance",

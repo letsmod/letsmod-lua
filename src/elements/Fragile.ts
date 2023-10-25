@@ -2,7 +2,7 @@ import { BodyHandle, PhysicsBodyType } from "engine/BodyHandle";
 import { LMent } from "engine/LMent";
 import { GameplayScene } from "engine/GameplayScene";
 import { HitPoints, DamageType } from "./HitPoints";
-import { CollisionHandler } from "engine/MessageHandlers";
+import { CollisionHandler, CollisionInfo } from "engine/MessageHandlers";
 import { Vector3 } from "three";
 
 export class Fragile extends LMent implements CollisionHandler
@@ -34,10 +34,11 @@ export class Fragile extends LMent implements CollisionHandler
   {
   }
 
-  onCollision(other: BodyHandle | undefined, contactPoint: Vector3, contactDeltaV: Vector3)
+  onCollision(info: CollisionInfo)
   {
     const now = GameplayScene.instance.memory.timeSinceStart;
-    
+    const contactDeltaV = info.getDeltaVRelative();
+
     if (now - this.lastDamagedTime >= this.cooldown)
     {
       if (contactDeltaV.length() >= this.deltaVThreshold)

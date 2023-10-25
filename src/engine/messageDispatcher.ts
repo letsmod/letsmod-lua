@@ -1,6 +1,7 @@
 
 import { js_new, global } from "js";
 import {
+  CollisionInfoFactory,
   HandlerTypeMap,
   HandlerTypes
 } from "./MessageHandlers";
@@ -174,28 +175,21 @@ export class MessageDispatcher
 
   // CollisionHandler
 
-  onCollision = (() =>
+  onCollision (infoFactory: CollisionInfoFactory)
   {
-    let dummyVector3 = js_new(global.THREE.Vector3);
-
-    return (a: THREE.Object3D | undefined, b : THREE.Object3D | undefined, contactPointOnA: THREE.Vector3, contactPointOnB: THREE.Vector3, contactDeltaV : THREE.Vector3) =>
+    // iterate over copy of listeners in case onCollision adds/removes listeners
+    for (let listener of this.listeners["collision"].slice())
     {
-      // iterate over copy of listeners in case onCollision adds/removes listeners
-      for (let listener of this.listeners["collision"].slice())
+      if (infoFactory.aId !== undefined && listener.body.body.id == infoFactory.aId)
       {
-        if (a !== undefined && listener.body.body.id == a.id)
-        {
-          let bBody = b === undefined? undefined : this.scene.getBodyById(b.id);
-          listener.onCollision(bBody, contactPointOnA, dummyVector3.copy(contactDeltaV).multiplyScalar(-1));
-        }
-        else if (b !== undefined && listener.body.body.id == b.id)
-        {
-          let aBody = a === undefined? undefined : this.scene.getBodyById(a.id);
-          listener.onCollision(aBody, contactPointOnB, dummyVector3.copy(contactDeltaV));
-        }
+        listener.onCollision(infoFactory.makeCollisionInfo("a"));
+      }
+      else if (infoFactory.bId !== undefined && listener.body.body.id == infoFactory.bId)
+      {
+        listener.onCollision(infoFactory.makeCollisionInfo("b"));
       }
     }
-  })();
+  }
 
   // ButtonHandler
 
