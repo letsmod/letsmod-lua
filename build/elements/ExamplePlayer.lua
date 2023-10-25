@@ -69,6 +69,14 @@ function ExamplePlayer.prototype.onDrag(self, dx, dy)
     self.dragDx = dx
     self.dragDy = dy
 end
+function ExamplePlayer.prototype.onHitPointChange(self, source, previousHP, currentHP)
+    if source == self.body and currentHP <= 0 then
+        local ____opt_0 = GameplayScene.instance.clientInterface
+        if ____opt_0 ~= nil then
+            ____opt_0:loseMod()
+        end
+    end
+end
 function ExamplePlayer.prototype.hasSubtype(self, button)
     return button == "AButton"
 end

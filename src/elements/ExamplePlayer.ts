@@ -1,10 +1,10 @@
 import { BodyHandle } from "engine/BodyHandle";
 import { GameplayScene } from "engine/GameplayScene";
 import { LMent } from "engine/LMent";
-import { ButtonHandler, DragGestureHandler, UpdateHandler } from "engine/MessageHandlers";
+import { ButtonHandler, DragGestureHandler, HitPointChangeHandler, UpdateHandler } from "engine/MessageHandlers";
 import { global, js_new } from "js";
 
-export class ExamplePlayer extends LMent implements ButtonHandler, DragGestureHandler, UpdateHandler
+export class ExamplePlayer extends LMent implements ButtonHandler, DragGestureHandler, UpdateHandler, HitPointChangeHandler
 {
   maxSpeed: number; // meters per second
   acceleration: number; // meters per second per second
@@ -87,6 +87,14 @@ export class ExamplePlayer extends LMent implements ButtonHandler, DragGestureHa
   onDrag(dx: number, dy: number): void {
     this.dragDx = dx;
     this.dragDy = dy;
+  }
+
+  onHitPointChange(source: BodyHandle, previousHP: number, currentHP: number): void {
+    if (source === this.body && currentHP <= 0)
+    {
+      // death effect goes here
+      GameplayScene.instance.clientInterface?.loseMod();
+    }
   }
 
   hasSubtype(button: string): boolean {

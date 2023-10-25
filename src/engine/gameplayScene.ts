@@ -1,6 +1,7 @@
 import { BodyPointer, BodyHandle } from "./BodyHandle";
 import { MessageDispatcher } from "engine/MessageDispatcher";
 import { GameplayMemory } from "engine/GameplayMemory";
+import { LuaClientInterface } from "./LuaClientInterface";
 
 export class GameplayScene
 {
@@ -18,9 +19,15 @@ export class GameplayScene
   bodyIdMap : Map<number, BodyHandle> = new Map<number, BodyHandle>();
   dispatcher : MessageDispatcher = new MessageDispatcher(this);
   memory : GameplayMemory = new GameplayMemory();
+  clientInterface: LuaClientInterface | undefined = undefined;
 
   private constructor()
   {
+  }
+
+  setClientInterface(clientInterface: LuaClientInterface)
+  {
+    this.clientInterface = clientInterface;
   }
 
   addBody (bodyNode: BodyPointer)

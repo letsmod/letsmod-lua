@@ -22,6 +22,10 @@ function GameplayScene.prototype.____constructor(self)
     self.bodyIdMap = __TS__New(Map)
     self.dispatcher = __TS__New(MessageDispatcher, self)
     self.memory = __TS__New(GameplayMemory)
+    self.clientInterface = nil
+end
+function GameplayScene.prototype.setClientInterface(self, clientInterface)
+    self.clientInterface = clientInterface
 end
 function GameplayScene.prototype.addBody(self, bodyNode)
     local handle = __TS__New(BodyHandle, bodyNode)
