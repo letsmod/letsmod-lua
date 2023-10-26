@@ -12,11 +12,11 @@ ____exports.Fragile = __TS__Class()
 local Fragile = ____exports.Fragile
 Fragile.name = "Fragile"
 __TS__ClassExtends(Fragile, LMent)
-function Fragile.prototype.____constructor(self, body, params)
+function Fragile.prototype.____constructor(self, body, id, params)
     if params == nil then
         params = {}
     end
-    LMent.prototype.____constructor(self, body)
+    LMent.prototype.____constructor(self, body, id)
     self.damageValue = params.damageValue == nil and 1 or params.damageValue
     self.damageType = params.damageType == nil and "blunt" or params.damageType
     self.cooldown = params.cooldown == nil and 0 or params.cooldown

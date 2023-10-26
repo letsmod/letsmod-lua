@@ -10,11 +10,11 @@ ____exports.CreatePrefabsOnDestroyed = __TS__Class()
 local CreatePrefabsOnDestroyed = ____exports.CreatePrefabsOnDestroyed
 CreatePrefabsOnDestroyed.name = "CreatePrefabsOnDestroyed"
 __TS__ClassExtends(CreatePrefabsOnDestroyed, LMent)
-function CreatePrefabsOnDestroyed.prototype.____constructor(self, body, params)
+function CreatePrefabsOnDestroyed.prototype.____constructor(self, body, id, params)
     if params == nil then
         params = {}
     end
-    LMent.prototype.____constructor(self, body)
+    LMent.prototype.____constructor(self, body, id)
     self.destroyed = false
     self.prefabNames = params.prefabNames == nil and ({}) or params.prefabNames
 end

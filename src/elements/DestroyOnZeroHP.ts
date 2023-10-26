@@ -8,9 +8,9 @@ export class DestroyOnZeroHP extends LMent implements HitPointChangeHandler
   private destroyed: boolean;
   destructionDelay: number;
 
-  constructor(body: BodyHandle, params: Partial<DestroyOnZeroHP> = {})
+  constructor(body: BodyHandle, id: number, params: Partial<DestroyOnZeroHP> = {})
   {
-    super(body);
+    super(body, id);
     this.destroyed = false;
     this.destructionDelay = params.destructionDelay === undefined? 0 : params.destructionDelay;
   }

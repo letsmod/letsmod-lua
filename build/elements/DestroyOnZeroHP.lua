@@ -11,11 +11,11 @@ ____exports.DestroyOnZeroHP = __TS__Class()
 local DestroyOnZeroHP = ____exports.DestroyOnZeroHP
 DestroyOnZeroHP.name = "DestroyOnZeroHP"
 __TS__ClassExtends(DestroyOnZeroHP, LMent)
-function DestroyOnZeroHP.prototype.____constructor(self, body, params)
+function DestroyOnZeroHP.prototype.____constructor(self, body, id, params)
     if params == nil then
         params = {}
     end
-    LMent.prototype.____constructor(self, body)
+    LMent.prototype.____constructor(self, body, id)
     self.destroyed = false
     self.destructionDelay = params.destructionDelay == nil and 0 or params.destructionDelay
 end

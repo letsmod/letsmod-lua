@@ -13,11 +13,11 @@ ____exports.ExamplePlayer = __TS__Class()
 local ExamplePlayer = ____exports.ExamplePlayer
 ExamplePlayer.name = "ExamplePlayer"
 __TS__ClassExtends(ExamplePlayer, LMent)
-function ExamplePlayer.prototype.____constructor(self, body, params)
+function ExamplePlayer.prototype.____constructor(self, body, id, params)
     if params == nil then
         params = {}
     end
-    LMent.prototype.____constructor(self, body)
+    LMent.prototype.____constructor(self, body, id)
     self.dragDx = 0
     self.dragDy = 0
     self.maxSpeed = params.maxSpeed == nil and 3 or params.maxSpeed

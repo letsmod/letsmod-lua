@@ -12,11 +12,11 @@ ____exports.ContactDamage = __TS__Class()
 local ContactDamage = ____exports.ContactDamage
 ContactDamage.name = "ContactDamage"
 __TS__ClassExtends(ContactDamage, LMent)
-function ContactDamage.prototype.____constructor(self, body, params)
+function ContactDamage.prototype.____constructor(self, body, id, params)
     if params == nil then
         params = {}
     end
-    LMent.prototype.____constructor(self, body)
+    LMent.prototype.____constructor(self, body, id)
     self.damageValue = params.damageValue == nil and 1 or params.damageValue
     self.damageType = params.damageType
     self.teamFlags = params.teamFlags

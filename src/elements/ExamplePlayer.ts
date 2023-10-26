@@ -13,9 +13,9 @@ export class ExamplePlayer extends LMent implements ButtonHandler, DragGestureHa
   private dragDx = 0;
   private dragDy = 0;
 
-  constructor(body: BodyHandle, params: Partial<ExamplePlayer> = {})
+  constructor(body: BodyHandle, id: number, params: Partial<ExamplePlayer> = {})
   {
-    super(body);
+    super(body, id);
     this.maxSpeed = params.maxSpeed === undefined? 3 : params.maxSpeed;
     this.acceleration = params.acceleration === undefined? this.maxSpeed * 5 : params.acceleration;
     this.deceleration = params.deceleration === undefined? this.maxSpeed * 5 : params.deceleration;

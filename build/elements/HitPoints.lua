@@ -17,11 +17,11 @@ ____exports.HitPoints = __TS__Class()
 local HitPoints = ____exports.HitPoints
 HitPoints.name = "HitPoints"
 __TS__ClassExtends(HitPoints, LMent)
-function HitPoints.prototype.____constructor(self, body, params)
+function HitPoints.prototype.____constructor(self, body, id, params)
     if params == nil then
         params = {}
     end
-    LMent.prototype.____constructor(self, body)
+    LMent.prototype.____constructor(self, body, id)
     self.maxHitpoints = params.maxHitpoints == nil and 1 or params.maxHitpoints
     self.hitpoints = params.hitpoints == nil and self.maxHitpoints or params.hitpoints
     self.damageTypeMultipliers = params.damageTypeMultipliers == nil and ({}) or params.damageTypeMultipliers

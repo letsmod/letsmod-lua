@@ -8,9 +8,9 @@ export class CreatePrefabsOnDestroyed extends LMent implements ActorDestructionH
   private destroyed: boolean;
   prefabNames: string[];
 
-  constructor(body: BodyHandle, params: Partial<CreatePrefabsOnDestroyed> = {})
+  constructor(body: BodyHandle, id: number, params: Partial<CreatePrefabsOnDestroyed> = {})
   {
-    super(body);
+    super(body, id);
     this.destroyed = false;
     this.prefabNames = params.prefabNames === undefined? [] : params.prefabNames;
   }

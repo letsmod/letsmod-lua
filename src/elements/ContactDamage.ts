@@ -14,9 +14,9 @@ export class ContactDamage extends LMent implements CollisionHandler
 
   private contactCooldowns : {[key:number] : number};
 
-  constructor(body: BodyHandle, params: Partial<ContactDamage> = {})
+  constructor(body: BodyHandle, id: number, params: Partial<ContactDamage> = {})
   {
-    super(body);
+    super(body, id);
     this.damageValue = params.damageValue === undefined? 1 : params.damageValue;
     this.damageType = params.damageType;
     this.teamFlags = params.teamFlags;

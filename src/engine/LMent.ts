@@ -6,15 +6,16 @@ export abstract class LMent
   enabled : boolean;
   initialized: boolean;
   started: boolean;
+  id: number;
 
-
-  constructor(body : BodyHandle)
+  constructor(body : BodyHandle, id: number)
   {
     this.body = body;
     this.body.elements.push(this);
     this.enabled = true;
     this.initialized = false;
     this.started = false;
+    this.id = id;
   }
 
   /*

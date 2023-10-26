@@ -16,9 +16,9 @@ export class HitPoints extends LMent
   damageTypeMultipliers: {[D in DamageType]?: number};
   team: DamageTeam;
 
-  constructor(body: BodyHandle, params: Partial<HitPoints> = {})
+  constructor(body: BodyHandle, id: number, params: Partial<HitPoints> = {})
   {
-    super(body);
+    super(body, id);
     this.maxHitpoints = params.maxHitpoints === undefined? 1: params.maxHitpoints;
     this.hitpoints = params.hitpoints === undefined? this.maxHitpoints : params.hitpoints;
     this.damageTypeMultipliers = params.damageTypeMultipliers === undefined? {} : params.damageTypeMultipliers;
