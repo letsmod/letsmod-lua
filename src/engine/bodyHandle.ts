@@ -55,6 +55,10 @@ export interface BodyPointer
 
   applyRotation(rotation: THREE.Quaternion) : void;
 
+  getScale() : THREE.Vector3;
+
+  setScale(scale: THREE.Vector3) : void; // does not scale the physics body; only changes the visual size
+
   getVisible() : boolean;
 
   setVisible(visible: boolean) : void;
