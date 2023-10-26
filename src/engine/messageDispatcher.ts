@@ -169,7 +169,9 @@ export class MessageDispatcher
     // iterate over copy of listeners in case onUpdate adds/removes listeners
     for (let listener of this.listeners["update"].slice())
     {
-      listener.onUpdate();
+      if (listener.enabled) {
+        listener.onUpdate();
+      }
     }
   }
 
@@ -182,11 +184,15 @@ export class MessageDispatcher
     {
       if (infoFactory.aId !== undefined && listener.body.body.id == infoFactory.aId)
       {
-        listener.onCollision(infoFactory.makeCollisionInfo("a"));
+        if (listener.enabled) {
+          listener.onCollision(infoFactory.makeCollisionInfo("a"));
+        }
       }
       else if (infoFactory.bId !== undefined && listener.body.body.id == infoFactory.bId)
       {
-        listener.onCollision(infoFactory.makeCollisionInfo("b"));
+        if (listener.enabled) {
+          listener.onCollision(infoFactory.makeCollisionInfo("b"));
+        }
       }
     }
   }
@@ -198,7 +204,9 @@ export class MessageDispatcher
     // iterate over copy of listeners in case onButtonPress adds/removes listeners
     for (let listener of this.listeners["button"].slice())
     {
-      listener.onButtonPress(button);
+      if (listener.enabled) {
+        listener.onButtonPress(button);
+      }
     }
   }
 
@@ -207,7 +215,9 @@ export class MessageDispatcher
     // iterate over copy of listeners in case onButtonHold adds/removes listeners
     for (let listener of this.listeners["button"].slice())
     {
-      listener.onButtonHold(button);
+      if (listener.enabled) {
+        listener.onButtonHold(button);
+      }
     }
   }
 
@@ -216,7 +226,9 @@ export class MessageDispatcher
     // iterate over copy of listeners in case onButtonRelease adds/removes listeners
     for (let listener of this.listeners["button"].slice())
     {
-      listener.onButtonRelease(button);
+      if (listener.enabled) {
+        listener.onButtonRelease(button);
+      }
     }
   }
 
@@ -226,7 +238,9 @@ export class MessageDispatcher
   {
     for (let listener of this.listeners["drag"])
     {
-      listener.onDrag(dx, dy);
+      if (listener.enabled) {
+        listener.onDrag(dx, dy);
+      }
     }
   }
 
@@ -248,7 +262,9 @@ export class MessageDispatcher
       // iterate over copy of listeners in case onTap adds/removes listeners
       for (let listener of this.listeners["tap"].slice())
       {
-        listener.onTap();
+        if (listener.enabled) {
+          listener.onTap();
+        }
       }
     }
   }
@@ -259,7 +275,9 @@ export class MessageDispatcher
   {
     for (let listener of this.listeners["swipe"].slice())
     {
-      listener.onSwipe(dx, dy);
+      if (listener.enabled) {
+        listener.onSwipe(dx, dy);
+      }
     }
   }
 
@@ -269,7 +287,9 @@ export class MessageDispatcher
   {
     for (let listener of this.listeners["hold"].slice())
     {
-      listener.onHoldStart();
+      if (listener.enabled) {
+        listener.onHoldStart();
+      }
     }
   }
 
@@ -277,7 +297,9 @@ export class MessageDispatcher
   {
     for (let listener of this.listeners["hold"].slice())
     {
-      listener.onHoldRelease();
+      if (listener.enabled) {
+        listener.onHoldRelease();
+      }
     }
   }
 
@@ -287,7 +309,9 @@ export class MessageDispatcher
   {
     for (let listener of this.listeners["aim"].slice())
     {
-      listener.onAimStart();
+      if (listener.enabled) {
+        listener.onAimStart();
+      }
     }
   }
 
@@ -295,7 +319,9 @@ export class MessageDispatcher
   {
     for (let listener of this.listeners["aim"].slice())
     {
-      listener.onAim(dx, dy);
+      if (listener.enabled) {
+        listener.onAim(dx, dy);
+      }
     }
   }
 
@@ -303,7 +329,9 @@ export class MessageDispatcher
   {
     for (let listener of this.listeners["aim"].slice())
     {
-      listener.onAimRelease(dx, dy);
+      if (listener.enabled) {
+        listener.onAimRelease(dx, dy);
+      }
     }
   }
 
@@ -315,7 +343,7 @@ export class MessageDispatcher
   {
     for (let listener of this.listeners["interact"].slice())
     {
-      if (listener.isInInteractionRange(interactor))
+      if (listener.enabled && listener.isInInteractionRange(interactor))
       {
         let didInteract = listener.onInteract(interactor);
 
@@ -335,7 +363,9 @@ export class MessageDispatcher
   {
     for (let listener of this.listeners["actorDestroyed"].slice())
     {
-      listener.onActorDestroyed(actor);
+      if (listener.enabled) {
+        listener.onActorDestroyed(actor);
+      }
     }
   }
 
@@ -345,7 +375,9 @@ export class MessageDispatcher
   {
     for (let listener of this.listeners["hitPointsChanged"].slice())
     {
-      listener.onHitPointChange(source, previousHP, currentHP);
+      if (listener.enabled) {
+        listener.onHitPointChange(source, previousHP, currentHP);
+      }
     }
   }
 }

@@ -116,36 +116,50 @@ function MessageDispatcher.prototype.updateFunctionQueue(self, dt)
 end
 function MessageDispatcher.prototype.onUpdate(self)
     for ____, listener in ipairs(__TS__ArraySlice(self.listeners.update)) do
-        listener:onUpdate()
+        if listener.enabled then
+            listener:onUpdate()
+        end
     end
 end
 function MessageDispatcher.prototype.onCollision(self, infoFactory)
     for ____, listener in ipairs(__TS__ArraySlice(self.listeners.collision)) do
         if infoFactory.aId ~= nil and listener.body.body.id == infoFactory.aId then
-            listener:onCollision(infoFactory:makeCollisionInfo("a"))
+            if listener.enabled then
+                listener:onCollision(infoFactory:makeCollisionInfo("a"))
+            end
         elseif infoFactory.bId ~= nil and listener.body.body.id == infoFactory.bId then
-            listener:onCollision(infoFactory:makeCollisionInfo("b"))
+            if listener.enabled then
+                listener:onCollision(infoFactory:makeCollisionInfo("b"))
+            end
         end
     end
 end
 function MessageDispatcher.prototype.onButtonPress(self, button)
     for ____, listener in ipairs(__TS__ArraySlice(self.listeners.button)) do
-        listener:onButtonPress(button)
+        if listener.enabled then
+            listener:onButtonPress(button)
+        end
     end
 end
 function MessageDispatcher.prototype.onButtonHold(self, button)
     for ____, listener in ipairs(__TS__ArraySlice(self.listeners.button)) do
-        listener:onButtonHold(button)
+        if listener.enabled then
+            listener:onButtonHold(button)
+        end
     end
 end
 function MessageDispatcher.prototype.onButtonRelease(self, button)
     for ____, listener in ipairs(__TS__ArraySlice(self.listeners.button)) do
-        listener:onButtonRelease(button)
+        if listener.enabled then
+            listener:onButtonRelease(button)
+        end
     end
 end
 function MessageDispatcher.prototype.onDrag(self, dx, dy)
     for ____, listener in ipairs(self.listeners.drag) do
-        listener:onDrag(dx, dy)
+        if listener.enabled then
+            listener:onDrag(dx, dy)
+        end
     end
 end
 function MessageDispatcher.prototype.onTap(self)
@@ -155,43 +169,57 @@ function MessageDispatcher.prototype.onTap(self)
     end
     if not didInteract then
         for ____, listener in ipairs(__TS__ArraySlice(self.listeners.tap)) do
-            listener:onTap()
+            if listener.enabled then
+                listener:onTap()
+            end
         end
     end
 end
 function MessageDispatcher.prototype.onSwipe(self, dx, dy)
     for ____, listener in ipairs(__TS__ArraySlice(self.listeners.swipe)) do
-        listener:onSwipe(dx, dy)
+        if listener.enabled then
+            listener:onSwipe(dx, dy)
+        end
     end
 end
 function MessageDispatcher.prototype.onHoldStart(self)
     for ____, listener in ipairs(__TS__ArraySlice(self.listeners.hold)) do
-        listener:onHoldStart()
+        if listener.enabled then
+            listener:onHoldStart()
+        end
     end
 end
 function MessageDispatcher.prototype.onHoldRelease(self)
     for ____, listener in ipairs(__TS__ArraySlice(self.listeners.hold)) do
-        listener:onHoldRelease()
+        if listener.enabled then
+            listener:onHoldRelease()
+        end
     end
 end
 function MessageDispatcher.prototype.onAimStart(self)
     for ____, listener in ipairs(__TS__ArraySlice(self.listeners.aim)) do
-        listener:onAimStart()
+        if listener.enabled then
+            listener:onAimStart()
+        end
     end
 end
 function MessageDispatcher.prototype.onAim(self, dx, dy)
     for ____, listener in ipairs(__TS__ArraySlice(self.listeners.aim)) do
-        listener:onAim(dx, dy)
+        if listener.enabled then
+            listener:onAim(dx, dy)
+        end
     end
 end
 function MessageDispatcher.prototype.onAimRelease(self, dx, dy)
     for ____, listener in ipairs(__TS__ArraySlice(self.listeners.aim)) do
-        listener:onAimRelease(dx, dy)
+        if listener.enabled then
+            listener:onAimRelease(dx, dy)
+        end
     end
 end
 function MessageDispatcher.prototype.onInteract(self, interactor)
     for ____, listener in ipairs(__TS__ArraySlice(self.listeners.interact)) do
-        if listener:isInInteractionRange(interactor) then
+        if listener.enabled and listener:isInInteractionRange(interactor) then
             local didInteract = listener:onInteract(interactor)
             if didInteract then
                 return didInteract
@@ -202,12 +230,16 @@ function MessageDispatcher.prototype.onInteract(self, interactor)
 end
 function MessageDispatcher.prototype.onActorDestroyed(self, actor)
     for ____, listener in ipairs(__TS__ArraySlice(self.listeners.actorDestroyed)) do
-        listener:onActorDestroyed(actor)
+        if listener.enabled then
+            listener:onActorDestroyed(actor)
+        end
     end
 end
 function MessageDispatcher.prototype.onHitPointChange(self, source, previousHP, currentHP)
     for ____, listener in ipairs(__TS__ArraySlice(self.listeners.hitPointsChanged)) do
-        listener:onHitPointChange(source, previousHP, currentHP)
+        if listener.enabled then
+            listener:onHitPointChange(source, previousHP, currentHP)
+        end
     end
 end
 return ____exports
