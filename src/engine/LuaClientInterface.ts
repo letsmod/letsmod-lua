@@ -27,4 +27,8 @@ export interface LuaClientInterface
 
   // causes the user to lose the game
   loseMod() : void;
+
+  // returns a pseudorandom number between 0 and 1.
+  // each element will always produce the same sequence of numbers each time the mod restarts.
+  nextRandomNumberForElement(elementId: number) : number;
 }
