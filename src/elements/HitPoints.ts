@@ -5,8 +5,8 @@ import { GameplayScene } from "engine/GameplayScene";
 export type DamageType = "blunt" | "slash" | "pierce" | "heat" | "cold" | "electric" | "poison";
 export enum DamageTeam {
   neutral = 0,
-  player = 1,
-  enemy = 2
+  player = 2 >> 0,
+  enemy = 2 >> 1
 }
 
 export class HitPoints extends LMent

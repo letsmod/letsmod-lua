@@ -25,6 +25,7 @@ export class ExamplePlayer extends LMent implements ButtonHandler, DragGestureHa
     GameplayScene.instance.dispatcher.addListener("button", this);
     GameplayScene.instance.dispatcher.addListener("drag", this);
     GameplayScene.instance.dispatcher.addListener("update", this);
+    GameplayScene.instance.dispatcher.addListener("hitPointsChanged", this);
     GameplayScene.instance.memory.player = this.body;
   }
 

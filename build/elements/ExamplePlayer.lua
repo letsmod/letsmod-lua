@@ -28,6 +28,7 @@ function ExamplePlayer.prototype.onInit(self)
     GameplayScene.instance.dispatcher:addListener("button", self)
     GameplayScene.instance.dispatcher:addListener("drag", self)
     GameplayScene.instance.dispatcher:addListener("update", self)
+    GameplayScene.instance.dispatcher:addListener("hitPointsChanged", self)
     GameplayScene.instance.memory.player = self.body
 end
 function ExamplePlayer.prototype.onStart(self)
