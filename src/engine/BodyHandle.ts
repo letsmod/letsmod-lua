@@ -40,6 +40,7 @@ export interface BodyPointer
   applyTorque(torque: THREE.Vector3) : void;
 
   lockRotation(xAxis: boolean, yAxis: boolean, zAxis: boolean) : void;
+  setCustomGravity(gravity: THREE.Vector3) : void;
 
   getPhysicsBodyType() : PhysicsBodyType;
 
