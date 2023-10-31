@@ -18,7 +18,7 @@ export class HitPoints extends LMent
 
   constructor(body: BodyHandle, id: number, params: Partial<HitPoints> = {})
   {
-    super(body, id);
+    super(body, id, params);
     this.maxHitpoints = params.maxHitpoints === undefined? 1: params.maxHitpoints;
     this.hitpoints = params.hitpoints === undefined? this.maxHitpoints : params.hitpoints;
     this.damageTypeMultipliers = params.damageTypeMultipliers === undefined? {} : params.damageTypeMultipliers;

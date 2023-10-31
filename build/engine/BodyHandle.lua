@@ -15,6 +15,7 @@ BodyHandle.name = "BodyHandle"
 function BodyHandle.prototype.____constructor(self, bodyNode)
     self.elements = {}
     self.isInScene = false
+    self.bodyGroup = {self}
     self.body = bodyNode
 end
 function BodyHandle.prototype.getElement(self, T)

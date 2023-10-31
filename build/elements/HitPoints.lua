@@ -21,7 +21,7 @@ function HitPoints.prototype.____constructor(self, body, id, params)
     if params == nil then
         params = {}
     end
-    LMent.prototype.____constructor(self, body, id)
+    LMent.prototype.____constructor(self, body, id, params)
     self.maxHitpoints = params.maxHitpoints == nil and 1 or params.maxHitpoints
     self.hitpoints = params.hitpoints == nil and self.maxHitpoints or params.hitpoints
     self.damageTypeMultipliers = params.damageTypeMultipliers == nil and ({}) or params.damageTypeMultipliers

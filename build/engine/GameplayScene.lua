@@ -19,6 +19,8 @@ GameplayScene.name = "GameplayScene"
 function GameplayScene.prototype.____constructor(self)
     self.bodies = {}
     self.prefabs = {}
+    self.groups = {}
+    self.nextGroupId = -1
     self.bodyIdMap = __TS__New(Map)
     self.dispatcher = __TS__New(MessageDispatcher, self)
     self.memory = __TS__New(GameplayMemory)
@@ -35,6 +37,24 @@ function GameplayScene.prototype.addBody(self, bodyNode)
     self.bodyIdMap:set(bodyNode.id, handle)
     return handle
 end
+function GameplayScene.prototype.addBodyToGroup(self, bodyId, groupId)
+    local body = self:getBodyById(bodyId)
+    if body ~= nil then
+        if self.groups[groupId] == nil then
+            self.groups[groupId] = {}
+        end
+        local group = self.groups[groupId]
+        body.bodyGroup = group
+        group[#group + 1] = body
+    end
+end
+function GameplayScene.prototype.createEmptyGroup(self)
+    local group = {}
+    local groupId = self.nextGroupId
+    self.groups[groupId] = group
+    self.nextGroupId = self.nextGroupId - 1
+    return {id = groupId, group = group}
+end
 function GameplayScene.prototype.addPrefab(self, bodyNode)
     local handle = __TS__New(BodyHandle, bodyNode)
     local ____self_prefabs_1 = self.prefabs
@@ -48,6 +68,8 @@ function GameplayScene.prototype.clear(self)
     self.bodies = {}
     self.bodyIdMap:clear()
     self.prefabs = {}
+    self.groups = {}
+    self.nextGroupId = -1
     self.dispatcher:clearListeners()
 end
 function GameplayScene.prototype.initializeMemory(self, memoryOverride)
@@ -94,6 +116,13 @@ function GameplayScene.prototype.destroyBody(self, body)
         self.dispatcher:onActorDestroyed(body)
         self.dispatcher:removeAllListenersFromBody(body)
         __TS__ArraySplice(self.bodies, index, 1)
+        if #body.bodyGroup > 1 then
+            local group = body.bodyGroup
+            local groupIndex = __TS__ArrayIndexOf(group, body)
+            if groupIndex >= 0 then
+                __TS__ArraySplice(group, groupIndex, 1)
+            end
+        end
         body.body:destroyBody()
         body.isInScene = false
     end
