@@ -1,8 +1,11 @@
 import { BodyHandle } from "engine/BodyHandle";
+import { GameplayMemory } from "engine/GameplayMemory";
 import { GameplayScene } from "engine/GameplayScene";
 import { LMent } from "engine/LMent";
 import { ButtonHandler, DragGestureHandler, HitPointChangeHandler, UpdateHandler } from "engine/MessageHandlers";
 import { global, js_new } from "js";
+import { Euler } from "three";
+import { radToDeg } from "three/src/math/MathUtils";
 
 export class ExamplePlayer extends LMent implements ButtonHandler, DragGestureHandler, UpdateHandler, HitPointChangeHandler
 {
@@ -26,6 +29,7 @@ export class ExamplePlayer extends LMent implements ButtonHandler, DragGestureHa
     GameplayScene.instance.dispatcher.addListener("drag", this);
     GameplayScene.instance.dispatcher.addListener("update", this);
     GameplayScene.instance.memory.player = this.body;
+    this.body.body.lockRotation(true,false,true);
   }
 
   onStart(): void {
@@ -36,8 +40,8 @@ export class ExamplePlayer extends LMent implements ButtonHandler, DragGestureHa
     let velocity = this.body.body.getVelocity();
     let planarVelocity = js_new(global.THREE.Vector3, velocity.x, 0, velocity.z);
     
-    let targetX = this.dragDx * this.maxSpeed;
-    let targetZ = this.dragDy * this.maxSpeed;
+    let targetX = -this.dragDx * this.maxSpeed;
+    let targetZ = -this.dragDy * this.maxSpeed;
     let target = js_new(global.THREE.Vector3, targetX, 0, targetZ);
 
     let delta = target.sub(planarVelocity);
@@ -51,6 +55,7 @@ export class ExamplePlayer extends LMent implements ButtonHandler, DragGestureHa
     else
     {
       accel = this.acceleration / GameplayScene.instance.memory.frameRate;
+      this.handlePlayerOrientation();
     }
 
     let deltaLengthSq = delta.lengthSq();
@@ -65,6 +70,14 @@ export class ExamplePlayer extends LMent implements ButtonHandler, DragGestureHa
 
     this.dragDx = 0;
     this.dragDy = 0;
+  }
+
+  handlePlayerOrientation(){
+    let angle = Math.atan2(-this.dragDx,-this.dragDy);
+    let axis = js_new(global.THREE.Vector3,0,1,0);
+    let quat = js_new(global.THREE.Quaternion);
+    quat.setFromAxisAngle(axis,angle);
+    this.body.body.setRotation(quat);
   }
 
   onButtonPress(button: string): void {

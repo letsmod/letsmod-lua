@@ -4,3 +4,8 @@ export { Fragile } from "./Fragile";
 export { DestroyOnZeroHP } from "./DestroyOnZeroHP";
 export { CreatePrefabsOnDestroyed } from "./CreatePrefabsOnDestroyed";
 export { ExamplePlayer } from "./ExamplePlayer";
+export { AhmadTest } from "./AhmadTest";
+export { Collectable as Collectable } from "./Collectable";
+export { PingPongMotion } from "./PingPongMotion";
+export {RotateMotion} from "./RotateMotion";
+export {Coin} from "./Coin";
