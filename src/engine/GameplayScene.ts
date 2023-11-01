@@ -16,6 +16,8 @@ export class GameplayScene
 
   bodies: BodyHandle[] = [];
   prefabs: BodyHandle[] = [];
+  groups: {[key: number] : BodyHandle[]} = {};
+  nextGroupId: number = -1;
   bodyIdMap : Map<number, BodyHandle> = new Map<number, BodyHandle>();
   dispatcher : MessageDispatcher = new MessageDispatcher(this);
   memory : GameplayMemory = new GameplayMemory();
@@ -39,6 +41,31 @@ export class GameplayScene
     return handle;
   }
 
+  addBodyToGroup(bodyId: number, groupId: number)
+  {
+    let body = this.getBodyById(bodyId);
+    if (body !== undefined)
+    {
+      if (this.groups[groupId] === undefined)
+      {
+        this.groups[groupId] = [];
+      }
+
+      let group = this.groups[groupId];
+      body.bodyGroup = group;
+      group.push(body);
+    }
+  }
+
+  createEmptyGroup()
+  {
+    let group: BodyHandle[] = [];
+    let groupId = this.nextGroupId;
+    this.groups[groupId] = group;
+    this.nextGroupId--;
+    return {id: groupId, group: group};
+  }
+
   addPrefab (bodyNode: BodyPointer)
   {
     let handle = new BodyHandle(bodyNode);
@@ -56,6 +83,8 @@ export class GameplayScene
     this.bodies = [];
     this.bodyIdMap.clear();
     this.prefabs = [];
+    this.groups = {};
+    this.nextGroupId = -1;
     this.dispatcher.clearListeners();
   }
 
@@ -118,6 +147,16 @@ export class GameplayScene
       this.dispatcher.removeAllListenersFromBody(body);
 
       this.bodies.splice(index, 1);
+
+      if (body.bodyGroup.length > 1)
+      {
+        let group = body.bodyGroup;
+        let groupIndex = group.indexOf(body);
+        if (groupIndex >= 0)
+        {
+          group.splice(groupIndex, 1);
+        }
+      }
       body.body.destroyBody();
       body.isInScene = false;
     }

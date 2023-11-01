@@ -16,7 +16,7 @@ function Fragile.prototype.____constructor(self, body, id, params)
     if params == nil then
         params = {}
     end
-    LMent.prototype.____constructor(self, body, id)
+    LMent.prototype.____constructor(self, body, id, params)
     self.damageValue = params.damageValue == nil and 1 or params.damageValue
     self.damageType = params.damageType == nil and "blunt" or params.damageType
     self.cooldown = params.cooldown == nil and 0 or params.cooldown

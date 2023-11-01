@@ -8,11 +8,11 @@ export abstract class LMent
   started: boolean;
   id: number;
 
-  constructor(body : BodyHandle, id: number)
+  constructor(body : BodyHandle, id: number, params: Partial<LMent>)
   {
     this.body = body;
     this.body.elements.push(this);
-    this.enabled = true;
+    this.enabled = params.enabled === undefined? true : params.enabled;
     this.initialized = false;
     this.started = false;
     this.id = id;

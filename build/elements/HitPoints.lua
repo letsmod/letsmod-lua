@@ -9,9 +9,9 @@ local GameplayScene = ____GameplayScene.GameplayScene
 ____exports.DamageTeam = DamageTeam or ({})
 ____exports.DamageTeam.neutral = 0
 ____exports.DamageTeam[____exports.DamageTeam.neutral] = "neutral"
-____exports.DamageTeam.player = 1
+____exports.DamageTeam.player = 2
 ____exports.DamageTeam[____exports.DamageTeam.player] = "player"
-____exports.DamageTeam.enemy = 2
+____exports.DamageTeam.enemy = 1
 ____exports.DamageTeam[____exports.DamageTeam.enemy] = "enemy"
 ____exports.HitPoints = __TS__Class()
 local HitPoints = ____exports.HitPoints
@@ -21,7 +21,7 @@ function HitPoints.prototype.____constructor(self, body, id, params)
     if params == nil then
         params = {}
     end
-    LMent.prototype.____constructor(self, body, id)
+    LMent.prototype.____constructor(self, body, id, params)
     self.maxHitpoints = params.maxHitpoints == nil and 1 or params.maxHitpoints
     self.hitpoints = params.hitpoints == nil and self.maxHitpoints or params.hitpoints
     self.damageTypeMultipliers = params.damageTypeMultipliers == nil and ({}) or params.damageTypeMultipliers
