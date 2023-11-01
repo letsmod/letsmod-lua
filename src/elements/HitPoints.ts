@@ -5,8 +5,8 @@ import { GameplayScene } from "engine/GameplayScene";
 export type DamageType = "blunt" | "slash" | "pierce" | "heat" | "cold" | "electric" | "poison";
 export enum DamageTeam {
   neutral = 0,
-  player = 1,
-  enemy = 2
+  player = 2 >> 0,
+  enemy = 2 >> 1
 }
 
 export class HitPoints extends LMent
@@ -18,7 +18,7 @@ export class HitPoints extends LMent
 
   constructor(body: BodyHandle, id: number, params: Partial<HitPoints> = {})
   {
-    super(body, id);
+    super(body, id, params);
     this.maxHitpoints = params.maxHitpoints === undefined? 1: params.maxHitpoints;
     this.hitpoints = params.hitpoints === undefined? this.maxHitpoints : params.hitpoints;
     this.damageTypeMultipliers = params.damageTypeMultipliers === undefined? {} : params.damageTypeMultipliers;

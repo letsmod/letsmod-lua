@@ -15,7 +15,7 @@ export class ExamplePlayer extends LMent implements ButtonHandler, DragGestureHa
 
   constructor(body: BodyHandle, id: number, params: Partial<ExamplePlayer> = {})
   {
-    super(body, id);
+    super(body, id, params);
     this.maxSpeed = params.maxSpeed === undefined? 3 : params.maxSpeed;
     this.acceleration = params.acceleration === undefined? this.maxSpeed * 5 : params.acceleration;
     this.deceleration = params.deceleration === undefined? this.maxSpeed * 5 : params.deceleration;
@@ -25,6 +25,7 @@ export class ExamplePlayer extends LMent implements ButtonHandler, DragGestureHa
     GameplayScene.instance.dispatcher.addListener("button", this);
     GameplayScene.instance.dispatcher.addListener("drag", this);
     GameplayScene.instance.dispatcher.addListener("update", this);
+    GameplayScene.instance.dispatcher.addListener("hitPointsChanged", this);
     GameplayScene.instance.memory.player = this.body;
   }
 

@@ -14,7 +14,7 @@ function CreatePrefabsOnDestroyed.prototype.____constructor(self, body, id, para
     if params == nil then
         params = {}
     end
-    LMent.prototype.____constructor(self, body, id)
+    LMent.prototype.____constructor(self, body, id, params)
     self.destroyed = false
     self.prefabNames = params.prefabNames == nil and ({}) or params.prefabNames
 end

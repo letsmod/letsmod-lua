@@ -40,6 +40,7 @@ export interface BodyPointer
   applyTorque(torque: THREE.Vector3) : void;
 
   lockRotation(xAxis: boolean, yAxis: boolean, zAxis: boolean) : void;
+  setCustomGravity(gravity: THREE.Vector3) : void;
 
   getPhysicsBodyType() : PhysicsBodyType;
 
@@ -74,6 +75,7 @@ export class BodyHandle
   readonly body: BodyPointer;
   elements: LMent[] = [];
   isInScene: boolean = false;
+  bodyGroup: BodyHandle[] = [this];
 
   // do not use directly; use gameplayScene.addBody / addPrefab instead
   constructor(bodyNode: BodyPointer)

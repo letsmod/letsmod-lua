@@ -15,7 +15,7 @@ function DestroyOnZeroHP.prototype.____constructor(self, body, id, params)
     if params == nil then
         params = {}
     end
-    LMent.prototype.____constructor(self, body, id)
+    LMent.prototype.____constructor(self, body, id, params)
     self.destroyed = false
     self.destructionDelay = params.destructionDelay == nil and 0 or params.destructionDelay
 end
