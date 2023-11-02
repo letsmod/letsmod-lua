@@ -20,5 +20,4 @@ export class Drag extends LMent implements UpdateHandler
         let zeroVector = js_new(global.THREE.Vector3, 0, 0, 0);
         this.body.body.setVelocity(js_new(global.THREE.Vector3).lerpVectors(this.body.body.getVelocity(), zeroVector, this.dragCoefficient));
     }
-
 }
