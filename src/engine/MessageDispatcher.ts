@@ -380,4 +380,44 @@ export class MessageDispatcher
       }
     }
   }
+
+  // TriggerHandler
+
+  onTrigger(source: LMent, triggerId: string, context: "local" | "group" | "global")
+  {
+    if (context == "local")
+    {
+      let body = source.body;
+      for (let listener of this.listeners["trigger"].slice())
+      {
+        if (listener.enabled && listener.body == body && listener.hasSubtype(triggerId)) {
+          listener.onTrigger(source, triggerId);
+        }
+      }
+    }
+    else if (context == "group")
+    {
+      for (let listener of this.listeners["trigger"].slice())
+      {
+        if (listener.enabled && listener.hasSubtype(triggerId)) {
+          for (let body of listener.body.bodyGroup)
+          {
+            if (listener.body == body)
+            {
+              listener.onTrigger(source, triggerId);
+            }
+          }
+        }
+      }
+    }
+    else // context == "global"
+    {
+      for (let listener of this.listeners["trigger"].slice())
+      {
+        if (listener.enabled && listener.hasSubtype(triggerId)) {
+          listener.onTrigger(source, triggerId);
+        }
+      }  
+    }
+  }
 }
