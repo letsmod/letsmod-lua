@@ -42,7 +42,7 @@ export class RadialDamage extends LMent implements CollisionHandler
                     let distanceFromCenter = other.body.getPosition().distanceTo(this.body.body.getPosition());
                     let damage = this.damageValue /  distanceFromCenter;
                     damage = Math.round(damage);
-                    if (this.distance == 999999 || damage > this.damageValue) {
+                    if (this.distance === 999999 || damage > this.damageValue) {
                         damage = this.damageValue;
                     }
                     if (distanceFromCenter <= this.distance) {

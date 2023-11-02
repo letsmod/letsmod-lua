@@ -6,6 +6,6 @@ export { CreatePrefabsOnDestroyed } from "./CreatePrefabsOnDestroyed";
 export { ExamplePlayer } from "./ExamplePlayer";
 export { SwingMotion } from "./SwingMotion";
 export { RadialForce } from "./RadialForce";
-export { ColorFlicker } from "./ColorFlicker";
 export { RadialDamage } from "./RadialDamage";
 export { Buoyant } from "./Buoyant";
+export { Drag } from "./Drag";
