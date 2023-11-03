@@ -36,18 +36,17 @@ export class Waypoint extends LMent implements UpdateHandler
 
     onStart(): void {
         let InitWayPoint: waypoints = { offset: this.body.body.getPosition().clone(), speed: this.points[0].speed, delay: this.points[0].delay, interpolationFunction: this.points[0].interpolationFunction };
-        console.log(this.points.push(InitWayPoint));
         this.totalDistanceToNextPoint = this.body.body.getPosition().distanceTo(this.points[0].offset);
     }
 
     onUpdate(): void {
         this.now = GameplayScene.instance.memory.timeSinceStart;
-        console.log(this.index);
         if (this.points[this.index] != undefined) {
             if (this.now - this.delayPlusTime >= this.points[this.index].delay) {
                 if (this.points[this.index].interpolationFunction === "linear") {
                     this.linearMovement(this.points[this.index]);
-                } else if (this.points[this.index].interpolationFunction === "sine") {
+                } else
+                    if (this.points[this.index].interpolationFunction === "sine") {
                     this.sineMovement(this.points[this.index]);
                 } else {
                     console.log("Wrong interpolationFunction");
@@ -73,7 +72,6 @@ export class Waypoint extends LMent implements UpdateHandler
                     break;
                 }
             }
-
             this.totalDistanceToNextPoint = this.body.body.getPosition().distanceTo(this.points[this.index].offset);
             this.delayPlusTime = this.now + this.points[this.index].delay;
         }
