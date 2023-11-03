@@ -3,7 +3,6 @@ import { GameplayScene } from "engine/GameplayScene";
 import { LMent } from "engine/LMent";
 import { UpdateHandler } from "engine/MessageHandlers";
 import { js_new, global } from "js";
-import { Vector3 } from "three";
 
 export class RotateMotion extends LMent implements UpdateHandler
 {
@@ -18,7 +17,7 @@ export class RotateMotion extends LMent implements UpdateHandler
 
     constructor(body: BodyHandle, id: number, params: Partial<RotateMotion> = {})
     {
-      super(body, id);
+      super(body, id,params);
       this.speed = params.speed === undefined?10:params.speed;
       this.axis = params.axis === undefined?"z":params.axis;
       this.radius = params.radius === undefined?0:params.radius;
@@ -45,9 +44,9 @@ export class RotateMotion extends LMent implements UpdateHandler
     {
       let myAxis = js_new(global.THREE.Vector3,1,0,0);
       if(this.axis.toString().toLowerCase() == "y")
-        myAxis = js_new(global.THREE.Vector3,0,1,0);
+        myAxis.set(0,1,0);
       else if(this.axis.toString().toLowerCase() == "z")
-        myAxis = js_new(global.THREE.Vector3,0,0,1);
+        myAxis.set(0,0,1);
       return myAxis;
     }
 
@@ -60,9 +59,9 @@ export class RotateMotion extends LMent implements UpdateHandler
       
       let newPos = js_new(global.THREE.Vector3,sinVal,0,cosVal);
       if(this.axis.toString().toLowerCase() == "x")
-        newPos = js_new(global.THREE.Vector3,0,sinVal,cosVal);
+        newPos.set(0,sinVal,cosVal);
       else if(this.axis.toString().toLowerCase() == "z")
-        newPos = js_new(global.THREE.Vector3,sinVal,cosVal,0);
+        newPos.set(sinVal,cosVal,0);
 
       this.body.body.setPosition(newPos.add(this.initPos));
     }
@@ -70,8 +69,8 @@ export class RotateMotion extends LMent implements UpdateHandler
     runRotation()
     {
       let quat = js_new(global.THREE.Quaternion);
-      let time = GameplayScene.instance.memory.timeSinceStart;
-      quat.setFromAxisAngle(this.rotateAxis,this.speed*time);
+      let timeElapsed = GameplayScene.instance.memory.timeSinceStart;
+      quat.setFromAxisAngle(this.rotateAxis,this.speed*timeElapsed);
       this.body.body.setRotation(quat);
     }
 }
