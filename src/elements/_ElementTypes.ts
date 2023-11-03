@@ -8,3 +8,4 @@ export { AhmadTest } from "./AhmadTest";
 export { Collectible as Collectable } from "./Collectible";
 export {RotateMotion} from "./RotateMotion";
 export {ScoreItem} from "./ScoreItem";
+export {FollowBody} from "./FollowBody";
