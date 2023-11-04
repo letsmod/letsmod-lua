@@ -25,7 +25,7 @@ export class FollowBody extends LMent implements UpdateHandler
     followSpeed:number; /* The maximum follow speed */
     rotationSpeed:number; /*The maximum follow-orientation speed */
 
-    //Element Variables
+    //Element Local Variables
     private targetVector:Vector3 | undefined;
     private targetOrientation:Quaternion | undefined;
     private deltaTime:number;
@@ -52,7 +52,7 @@ export class FollowBody extends LMent implements UpdateHandler
     }
 
     onInit(): void {
-    GameplayScene.instance.dispatcher.addListener("update", this);
+        GameplayScene.instance.dispatcher.addListener("update", this);
     }
 
     onStart(): void {
@@ -75,7 +75,7 @@ export class FollowBody extends LMent implements UpdateHandler
         if(this.targetBody === undefined)
             return;
         let offset = this.rotationOffsetQuaternion;
-        this.targetOrientation = this.targetBody.body.getRotation().clone().multiply(offset);
+        this.targetOrientation = this.targetBody.body.getRotation().clone().multiply(offset).normalize();
     }
 
  
@@ -88,15 +88,6 @@ export class FollowBody extends LMent implements UpdateHandler
         if(this.targetOrientation !== undefined)
             this.body.body.setRotation(this.body.body.getRotation().clone().slerp(this.targetOrientation,this.rotationSpeed*this.deltaTime));
 
-    }
-
-    distanceOfPlayer ():number
-    {
-      let player = GameplayScene.instance.memory.player;
-      if(player === undefined)
-        return 0;
-      
-      return this.body.body.getPosition().distanceTo(player.body.getPosition());
     }
 
 }

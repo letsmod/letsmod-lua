@@ -96,6 +96,22 @@ export class BodyHandle
     return undefined;
   }
 
+  getAllElements <U extends LMent> (T : new (...args: any[]) => U ) : U[]
+  {
+    let arr =[];
+    for (let i = 0; i < this.elements.length; i++)
+    {
+      if (this.elements[i] instanceof T)
+      {
+        arr.push(this.elements[i] as U);
+      }
+    }
+
+    return arr;
+  }
+
+
+
   addElement(elem : LMent)
   {
     this.elements.push(elem);
