@@ -6,10 +6,12 @@ import { ShapeStateController } from "./ShapeStateController";
 
 export class ShapeStateAnimator extends LMent implements UpdateHandler
 {
+    /*** THIS LMENT REQUIRES A ShapeStateController ELEMENT TO BE ATTACHED TO THE SAME***/
 
     // PARAMS
     stateName:string;
     frameRate:number;
+    loop:boolean;
     animFrames:[{shapeName:string,frameSpan:number}];
 
     //Element Local Variables
@@ -24,6 +26,7 @@ export class ShapeStateAnimator extends LMent implements UpdateHandler
         this.stateName = params.stateName === undefined?"default":params.stateName;
         this.animFrames = params.animFrames === undefined?[{shapeName:this.body.body.getShapes()[0].name,frameSpan:1}]:params.animFrames;
         this.frameRate = params.frameRate === undefined?30:params.frameRate;
+        this.loop = params.loop === undefined?true:params.loop;
     }
 
     onInit(): void {
@@ -86,6 +89,9 @@ export class ShapeStateAnimator extends LMent implements UpdateHandler
 
     swapFrames():void
     {
+        let onLastFrame = this.activeFrameIndex==this.shapePointers.length-1;
+        if(!this.loop && onLastFrame)
+            return;
         let activeFrameSpan = this.shapeSpans[this.activeFrameIndex];
         this.frameSpanCounter++;
         if(activeFrameSpan >this.frameSpanCounter)
@@ -94,9 +100,8 @@ export class ShapeStateAnimator extends LMent implements UpdateHandler
         }else
         {
             this.shapePointers[this.activeFrameIndex].setVisible(false);
-            this.activeFrameIndex++;
-            if(this.activeFrameIndex>=this.shapePointers.length)
-                this.activeFrameIndex = 0;
+            this.activeFrameIndex = onLastFrame?0:this.activeFrameIndex+1;
+
             this.shapePointers[this.activeFrameIndex].setVisible(true);
         }
     }
