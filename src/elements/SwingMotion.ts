@@ -1,19 +1,14 @@
-import { Quaternion} from "three";
+import { Quaternion, Vector3} from "three";
 import { BodyHandle } from "../engine/BodyHandle";
 import { GameplayScene } from "../engine/GameplayScene";
 import { LMent } from "../engine/LMent";
 import { UpdateHandler } from "../engine/MessageHandlers";
 import { global, js_new } from "../js";
 
-type Vector3 = {
-	x: number;
-	y: number;
-	z: number;
-};
 
 export class SwingMotion extends LMent implements UpdateHandler
 {
-	
+
 	rotationAxis: Vector3;
 	amplitude: number;
 	frequency: number;
