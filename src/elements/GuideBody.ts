@@ -5,7 +5,7 @@ import { UpdateHandler } from "engine/MessageHandlers";
 import { global, js_new } from "js";
 import { Quaternion, Vector3 } from "three";
 
-export class FollowBody extends LMent implements UpdateHandler
+export class GuideBody extends LMent implements UpdateHandler
 {
 
     // PARAMS
@@ -25,17 +25,20 @@ export class FollowBody extends LMent implements UpdateHandler
     followSpeed:number; /* The maximum follow speed */
     rotationSpeed:number; /*The maximum follow-orientation speed */
 
+    mode:string; /*To tell whether to leade the target or follow the target*/
+
     //Element Local Variables
-    private targetVector:Vector3 | undefined;
-    private targetOrientation:Quaternion | undefined;
     private deltaTime:number;
 
-    constructor(body: BodyHandle, id: number, params: Partial<FollowBody> = {})
+    constructor(body: BodyHandle, id: number, params: Partial<GuideBody> = {})
     {
         super(body, id,params);
         this.target = params.target === undefined?"N/A":params.target;
-        this.targetBody = this.body.bodyGroup.find((obj) => {return obj.body.name == this.target});
+        
+        this.targetBody = this.body.bodyGroup.find((obj) => {return obj.body.name === this.target});
+        console.log(this.targetBody);
 
+        this.mode = params.mode === undefined?"follow":params.mode;
         this.offset = params.offset === undefined?{x:0,y:0,z:0}:params.offset;
         this.offsetVector = js_new(global.THREE.Vector3,this.offset.x,this.offset.y,this.offset.z);
 
@@ -60,34 +63,48 @@ export class FollowBody extends LMent implements UpdateHandler
     }
   
 
-    updateTargetVector()
+    updateTargetPosition()
     {
         if(this.targetBody === undefined)
             return;
+        console.log("Meh ..");
         let offset = this.offsetVector.clone();
+        
+        let leader = this.targetBody;
+        let follower = this.body;
+        if(this.mode.toLowerCase() == "lead")
+        {
+            leader = this.body;
+            follower = this.targetBody;
+        }
+
         if(this.offsetSpace.toLowerCase() == "local")
-            offset.copy(this.offsetVector.clone().applyQuaternion(this.targetBody.body.getRotation()));
-        this.targetVector = this.targetBody.body.getPosition().clone().add(offset);
+            offset.copy(this.offsetVector.clone().applyQuaternion(leader.body.getRotation()));
+        let targetVector = leader.body.getPosition().clone().add(offset);
+        follower.body.setPosition(follower.body.getPosition().clone().lerp(targetVector,this.followSpeed*this.deltaTime));
     }
 
     updateTargetOrientation()
     {
         if(this.targetBody === undefined)
             return;
-        let offset = this.rotationOffsetQuaternion;
-        this.targetOrientation = this.targetBody.body.getRotation().clone().multiply(offset).normalize();
-    }
 
+        let leader = this.targetBody;
+        let follower = this.body;
+        if(this.mode.toLowerCase() == "lead")
+        {
+            leader = this.body;
+            follower = this.targetBody;
+        }
+
+        let offset = this.rotationOffsetQuaternion;
+        let targetOrientation = leader.body.getRotation().clone().multiply(offset).normalize();
+        follower.body.setRotation(follower.body.getRotation().clone().slerp(targetOrientation,this.rotationSpeed*this.deltaTime));
+    }
  
     onUpdate(): void {
-        this.updateTargetVector();
-        if(this.targetVector !== undefined)
-            this.body.body.setPosition(this.body.body.getPosition().clone().lerp(this.targetVector,this.followSpeed*this.deltaTime));
-
+        this.updateTargetPosition();
         this.updateTargetOrientation();
-        if(this.targetOrientation !== undefined)
-            this.body.body.setRotation(this.body.body.getRotation().clone().slerp(this.targetOrientation,this.rotationSpeed*this.deltaTime));
-
     }
 
 }

@@ -31,14 +31,14 @@ export class ShapeStateAnimator extends LMent implements UpdateHandler
 
     onInit(): void {
         GameplayScene.instance.dispatcher.addListener("update", this);
-        let controller = this.body.getElement(ShapeStateController);
-        if(controller === undefined)
-            console.error("No ShapeStateController LMent is found on body.");
-        else controller.addState(this);
     }
 
     onStart(): void {
         this.fillFrames();
+        let controller = this.body.getElement(ShapeStateController);
+        if(controller === undefined)
+            console.error("No "+ShapeStateController.name+" LMent is found on body.");
+        else controller.addState(this);
     }
 
 
@@ -58,9 +58,6 @@ export class ShapeStateAnimator extends LMent implements UpdateHandler
         
         this.hideAllFrames();
         this.enabled = false;
-
-        //TODO: This is not needed because all shapes should be included in their own animator LMents.
-        //allShapes.forEach(item =>{item.setVisible(false);});
     }
 
     hideAllFrames()
@@ -91,7 +88,10 @@ export class ShapeStateAnimator extends LMent implements UpdateHandler
     {
         let onLastFrame = this.activeFrameIndex==this.shapePointers.length-1;
         if(!this.loop && onLastFrame)
+        {
+            this.shapePointers[this.activeFrameIndex].setVisible(true);
             return;
+        }
         let activeFrameSpan = this.shapeSpans[this.activeFrameIndex];
         this.frameSpanCounter++;
         if(activeFrameSpan >this.frameSpanCounter)

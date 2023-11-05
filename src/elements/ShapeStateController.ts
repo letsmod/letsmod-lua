@@ -1,11 +1,13 @@
 import { BodyHandle } from "engine/BodyHandle";
 import { LMent } from "engine/LMent";
 import { ShapeStateAnimator } from "./ShapeStateAnimator";
+import { GameplayScene } from "engine/GameplayScene";
 
 export class ShapeStateController extends LMent
 {
     private animStates:ShapeStateAnimator[] = [];
-    private activeStateName:string = "";
+    private activeState:ShapeStateAnimator = {} as ShapeStateAnimator;
+    private deltaTime = 1/GameplayScene.instance.memory.frameRate;
     constructor(body: BodyHandle, id: number, params: Partial<ShapeStateController> = {})
     {
       super(body, id,params);
@@ -15,12 +17,18 @@ export class ShapeStateController extends LMent
     }
   
     onStart(): void {
-      if(this.animStates.length>0)
+      this.playStateZero();
+    }
+
+    playStateZero(){
+      GameplayScene.instance.dispatcher.queueDelayedFunction(this,()=>{
+        if(this.animStates.length>0)
          if(this.animStates[0] !== undefined)
            {
             this.animStates[0].startState();
-            this.activeStateName = this.animStates[0].stateName;
+            this.activeState = this.animStates[0];
            }
+      },this.deltaTime);
     }
 
     addState(state:ShapeStateAnimator)
@@ -30,18 +38,18 @@ export class ShapeStateController extends LMent
 
     playState(name:string)
     {
-      if(name == this.activeStateName)
+      if(name == this.activeState.stateName)
         return;
 
       let stateFound = false;
       for(let state of this.animStates) 
         if(state.stateName === name)
-          {
-            this.activeStateName = name;
-            state.startState();
-            stateFound = true;
-          }
-        else state.stopState();
+        {
+          this.activeState.stopState();
+          state.startState();
+          this.activeState = state;
+          stateFound = true;
+        }
 
       if(!stateFound)
           console.error("Animation state of name ("+name+") is not found.");
