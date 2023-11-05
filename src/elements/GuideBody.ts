@@ -10,7 +10,7 @@ export class GuideBody extends LMent implements UpdateHandler
 
     // PARAMS
     target:string; /* The target body _this_ needs to follow */
-    private targetBody;
+    private targetBody:BodyHandle|undefined = undefined;
     
     offset:{x:number,y:number,z:number}; /* The position offset from target */
     private offsetVector; /* To generate a Vector3 from the previous param*/
@@ -35,7 +35,11 @@ export class GuideBody extends LMent implements UpdateHandler
         super(body, id,params);
         this.target = params.target === undefined?"N/A":params.target;
         
-        this.targetBody = this.body.bodyGroup.find((obj) => {return obj.body.name === this.target});
+        this.targetBody = undefined;
+        for(let i of this.body.bodyGroup)
+            if(i.body.name === this.target)
+                this.targetBody = i;
+        
         console.log(this.targetBody);
 
         this.mode = params.mode === undefined?"follow":params.mode;
@@ -67,7 +71,7 @@ export class GuideBody extends LMent implements UpdateHandler
     {
         if(this.targetBody === undefined)
             return;
-        console.log("Meh ..");
+
         let offset = this.offsetVector.clone();
         
         let leader = this.targetBody;
