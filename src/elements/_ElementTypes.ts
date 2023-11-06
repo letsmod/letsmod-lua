@@ -10,3 +10,4 @@ export { RadialDamage } from "./RadialDamage";
 export { Buoyant } from "./Buoyant";
 export { Drag } from "./Drag";
 export { Waypoint } from "./Waypoint";
+export { ForceDamage } from "./ForceDamage";
