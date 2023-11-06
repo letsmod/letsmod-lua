@@ -36,8 +36,8 @@ do
     ____exports.TriggerOnCollision = TriggerOnCollision
 end
 do
-    local ____AutomaticDoor = require("elements.AutomaticDoor")
-    local AutomaticDoor = ____AutomaticDoor.AutomaticDoor
-    ____exports.AutomaticDoor = AutomaticDoor
+    local ____AutomaticSlidingDoor = require("elements.AutomaticSlidingDoor")
+    local AutomaticSlidingDoor = ____AutomaticSlidingDoor.AutomaticSlidingDoor
+    ____exports.AutomaticSlidingDoor = AutomaticSlidingDoor
 end
 return ____exports

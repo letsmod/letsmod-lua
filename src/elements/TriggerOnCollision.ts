@@ -14,11 +14,12 @@ export class TriggerOnCollision extends LMent implements CollisionHandler
     super(body, id, params);
     this.triggerId = params.triggerId;
     this.triggerContext = params.triggerContext === undefined? "group" : params.triggerContext;
-    this.triggerOnCollisionWithElementType
+    this.triggerOnCollisionWithElementType = params.triggerOnCollisionWithElementType;
   }
 
   onInit()
   {
+    GameplayScene.instance.dispatcher.addListener("collision", this);
   }
 
   onStart()
@@ -44,7 +45,7 @@ export class TriggerOnCollision extends LMent implements CollisionHandler
   {
     if (this.triggerId !== undefined)
     {
-      GameplayScene.instance.dispatcher.onTrigger(this, this.triggerId, this.triggerContext)
+      GameplayScene.instance.dispatcher.onTrigger(this, this.triggerId, this.triggerContext);
     }
   }
 }

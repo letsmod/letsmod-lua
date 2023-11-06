@@ -17,12 +17,12 @@ class ClosedState extends State implements TriggerHandler
 
   onEnterState(previousState: State | undefined)
   {
-    console.log("ClosedState.onEnter");
+    // console.log("ClosedState.onEnter");
   }
 
   onExitState(nextState: State | undefined)
   {
-    console.log("ClosedState.onExit");
+    // console.log("ClosedState.onExit");
   }
 
   onTrigger(source: LMent, triggerId: string): void {
@@ -39,30 +39,41 @@ class ClosedState extends State implements TriggerHandler
 
 class OpeningState extends State implements UpdateHandler
 {
-  initialPosition: Vector3;
-  targetOffset: Vector3;
+  targetPosition: Vector3;
   speed: number;
 
   constructor(stateMachine: StateMachineLMent, initialPosition: Vector3, targetOffset: Vector3, speed: number)
   {
     super("opening", stateMachine);
-    this.initialPosition = initialPosition;
-    this.targetOffset = targetOffset;
+    this.targetPosition = initialPosition.clone().add(targetOffset);
     this.speed = speed;
   }
 
   onEnterState(previousState: State | undefined)
   {
-    console.log("OpeningState.onEnter");
+    // console.log("OpeningState.onEnter");
   }
 
   onExitState(nextState: State | undefined)
   {
-    console.log("OpeningState.onExit");
+    // console.log("OpeningState.onExit");
   }
 
   onUpdate(dt : number): void {
-    
+    let delta = this.targetPosition.clone().sub(this.stateMachine.body.body.getPosition());
+    let length = delta.length();
+    let speedDt = this.speed * dt;
+
+    if (length < speedDt)
+    {
+      this.stateMachine.body.body.setPosition(this.targetPosition);
+      this.stateMachine.switchState("open");
+    }
+    else
+    {
+      delta.normalize().multiplyScalar(speedDt);
+      this.stateMachine.body.body.offsetPosition(delta);
+    }
   }
 }
 
@@ -83,18 +94,18 @@ class OpenState extends State implements TriggerHandler, UpdateHandler
   onEnterState(previousState: State | undefined)
   {
     this.currentOpenDuration = 0;
-    console.log("OpenState.onEnter");
+    // console.log("OpenState.onEnter");
   }
 
   onExitState(nextState: State | undefined)
   {
-    console.log("OpenState.onExit");
+    // console.log("OpenState.onExit");
   }
 
   onUpdate(dt: number): void {
     this.currentOpenDuration += dt;
 
-    if (this.currentOpenDuration >= this.stayOpenDuration)
+    if (this.currentOpenDuration >= this.stayOpenDuration - 2.2e-16) // epsilon for floating point error
     {
       this.stateMachine.switchState("closing");
     }
@@ -122,21 +133,35 @@ class ClosingState extends State implements UpdateHandler, TriggerHandler
   {
     super("closing", stateMachine);
     this.triggerId = triggerId;
-    this.initialPosition = initialPosition;
+    this.initialPosition = initialPosition.clone();
     this.speed = speed;
   }
 
   onEnterState(previousState: State | undefined)
   {
-    console.log("ClosingState.onEnter");
+    // console.log("ClosingState.onEnter");
   }
 
   onExitState(nextState: State | undefined)
   {
-    console.log("ClosingState.onExit");
+    // console.log("ClosingState.onExit");
   }
 
   onUpdate(dt: number): void {
+    let delta = this.initialPosition.clone().sub(this.stateMachine.body.body.getPosition());
+    let length = delta.length();
+    let speedDt = this.speed * dt;
+
+    if (length < speedDt)
+    {
+      this.stateMachine.body.body.setPosition(this.initialPosition);
+      this.stateMachine.switchState("closed");
+    }
+    else
+    {
+      delta.normalize().multiplyScalar(speedDt);
+      this.stateMachine.body.body.offsetPosition(delta);
+    }
   }
 
   onTrigger(source: LMent, triggerId: string): void {

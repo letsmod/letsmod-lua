@@ -18,12 +18,12 @@ ____exports.StateMachineLMent = __TS__Class()
 local StateMachineLMent = ____exports.StateMachineLMent
 StateMachineLMent.name = "StateMachineLMent"
 __TS__ClassExtends(StateMachineLMent, LMent)
-function StateMachineLMent.prototype.____constructor(self, body, id, states, params)
+function StateMachineLMent.prototype.____constructor(self, body, id, params)
     if params == nil then
         params = {}
     end
     LMent.prototype.____constructor(self, body, id, params)
-    self.states = states
+    self.states = {}
     self.switchStateQueue = {}
 end
 function StateMachineLMent.prototype.switchState(self, stateName)
@@ -52,6 +52,9 @@ function StateMachineLMent.prototype.switchState(self, stateName)
             end
         end
     end
+end
+function StateMachineLMent.prototype.getState(self, stateName)
+    return self.states[stateName]
 end
 function StateMachineLMent.prototype.removeListeners(self, state)
     local dispatcher = GameplayScene.instance.dispatcher
@@ -131,10 +134,10 @@ function StateMachineLMent.prototype.addListeners(self, state)
         dispatcher:addListener("trigger", self)
     end
 end
-function StateMachineLMent.prototype.onUpdate(self)
+function StateMachineLMent.prototype.onUpdate(self, dt)
     local ____opt_1 = self.currentState
     if ____opt_1 and ____opt_1.onUpdate then
-        self.currentState:onUpdate()
+        self.currentState:onUpdate(dt)
     end
 end
 function StateMachineLMent.prototype.onCollision(self, info)

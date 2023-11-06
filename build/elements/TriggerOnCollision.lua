@@ -17,9 +17,10 @@ function TriggerOnCollision.prototype.____constructor(self, body, id, params)
     LMent.prototype.____constructor(self, body, id, params)
     self.triggerId = params.triggerId
     self.triggerContext = params.triggerContext == nil and "group" or params.triggerContext
-    local ____ = self.triggerOnCollisionWithElementType
+    self.triggerOnCollisionWithElementType = params.triggerOnCollisionWithElementType
 end
 function TriggerOnCollision.prototype.onInit(self)
+    GameplayScene.instance.dispatcher:addListener("collision", self)
 end
 function TriggerOnCollision.prototype.onStart(self)
 end

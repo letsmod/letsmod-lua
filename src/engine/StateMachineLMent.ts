@@ -146,6 +146,11 @@ export abstract class StateMachineLMent extends LMent implements
     }
   }
 
+  getState(stateName: string) : State | undefined
+  {
+    return this.states[stateName];
+  }
+
   removeListeners(state : State)
   {
     let dispatcher = GameplayScene.instance.dispatcher;

@@ -25,6 +25,7 @@ function GameplayScene.prototype.____constructor(self)
     self.dispatcher = __TS__New(MessageDispatcher, self)
     self.memory = __TS__New(GameplayMemory)
     self.clientInterface = nil
+    self.currentDt = 0
 end
 function GameplayScene.prototype.setClientInterface(self, clientInterface)
     self.clientInterface = clientInterface
@@ -82,6 +83,7 @@ end
 function GameplayScene.prototype.preUpdate(self, dt)
     local ____self_memory_2, ____timeSinceStart_3 = self.memory, "timeSinceStart"
     ____self_memory_2[____timeSinceStart_3] = ____self_memory_2[____timeSinceStart_3] + dt
+    self.currentDt = dt
     for ____, body in ipairs(self.bodies) do
         body:initializeElements()
     end
@@ -91,7 +93,7 @@ function GameplayScene.prototype.preUpdate(self, dt)
     self.dispatcher:updateFunctionQueue(dt)
 end
 function GameplayScene.prototype.update(self)
-    self.dispatcher:onUpdate()
+    self.dispatcher:onUpdate(self.currentDt)
 end
 function GameplayScene.prototype.cloneBody(self, body)
     local clonePointer = body.body:cloneBody()

@@ -114,10 +114,10 @@ function MessageDispatcher.prototype.updateFunctionQueue(self, dt)
         fq:func(table.unpack(fq.args))
     end
 end
-function MessageDispatcher.prototype.onUpdate(self)
+function MessageDispatcher.prototype.onUpdate(self, dt)
     for ____, listener in ipairs(__TS__ArraySlice(self.listeners.update)) do
         if listener.enabled then
-            listener:onUpdate()
+            listener:onUpdate(dt)
         end
     end
 end
