@@ -11,5 +11,5 @@ export {ScoreItem} from "./ScoreItem";
 export {GuideBody} from "./GuideBody";
 export {ShapeStateAnimator} from "./ShapeStateAnimator";
 export {AvatarBase} from "./AvatarBase";
-export {PlatformerAvatar} from "./PlatformerAvatar";
+export {PlatformerControls} from "./PlatformerControls";
 export {CameraTarget} from "./CameraTarget";

@@ -6,7 +6,7 @@ import { AvatarBase } from "./AvatarBase";
 import { ShapeStateController } from "./ShapeStateController";
 import { Helpers } from "engine/Helpers";
 
-export class PlatformerAvatar extends AvatarBase implements ButtonHandler, DragGestureHandler {
+export class PlatformerControls extends AvatarBase implements ButtonHandler, DragGestureHandler {
   maxSpeed: number; // meters per second
   acceleration: number; // meters per second per second
   deceleration: number; // meters per second per second
@@ -16,7 +16,7 @@ export class PlatformerAvatar extends AvatarBase implements ButtonHandler, DragG
   private dragDy = 0;
   private isOnGround = false;
   private anim: ShapeStateController | undefined;
-  constructor(body: BodyHandle, id: number, params: Partial<PlatformerAvatar> = {}) {
+  constructor(body: BodyHandle, id: number, params: Partial<PlatformerControls> = {}) {
     super(body, id, params);
     this.maxSpeed = params.maxSpeed === undefined ? 5 : params.maxSpeed;
     this.acceleration = params.acceleration === undefined ? this.maxSpeed * 5 : params.acceleration;

@@ -26,14 +26,14 @@ export class Helpers{
         return js_new(global.THREE.Vector3,x,y,z);
     }
 
-    static NewQuat()
+    static NewQuaternion()
     {
         return js_new(global.THREE.Quaternion);
     }
 
     static NewQuatFromEuler(x:number,y:number,z:number)
     {
-        return js_new(global.THREE.Quaternion).setFromEuler(js_new(global.THREE.Euler,x,y,z));
+        return js_new(global.THREE.Quaternion).setFromEuler(js_new(global.THREE.Euler,this.Rad(x),this.Rad(y),this.Rad(z)));
     }
 
     static Rad(degreeAngle:number):number

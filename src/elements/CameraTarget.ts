@@ -7,9 +7,12 @@ import { Helpers } from "engine/Helpers";
 
 export class CameraTarget extends LMent implements UpdateHandler, DragGestureHandler {
 
+    prefabName: string;
     dragSpeed: number;
     maxCamDrag: { x: number; y: number; z: number; };
     minCamDrag: { x: number; y: number; z: number; };
+
+    private cameraIsMain: boolean = false;
     private currentCamDrag = Helpers.zeroVector;
 
 
@@ -24,16 +27,17 @@ export class CameraTarget extends LMent implements UpdateHandler, DragGestureHan
         this.maxCamDrag = params.maxCamDrag === undefined ? { x: 0, y: 0, z: 0 } : params.maxCamDrag;
         this.minCamDrag = params.minCamDrag === undefined ? { x: 0, y: 0, z: 0 } : params.minCamDrag;
         this.dragSpeed = params.dragSpeed === undefined ? 0 : params.dragSpeed;
+        this.prefabName = params.prefabName === undefined ? "MainCamera" : params.prefabName;
+        this.cameraIsMain = this.prefabName === "MainCamera";
     }
 
     onInit(): void {
         GameplayScene.instance.dispatcher.addListener("update", this);
         GameplayScene.instance.dispatcher.addListener("drag", this);
-        GameplayScene.instance.memory.player = this.body;
     }
 
     onStart(): void {
-        this.initCamera()
+        this.initCamera();
         this.initBodyGuides();
     }
 
@@ -48,15 +52,16 @@ export class CameraTarget extends LMent implements UpdateHandler, DragGestureHan
     }
 
     initCamera() {
-        if (GameplayScene.instance.memory.mainCamera !== undefined)
+        if(this.cameraIsMain && GameplayScene.instance.memory.mainCamera !== undefined)
             return;
-        let cameraInstance = GameplayScene.instance.clonePrefab("Player Camera");
-        if (cameraInstance !== undefined) {
+        
+        let cameraInstance = GameplayScene.instance.clonePrefab(this.prefabName);
+        if (cameraInstance !== undefined && this.cameraIsMain) {
             cameraInstance.body.setPosition(Helpers.forwardVector.multiplyScalar(-2).add(this.body.body.getPosition()));
             GameplayScene.instance.memory.mainCamera = cameraInstance;
             if (GameplayScene.instance.clientInterface !== undefined)
                 GameplayScene.instance.clientInterface.setCamera(cameraInstance.body.id);
-        }
+        } else console.error("No camera prefab named: "+this.prefabName+".");
     }
 
     initBodyGuides() {
@@ -79,14 +84,13 @@ export class CameraTarget extends LMent implements UpdateHandler, DragGestureHan
                 this.currentCamDrag.x = Helpers.NumLerp(this.currentCamDrag.x, -this.maxCamDrag.x, this.dragSpeed);
             else if (this.dragDx < 0)
                 this.currentCamDrag.x = Helpers.NumLerp(this.currentCamDrag.x, this.minCamDrag.x, this.dragSpeed);
-            else this.currentCamDrag.x = Helpers.NumLerp(this.currentCamDrag.x, 0, 0.15);
+            else this.currentCamDrag.x = Helpers.NumLerp(this.currentCamDrag.x, 0, this.dragSpeed);
 
             if (this.dragDy > 0)
                 this.currentCamDrag.z = Helpers.NumLerp(this.currentCamDrag.z, -this.maxCamDrag.z, this.dragSpeed);
-            else this.currentCamDrag.z = Helpers.NumLerp(this.currentCamDrag.z, this.minCamDrag.z, this.dragSpeed);
-            console.log("currentz:" + this.currentCamDrag.z);
-            console.log("maxZ:" + this.maxCamDrag.z);
-            console.log("dragDy:" + this.dragDy);
+            else if (this.dragDy < 0)
+                this.currentCamDrag.z = Helpers.NumLerp(this.currentCamDrag.z, this.minCamDrag.z, this.dragSpeed);
+            else this.currentCamDrag.z = Helpers.NumLerp(this.currentCamDrag.z, 0, this.dragSpeed);
         }
         this.cameraLead.updateOffsetVector(this.currentCamDrag.x, this.currentCamDrag.y, this.currentCamDrag.z, true);
     }
