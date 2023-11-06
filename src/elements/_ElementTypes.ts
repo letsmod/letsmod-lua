@@ -13,3 +13,5 @@ export {ShapeStateAnimator} from "./ShapeStateAnimator";
 export {AvatarBase} from "./AvatarBase";
 export {PlatformerControls} from "./PlatformerControls";
 export {CameraTarget} from "./CameraTarget";
+export {BallControls} from "./BallControls";
+export {DragTurner} from "./DragTurner";
