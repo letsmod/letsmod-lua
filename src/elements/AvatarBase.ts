@@ -13,7 +13,7 @@ export class AvatarBase extends LMent implements UpdateHandler, HitPointChangeHa
   }
   
   onCollision(info: CollisionInfo): void {
-    GameplayScene.instance.getBodyById
+    GameplayScene.instance.getBodyById;
   }
 
   onInit(): void {
@@ -26,9 +26,7 @@ export class AvatarBase extends LMent implements UpdateHandler, HitPointChangeHa
   initRotation()
   {
     let rotation = this.body.body.getRotation().clone();
-    //Note: X is swapped with W, it appears our coordinate system is W,Y,Z,X instead of X,Y,Z,W
-    let yaw:number = Math.atan2(2 * (rotation.w * rotation.y + rotation.x * rotation.z), rotation.x * rotation.x + rotation.w * rotation.w - rotation.y * rotation.y - rotation.z * rotation.z);
-    rotation.setFromAxisAngle(Helpers.upVector,yaw);
+    rotation.setFromAxisAngle(Helpers.upVector,Helpers.GetYaw(rotation));
     this.body.body.setRotation(rotation);
     
   }

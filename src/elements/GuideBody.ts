@@ -3,6 +3,7 @@ import { GameplayScene } from "engine/GameplayScene";
 import { Helpers } from "engine/Helpers";
 import { LMent } from "engine/LMent";
 import { UpdateHandler } from "engine/MessageHandlers";
+import { Quaternion, Vector3 } from "three";
 
 export class GuideBody extends LMent implements UpdateHandler
 {
@@ -15,8 +16,7 @@ export class GuideBody extends LMent implements UpdateHandler
     
     offset:{x:number,y:number,z:number}; /* The position offset from target */
     private offsetVector; /* To generate a Vector3 from the previous param*/
-    
-    //rotationOffsetAxis:{x:number,y:number,z:number}; /* The axis where quaternion offset will be applied */
+
     rotationOffset:{x:number,y:number,z:number};
     private rotationOffsetQuaternion; /* To contain the quaternion value of the given axis angle */
 
@@ -24,8 +24,12 @@ export class GuideBody extends LMent implements UpdateHandler
 
     followSpeed:number; /* The maximum follow speed */
     rotationSpeed:number; /*The maximum follow-orientation speed */
-
+    rotate:boolean; /*Default to TRUE, which allows it to update rotation to match target every frame*/
+    move:boolean; /*Defaults to TRUE, which allows it to update position to match target every frame*/
     mode:string; /*To tell whether to leade the target or follow the target*/
+
+    private leader:BodyHandle|undefined;
+    private follower:BodyHandle|undefined;
 
     constructor(body: BodyHandle, id: number, params: Partial<GuideBody> = {})
     {
@@ -35,10 +39,11 @@ export class GuideBody extends LMent implements UpdateHandler
         this.mode = params.mode === undefined?"follow":params.mode;
         this.offset = params.offset === undefined?{x:0,y:0,z:0}:params.offset;
         this.offsetVector = Helpers.NewVector3(this.offset.x,this.offset.y,this.offset.z);
+        this.move = params.move === undefined?true:params.move;
 
         this.rotationOffset = params.rotationOffset === undefined?{x:0,y:0,z:0}:params.rotationOffset;
         this.rotationOffsetQuaternion = Helpers.NewQuatFromEuler(this.rotationOffset.x,this.rotationOffset.y,this.rotationOffset.z);
-        console.log(this.rotationOffset.x);
+        this.rotate = params.rotate === undefined?true:params.rotate;
 
         this.offsetSpace = params.offsetSpace === undefined?"local":params.offsetSpace;
 
@@ -66,8 +71,24 @@ export class GuideBody extends LMent implements UpdateHandler
 
     onStart(): void {
         this.initTargetBody();
+        this.initLeadership();
+        if(!this.rotate && this.follower !== undefined)
+            this.follower.body.setRotation(this.rotationOffsetQuaternion);
     }
     
+    initLeadership()
+    {
+        GameplayScene.instance.dispatcher.queueDelayedFunction(this,()=>{
+            this.leader = this.targetBody;
+            this.follower = this.body;
+            if(this.mode.toLowerCase() === "lead")
+            {
+                this.leader = this.body;
+                this.follower = this.targetBody;
+            }
+        },2*Helpers.deltaTime)
+    }
+
     updateOffsetVector(x:number,y:number,z:number,additive:boolean|false)
     {
         if(additive)
@@ -77,51 +98,34 @@ export class GuideBody extends LMent implements UpdateHandler
 
     updateTargetPosition()
     {
-        if(this.targetBody === undefined)
+        if(this.targetBody === undefined || this.leader === undefined || this.follower === undefined)
             return;
 
         let offset = this.offsetVector.clone();
         
-        let leader = this.targetBody;
-        let follower = this.body;
-        if(this.mode.toLowerCase() == "lead")
-        {
-            leader = this.body;
-            follower = this.targetBody;
-        }
-
         if(this.offsetSpace.toLowerCase() === "local")
-            offset.copy(this.offsetVector.clone().applyQuaternion(leader.body.getRotation()));
-        let targetVector = leader.body.getPosition().clone().add(offset);
-        follower.body.setPosition(follower.body.getPosition().clone().lerp(targetVector,this.followSpeed*Helpers.deltaTime));
+            offset.copy(this.offsetVector.clone().applyQuaternion(this.leader.body.getRotation()));
+        let targetVector = this.leader.body.getPosition().clone().add(offset);
+        this.follower.body.setPosition(this.follower.body.getPosition().clone().lerp(targetVector,this.followSpeed*Helpers.deltaTime));
     }
 
     updateTargetOrientation()
     {
-        if(this.targetBody === undefined)
+        if(this.targetBody === undefined || this.leader === undefined || this.follower === undefined)
             return;
-
-        let leader = this.targetBody;
-        let follower = this.body;
-        if(this.mode.toLowerCase() == "lead")
-        {
-            leader = this.body;
-            follower = this.targetBody;
-        }
-
-        let offset = this.rotationOffsetQuaternion;
         
-        let targetOrientation = leader.body.getRotation().clone().multiply(offset).normalize();
-        if(this.rotationSpeed===0) //meaning that rotation is not guided
-        {
-            targetOrientation = offset;
-            follower.body.setRotation(targetOrientation);
-        }else follower.body.setRotation(follower.body.getRotation().clone().slerp(targetOrientation,this.rotationSpeed*Helpers.deltaTime));
+        if(this.rotationSpeed==0)
+            this.follower.body.setRotation(this.rotationOffsetQuaternion);
+        let targetOrientation = this.leader.body.getRotation().clone().multiply(this.rotationOffsetQuaternion).normalize();
+        this.follower.body.setRotation(this.follower.body.getRotation().clone().slerp(targetOrientation,this.rotationSpeed*Helpers.deltaTime));
     }
- 
+
     onUpdate(): void {
-        this.updateTargetPosition();
-        this.updateTargetOrientation();
+        if(this.move)
+            this.updateTargetPosition();
+        
+        if(this.rotate)
+            this.updateTargetOrientation();
     }
 
 }

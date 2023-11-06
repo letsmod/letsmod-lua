@@ -1,5 +1,5 @@
 import { global, js_new } from "js";
-import { Vector3 } from "three";
+import { Quaternion, Vector3 } from "three";
 import { GameplayScene } from "./GameplayScene";
 
 export class Helpers{
@@ -44,5 +44,10 @@ export class Helpers{
     static Deg(radianAngle:number):number
     {
         return radianAngle*180/Math.PI;
+    }
+
+    static GetYaw(q:Quaternion)
+    {
+        return Math.atan2(2 * (q.w * q.y + q.x * q.z), q.x * q.x + q.w * q.w - q.y * q.y - q.z * q.z);
     }
 }

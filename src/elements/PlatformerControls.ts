@@ -29,7 +29,6 @@ export class PlatformerControls extends AvatarBase implements ButtonHandler, Dra
 
     GameplayScene.instance.dispatcher.addListener("button", this);
     GameplayScene.instance.dispatcher.addListener("drag", this);
-    GameplayScene.instance.memory.player = this.body;
     this.body.body.lockRotation(true, false, true);
   }
   override onCollision(info: CollisionInfo): void {
