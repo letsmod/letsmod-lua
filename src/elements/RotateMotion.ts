@@ -1,8 +1,8 @@
 import { BodyHandle } from "engine/BodyHandle";
 import { GameplayScene } from "engine/GameplayScene";
+import { Helpers } from "engine/Helpers";
 import { LMent } from "engine/LMent";
 import { UpdateHandler } from "engine/MessageHandlers";
-import { js_new, global } from "js";
 
 export class RotateMotion extends LMent implements UpdateHandler
 {
@@ -42,7 +42,7 @@ export class RotateMotion extends LMent implements UpdateHandler
 
     initRotationAxis(): THREE.Vector3
     {
-      let myAxis = js_new(global.THREE.Vector3,1,0,0);
+      let myAxis = Helpers.rightVector;
       if(this.axis.toString().toLowerCase() == "y")
         myAxis.set(0,1,0);
       else if(this.axis.toString().toLowerCase() == "z")
@@ -57,7 +57,7 @@ export class RotateMotion extends LMent implements UpdateHandler
       let sinVal = Math.sin(time*this.speed)*this.radius;
       let cosVal = Math.cos(time*this.speed)*this.radius;
       
-      let newPos = js_new(global.THREE.Vector3,sinVal,0,cosVal);
+      let newPos = Helpers.NewVector3(sinVal,0,cosVal);
       if(this.axis.toString().toLowerCase() == "x")
         newPos.set(0,sinVal,cosVal);
       else if(this.axis.toString().toLowerCase() == "z")
@@ -68,7 +68,7 @@ export class RotateMotion extends LMent implements UpdateHandler
 
     runRotation()
     {
-      let quat = js_new(global.THREE.Quaternion);
+      let quat = Helpers.NewQuaternion();
       let timeElapsed = GameplayScene.instance.memory.timeSinceStart;
       quat.setFromAxisAngle(this.rotateAxis,this.speed*timeElapsed);
       this.body.body.setRotation(quat);

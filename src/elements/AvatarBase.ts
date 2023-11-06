@@ -1,10 +1,9 @@
 import { BodyHandle } from "engine/BodyHandle";
 import { GameplayMemory } from "engine/GameplayMemory";
 import { GameplayScene } from "engine/GameplayScene";
+import { Helpers } from "engine/Helpers";
 import { LMent } from "engine/LMent";
 import { CollisionHandler, CollisionInfo, HitPointChangeHandler, UpdateHandler } from "engine/MessageHandlers";
-import { global, js_new } from "js";
-import { GuideBody } from "./GuideBody";
 
 export class AvatarBase extends LMent implements UpdateHandler, HitPointChangeHandler, CollisionHandler
 {
@@ -29,14 +28,14 @@ export class AvatarBase extends LMent implements UpdateHandler, HitPointChangeHa
     let rotation = this.body.body.getRotation().clone();
     //Note: X is swapped with W, it appears our coordinate system is W,Y,Z,X instead of X,Y,Z,W
     let yaw:number = Math.atan2(2 * (rotation.w * rotation.y + rotation.x * rotation.z), rotation.x * rotation.x + rotation.w * rotation.w - rotation.y * rotation.y - rotation.z * rotation.z);
-    rotation.setFromAxisAngle(js_new(global.THREE.Vector3,0,1,0),yaw);
+    rotation.setFromAxisAngle(Helpers.upVector,yaw);
     this.body.body.setRotation(rotation);
     
   }
 
   onStart(): void {
     this.initRotation();
-    this.body.body.setAngularVelocity(js_new(global.THREE.Vector3,0,0,0));
+    this.body.body.setAngularVelocity(Helpers.zeroVector);
   }
 
   onUpdate(): void {

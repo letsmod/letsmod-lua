@@ -2,10 +2,8 @@ import { BodyHandle } from "engine/BodyHandle";
 import { GameplayMemory } from "engine/GameplayMemory";
 import { GameplayScene } from "engine/GameplayScene";
 import { ButtonHandler, CollisionInfo, DragGestureHandler } from "engine/MessageHandlers";
-import { global, js_new } from "js";
 import { AvatarBase } from "./AvatarBase";
 import { ShapeStateController } from "./ShapeStateController";
-import { MathUtils, Vector3 } from "three";
 import { Helpers } from "engine/Helpers";
 
 export class PlatformerAvatar extends AvatarBase implements ButtonHandler, DragGestureHandler {
@@ -37,11 +35,10 @@ export class PlatformerAvatar extends AvatarBase implements ButtonHandler, DragG
   override onCollision(info: CollisionInfo): void {
     super.onCollision(info);
 
-    let upVector = js_new(global.THREE.Vector3, 0, 1, 0);
-    if (info.getDeltaVSelf().normalize().dot(upVector) > 0.7)
+    if (info.getDeltaVSelf().normalize().dot(Helpers.upVector) > 0.7)
       this.isOnGround = true;
 
-    this.body.body.setAngularVelocity(js_new(global.THREE.Vector3, 0, 0, 0));
+    this.body.body.setAngularVelocity(Helpers.zeroVector);
   }
 
   override onStart(): void {
@@ -71,11 +68,11 @@ export class PlatformerAvatar extends AvatarBase implements ButtonHandler, DragG
 
   Walk() {
     let velocity = this.body.body.getVelocity();
-    let planarVelocity = js_new(global.THREE.Vector3, velocity.x, 0, velocity.z);
+    let planarVelocity = Helpers.NewVector3(velocity.x, 0, velocity.z);
 
     let targetX = -this.dragDx * this.maxSpeed;
     let targetZ = -this.dragDy * this.maxSpeed;
-    let target = js_new(global.THREE.Vector3, targetX, 0, targetZ);
+    let target = Helpers.NewVector3(targetX, 0, targetZ);
 
     let delta = target.sub(planarVelocity);
 
@@ -90,7 +87,7 @@ export class PlatformerAvatar extends AvatarBase implements ButtonHandler, DragG
       accel = this.acceleration * Helpers.deltaTime;
       this.handlePlayerOrientation();
       //Don :: For some reason, it gets some angular velocity while walking, I wrote this line to prevent it, thoughts?
-      this.body.body.setAngularVelocity(js_new(global.THREE.Vector3, 0, 0, 0));
+      this.body.body.setAngularVelocity(Helpers.zeroVector);
       if (this.isOnGround)
         this.playAnimation("Walk");
 
@@ -112,9 +109,8 @@ export class PlatformerAvatar extends AvatarBase implements ButtonHandler, DragG
 
   handlePlayerOrientation() {
     let angle = Math.atan2(-this.dragDx, -this.dragDy);
-    let axis = js_new(global.THREE.Vector3, 0, 1, 0);
-    let quat = js_new(global.THREE.Quaternion);
-    quat.setFromAxisAngle(axis, angle);
+    let quat = Helpers.NewQuaternion();
+    quat.setFromAxisAngle(Helpers.upVector, angle);
     this.body.body.setRotation(quat);
   }
 

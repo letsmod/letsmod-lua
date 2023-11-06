@@ -2,12 +2,12 @@ import { BodyHandle } from "engine/BodyHandle";
 import { LMent } from "engine/LMent";
 import { ShapeStateAnimator } from "./ShapeStateAnimator";
 import { GameplayScene } from "engine/GameplayScene";
+import { Helpers } from "engine/Helpers";
 
 export class ShapeStateController extends LMent
 {
     private animStates:ShapeStateAnimator[] = [];
     private activeState:ShapeStateAnimator = {} as ShapeStateAnimator;
-    private deltaTime = 1/GameplayScene.instance.memory.frameRate;
     constructor(body: BodyHandle, id: number, params: Partial<ShapeStateController> = {})
     {
       super(body, id,params);
@@ -28,7 +28,7 @@ export class ShapeStateController extends LMent
             this.animStates[0].startState();
             this.activeState = this.animStates[0];
            }
-      },this.deltaTime);
+      },Helpers.deltaTime);
     }
 
     addState(state:ShapeStateAnimator)

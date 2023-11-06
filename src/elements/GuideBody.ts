@@ -3,8 +3,6 @@ import { GameplayScene } from "engine/GameplayScene";
 import { Helpers } from "engine/Helpers";
 import { LMent } from "engine/LMent";
 import { UpdateHandler } from "engine/MessageHandlers";
-import { global, js_new } from "js";
-import { Quaternion, Vector3 } from "three";
 
 export class GuideBody extends LMent implements UpdateHandler
 {
@@ -18,9 +16,8 @@ export class GuideBody extends LMent implements UpdateHandler
     offset:{x:number,y:number,z:number}; /* The position offset from target */
     private offsetVector; /* To generate a Vector3 from the previous param*/
     
-    rotationOffsetAxis:{x:number,y:number,z:number}; /* The axis where quaternion offset will be applied */
-    private rotationOffsetAxisVector; /* To generate a Vector3 from the previous param*/
-    rotationOffsetAngle:number; /* The angle of rotation offset */
+    //rotationOffsetAxis:{x:number,y:number,z:number}; /* The axis where quaternion offset will be applied */
+    rotationOffset:{x:number,y:number,z:number};
     private rotationOffsetQuaternion; /* To contain the quaternion value of the given axis angle */
 
     offsetSpace: string; /*To set whether offset is in local or global space*/
@@ -37,12 +34,11 @@ export class GuideBody extends LMent implements UpdateHandler
         this.guideName = params.guideName === undefined?"N/A":params.guideName;
         this.mode = params.mode === undefined?"follow":params.mode;
         this.offset = params.offset === undefined?{x:0,y:0,z:0}:params.offset;
-        this.offsetVector = js_new(global.THREE.Vector3,this.offset.x,this.offset.y,this.offset.z);
+        this.offsetVector = Helpers.NewVector3(this.offset.x,this.offset.y,this.offset.z);
 
-        this.rotationOffsetAxis = params.rotationOffsetAxis === undefined?{x:1,y:0,z:0}:params.rotationOffsetAxis;
-        this.rotationOffsetAxisVector = js_new(global.THREE.Vector3,this.rotationOffsetAxis.x,this.rotationOffsetAxis.y,this.rotationOffsetAxis.z);
-        this.rotationOffsetAngle = params.rotationOffsetAngle === undefined?0:params.rotationOffsetAngle;
-        this.rotationOffsetQuaternion = js_new(global.THREE.Quaternion).setFromAxisAngle(this.rotationOffsetAxisVector,this.rotationOffsetAngle*Math.PI/180);
+        this.rotationOffset = params.rotationOffset === undefined?{x:0,y:0,z:0}:params.rotationOffset;
+        this.rotationOffsetQuaternion = Helpers.NewQuatFromEuler(this.rotationOffset.x,this.rotationOffset.y,this.rotationOffset.z);
+        console.log(this.rotationOffset.x);
 
         this.offsetSpace = params.offsetSpace === undefined?"local":params.offsetSpace;
 
