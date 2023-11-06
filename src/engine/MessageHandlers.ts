@@ -1,7 +1,7 @@
 import { LMent } from "./LMent";
 import { BodyHandle } from "./BodyHandle";
 
-export interface GenericHandler extends LMent
+export interface GenericHandler
 {
   // override this function for listeners (such as button listeners) with subtypes
   hasSubtype? (subtype : string) : boolean;
@@ -9,7 +9,7 @@ export interface GenericHandler extends LMent
 
 export interface UpdateHandler extends GenericHandler
 {
-  onUpdate() : void;
+  onUpdate(dt? : number) : void;
 }
 
 export interface CollisionInfo

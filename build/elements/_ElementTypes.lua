@@ -30,4 +30,14 @@ do
     local ExamplePlayer = ____ExamplePlayer.ExamplePlayer
     ____exports.ExamplePlayer = ExamplePlayer
 end
+do
+    local ____TriggerOnCollision = require("elements.TriggerOnCollision")
+    local TriggerOnCollision = ____TriggerOnCollision.TriggerOnCollision
+    ____exports.TriggerOnCollision = TriggerOnCollision
+end
+do
+    local ____AutomaticDoor = require("elements.AutomaticDoor")
+    local AutomaticDoor = ____AutomaticDoor.AutomaticDoor
+    ____exports.AutomaticDoor = AutomaticDoor
+end
 return ____exports

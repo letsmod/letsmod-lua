@@ -30,6 +30,18 @@ function BodyHandle.prototype.getElement(self, T)
     end
     return nil
 end
+function BodyHandle.prototype.getElementByTypeName(self, name)
+    do
+        local i = 0
+        while i < #self.elements do
+            if self.elements[i + 1].constructor.name == name then
+                return self.elements[i + 1]
+            end
+            i = i + 1
+        end
+    end
+    return nil
+end
 function BodyHandle.prototype.addElement(self, elem)
     local ____self_elements_0 = self.elements
     ____self_elements_0[#____self_elements_0 + 1] = elem
