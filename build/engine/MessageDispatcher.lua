@@ -253,7 +253,7 @@ function MessageDispatcher.prototype.onTrigger(self, source, triggerId, context)
     elseif context == "group" then
         for ____, listener in ipairs(__TS__ArraySlice(self.listeners.trigger)) do
             if listener.enabled and listener:hasSubtype(triggerId) then
-                for ____, body in ipairs(listener.body.bodyGroup) do
+                for ____, body in ipairs(source.body.bodyGroup) do
                     if listener.body == body then
                         listener:onTrigger(source, triggerId)
                     end

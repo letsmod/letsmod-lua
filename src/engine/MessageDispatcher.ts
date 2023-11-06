@@ -402,7 +402,7 @@ export class MessageDispatcher
       for (let listener of this.listeners["trigger"].slice())
       {
         if (listener.enabled && listener.hasSubtype(triggerId)) {
-          for (let body of listener.body.bodyGroup)
+          for (let body of source.body.bodyGroup)
           {
             if (listener.body == body)
             {
