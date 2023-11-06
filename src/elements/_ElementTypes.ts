@@ -10,6 +10,6 @@ export {RotateMotion} from "./RotateMotion";
 export {ScoreItem} from "./ScoreItem";
 export {GuideBody} from "./GuideBody";
 export {ShapeStateAnimator} from "./ShapeStateAnimator";
-export {ButtonTest} from "./ButtonTest";
 export {AvatarBase} from "./AvatarBase";
 export {PlatformerAvatar} from "./PlatformerAvatar";
+export {CameraTarget} from "./CameraTarget";

@@ -4,16 +4,18 @@ import { GameplayScene } from "engine/GameplayScene";
 import { LMent } from "engine/LMent";
 import { CollisionHandler, CollisionInfo, HitPointChangeHandler, UpdateHandler } from "engine/MessageHandlers";
 import { global, js_new } from "js";
+import { GuideBody } from "./GuideBody";
 
 export class AvatarBase extends LMent implements UpdateHandler, HitPointChangeHandler, CollisionHandler
 {
- 
   constructor(body: BodyHandle, id: number, params: Partial<AvatarBase> = {})
   {
     super(body, id, params);
   }
-    onCollision(info: CollisionInfo): void {
-    }
+  
+  onCollision(info: CollisionInfo): void {
+    GameplayScene.instance.getBodyById
+  }
 
   onInit(): void {
     GameplayScene.instance.dispatcher.addListener("update", this);
