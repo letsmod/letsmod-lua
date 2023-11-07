@@ -13,12 +13,27 @@ export class ExamplePlayer extends LMent implements ButtonHandler, DragGestureHa
   private dragDx = 0;
   private dragDy = 0;
 
+  arrayTest: {x: number, y: number, z: number}[];
+
   constructor(body: BodyHandle, id: number, params: Partial<ExamplePlayer> = {})
   {
     super(body, id, params);
     this.maxSpeed = params.maxSpeed === undefined? 3 : params.maxSpeed;
     this.acceleration = params.acceleration === undefined? this.maxSpeed * 5 : params.acceleration;
     this.deceleration = params.deceleration === undefined? this.maxSpeed * 5 : params.deceleration;
+    this.arrayTest = this.convertArray(params.arrayTest) || [];
+
+    console.log("is array", Array.isArray(this.arrayTest));
+    console.log("testing array");
+    console.log("length", this.arrayTest.length);
+    for (let i = 0; i < this.arrayTest.length; i++)
+    {
+      console.log(this.arrayTest[i].x, this.arrayTest[i].y, this.arrayTest[i].z);
+    }
+    console.log("test b");
+    this.arrayTest.forEach(v => {
+      console.log(v.x, v.y, v.z);
+    });
   }
 
   onInit(): void {

@@ -18,6 +18,22 @@ export abstract class LMent
     this.id = id;
   }
 
+  convertArray(arr : any)
+  {
+    if (arr === undefined)
+    {
+      return undefined;
+    }
+
+    let result = [];
+
+    for (let key in arr)
+    {
+      result.push(arr[key]);
+    }
+    return result;
+  }
+
   /*
     Called immediately when the body this element belongs to is created, after the constructors of all elements have been called.
     Any event listeners associated with this element should be added to GameplayScene.dispatcher here.
