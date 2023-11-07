@@ -23,7 +23,7 @@ export class Waypoint extends LMent implements UpdateHandler
     constructor(body: BodyHandle, id: number, params: Partial<Waypoint> = {}) {
         super(body, id, params);
 
-        this.points = params.points === undefined ? [{ offset: js_new(global.THREE.Vector3, 0, 0, 0), speed: 5, delay: 3, interpolationFunction: "linear" }] : params.points;
+        this.points = this.convertArray(params.points) || [];
         this.totalDistanceToNextPoint = 0;
         this.index = 0;
         this.delayPlusTime = 0;
@@ -60,7 +60,7 @@ export class Waypoint extends LMent implements UpdateHandler
         let movement = direction.clone().multiplyScalar(target.speed / 20);
 
         this.body.body.setPosition(this.body.body.getPosition().clone().add(movement));
-        
+
         if (this.body.body.getPosition().clone().add(movement).distanceTo(target.offset) < target.speed / 20) {
             this.body.body.setPosition(target.offset);
             this.index += 1;
@@ -81,8 +81,8 @@ export class Waypoint extends LMent implements UpdateHandler
     sineMovement(target: waypoints): void {
         let currentDistance = this.body.body.getPosition().distanceTo(target.offset);
         let distanceFactor = 1 - currentDistance / this.totalDistanceToNextPoint;
-        let sineEaseInOut = 0.5 * (1 - Math.cos(Math.PI * distanceFactor));
-        this.body.body.setPosition(this.body.body.getPosition().clone().lerp(target.offset, 0.001 + sineEaseInOut * target.speed / 20));
+        let sineEaseInOut =(1 - Math.cos(Math.PI * distanceFactor));
+        this.body.body.setPosition(this.body.body.getPosition().clone().lerp(target.offset, 0.003 + sineEaseInOut * target.speed / 20));
 
         if (this.body.body.getPosition().distanceTo(target.offset) < target.speed / 20) {
             this.body.body.setPosition(target.offset);

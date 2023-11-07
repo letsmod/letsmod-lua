@@ -22,6 +22,7 @@ export class GameplayScene
   dispatcher : MessageDispatcher = new MessageDispatcher(this);
   memory : GameplayMemory = new GameplayMemory();
   clientInterface: LuaClientInterface | undefined = undefined;
+  currentDt: number = 0;
 
   private constructor()
   {
@@ -96,6 +97,7 @@ export class GameplayScene
   preUpdate(dt : number)
   {
     this.memory.timeSinceStart += dt;
+    this.currentDt = dt;
     for (let body of this.bodies)
     {
       body.initializeElements();
@@ -111,7 +113,7 @@ export class GameplayScene
 
   update()
   {
-    this.dispatcher.onUpdate();
+    this.dispatcher.onUpdate(this.currentDt);
   }
 
   cloneBody(body: BodyHandle) : BodyHandle | undefined
