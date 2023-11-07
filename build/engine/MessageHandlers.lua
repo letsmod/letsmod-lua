@@ -11,6 +11,7 @@ ____exports.HandlerTypes = {
     "aim",
     "interact",
     "actorDestroyed",
-    "hitPointsChanged"
+    "hitPointsChanged",
+    "trigger"
 }
 return ____exports

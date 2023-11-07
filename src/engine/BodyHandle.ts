@@ -96,6 +96,19 @@ export class BodyHandle
     return undefined;
   }
 
+  getElementByTypeName(name: string)
+  {
+    for (let i = 0; i < this.elements.length; i++)
+    {
+      if (this.elements[i].constructor.name == name)
+      {
+        return this.elements[i];
+      }
+    }
+
+    return undefined;
+  }
+
   getAllElements <U extends LMent> (T : new (...args: any[]) => U ) : U[]
   {
     let arr =[];

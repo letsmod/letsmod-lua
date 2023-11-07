@@ -1,6 +1,8 @@
 local ____lualib = require("lualib_bundle")
 local __TS__Class = ____lualib.__TS__Class
 local __TS__ClassExtends = ____lualib.__TS__ClassExtends
+local __TS__ArrayIsArray = ____lualib.__TS__ArrayIsArray
+local __TS__ArrayForEach = ____lualib.__TS__ArrayForEach
 local ____exports = {}
 local ____GameplayScene = require("engine.GameplayScene")
 local GameplayScene = ____GameplayScene.GameplayScene
@@ -23,6 +25,27 @@ function ExamplePlayer.prototype.____constructor(self, body, id, params)
     self.maxSpeed = params.maxSpeed == nil and 3 or params.maxSpeed
     self.acceleration = params.acceleration == nil and self.maxSpeed * 5 or params.acceleration
     self.deceleration = params.deceleration == nil and self.maxSpeed * 5 or params.deceleration
+    self.arrayTest = self:convertArray(params.arrayTest) or ({})
+    print(
+        "is array",
+        __TS__ArrayIsArray(self.arrayTest)
+    )
+    print("testing array")
+    print("length", #self.arrayTest)
+    do
+        local i = 0
+        while i < #self.arrayTest do
+            print(self.arrayTest[i + 1].x, self.arrayTest[i + 1].y, self.arrayTest[i + 1].z)
+            i = i + 1
+        end
+    end
+    print("test b")
+    __TS__ArrayForEach(
+        self.arrayTest,
+        function(____, v)
+            print(v.x, v.y, v.z)
+        end
+    )
 end
 function ExamplePlayer.prototype.onInit(self)
     GameplayScene.instance.dispatcher:addListener("button", self)

@@ -1,7 +1,7 @@
 import { LMent } from "./LMent";
 import { BodyHandle } from "./BodyHandle";
 
-export interface GenericHandler extends LMent
+export interface GenericHandler
 {
   // override this function for listeners (such as button listeners) with subtypes
   hasSubtype? (subtype : string) : boolean;
@@ -9,7 +9,7 @@ export interface GenericHandler extends LMent
 
 export interface UpdateHandler extends GenericHandler
 {
-  onUpdate() : void;
+  onUpdate(dt? : number) : void;
 }
 
 export interface CollisionInfo
@@ -94,6 +94,13 @@ export interface HitPointChangeHandler extends GenericHandler
   onHitPointChange(source: BodyHandle, previousHP: number, currentHP: number) : void;
 }
 
+export interface TriggerHandler extends GenericHandler
+{
+  hasSubtype(trigger: string) : boolean;
+
+  onTrigger(source: LMent, triggerId: string) : void;
+}
+
 export type HandlerTypeMap = {
   update: UpdateHandler,
   collision: CollisionHandler,
@@ -106,6 +113,7 @@ export type HandlerTypeMap = {
   interact: InteractHandler,
   actorDestroyed: ActorDestructionHandler,
   hitPointsChanged: HitPointChangeHandler,
+  trigger: TriggerHandler,
 }
 
 export type HandlerKey = keyof HandlerTypeMap;
@@ -122,4 +130,5 @@ export const HandlerTypes : HandlerKey[] = [
   "interact",
   "actorDestroyed",
   "hitPointsChanged",
+  "trigger",
 ]

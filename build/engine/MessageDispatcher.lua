@@ -114,10 +114,10 @@ function MessageDispatcher.prototype.updateFunctionQueue(self, dt)
         fq:func(table.unpack(fq.args))
     end
 end
-function MessageDispatcher.prototype.onUpdate(self)
+function MessageDispatcher.prototype.onUpdate(self, dt)
     for ____, listener in ipairs(__TS__ArraySlice(self.listeners.update)) do
         if listener.enabled then
-            listener:onUpdate()
+            listener:onUpdate(dt)
         end
     end
 end
@@ -239,6 +239,32 @@ function MessageDispatcher.prototype.onHitPointChange(self, source, previousHP, 
     for ____, listener in ipairs(__TS__ArraySlice(self.listeners.hitPointsChanged)) do
         if listener.enabled then
             listener:onHitPointChange(source, previousHP, currentHP)
+        end
+    end
+end
+function MessageDispatcher.prototype.onTrigger(self, source, triggerId, context)
+    if context == "local" then
+        local body = source.body
+        for ____, listener in ipairs(__TS__ArraySlice(self.listeners.trigger)) do
+            if listener.enabled and listener.body == body and listener:hasSubtype(triggerId) then
+                listener:onTrigger(source, triggerId)
+            end
+        end
+    elseif context == "group" then
+        for ____, listener in ipairs(__TS__ArraySlice(self.listeners.trigger)) do
+            if listener.enabled and listener:hasSubtype(triggerId) then
+                for ____, body in ipairs(source.body.bodyGroup) do
+                    if listener.body == body then
+                        listener:onTrigger(source, triggerId)
+                    end
+                end
+            end
+        end
+    else
+        for ____, listener in ipairs(__TS__ArraySlice(self.listeners.trigger)) do
+            if listener.enabled and listener:hasSubtype(triggerId) then
+                listener:onTrigger(source, triggerId)
+            end
         end
     end
 end
