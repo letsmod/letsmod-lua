@@ -11,6 +11,7 @@ export class CameraTarget extends LMent implements UpdateHandler, DragGestureHan
     dragSpeed: number;
     maxCamDrag: { x: number; y: number; z: number; };
     minCamDrag: { x: number; y: number; z: number; };
+    resetDragOnRelease : boolean;
 
     private cameraIsMain: boolean = false;
     private currentCamDrag = Helpers.zeroVector;
@@ -29,6 +30,7 @@ export class CameraTarget extends LMent implements UpdateHandler, DragGestureHan
         this.dragSpeed = params.dragSpeed === undefined ? 0 : params.dragSpeed;
         this.prefabName = params.prefabName === undefined ? "MainCamera" : params.prefabName;
         this.cameraIsMain = this.prefabName === "MainCamera";
+        this.resetDragOnRelease = params.resetDragOnRelease === undefined?false:params.resetDragOnRelease;
     }
 
     onInit(): void {
@@ -49,6 +51,8 @@ export class CameraTarget extends LMent implements UpdateHandler, DragGestureHan
     onUpdate(): void {
         this.updateCameraDrag();
         this.belowZeroCheck();
+        this.dragDx = 0;
+        this.dragDy = 0;
     }
 
     initCamera() {
@@ -79,7 +83,7 @@ export class CameraTarget extends LMent implements UpdateHandler, DragGestureHan
 
     updateCameraDrag() {
         if (this.cameraLead === undefined) return;
-        if (this.dragDx != 0 || this.dragDy != 0) {
+        if(!this.resetDragOnRelease && (this.dragDx != 0 || this.dragDy != 0)) {
             if (this.dragDx > 0)
                 this.currentCamDrag.x = Helpers.NumLerp(this.currentCamDrag.x, -this.maxCamDrag.x, this.dragSpeed);
             else if (this.dragDx < 0)

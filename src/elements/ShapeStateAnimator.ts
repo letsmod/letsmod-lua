@@ -12,7 +12,7 @@ export class ShapeStateAnimator extends LMent implements UpdateHandler
     stateName:string;
     frameRate:number;
     loop:boolean;
-    animFrames:[{shapeName:string,frameSpan:number}];
+    animFrames:{shapeName:string,frameSpan:number}[];
 
     //Element Local Variables
     private shapePointers: ShapePointer [] = [];
@@ -24,7 +24,7 @@ export class ShapeStateAnimator extends LMent implements UpdateHandler
     {
         super(body, id,params);
         this.stateName = params.stateName === undefined?"default":params.stateName;
-        this.animFrames = params.animFrames === undefined?[{shapeName:this.body.body.getShapes()[0].name,frameSpan:1}]:params.animFrames;
+        this.animFrames = this.convertArray(params.animFrames) || [];
         this.frameRate = params.frameRate === undefined?30:params.frameRate;
         this.loop = params.loop === undefined?true:params.loop;
     }

@@ -6,7 +6,7 @@ import { Helpers } from "engine/Helpers";
 
 export class BallControls extends AvatarBase implements DragGestureHandler {
     maxSpeed: number;
-    acceleration: number;
+    acceleration:number;
     deceleration: number;
     turningSpeed: number;
 
@@ -19,19 +19,34 @@ export class BallControls extends AvatarBase implements DragGestureHandler {
     constructor(body: BodyHandle, id: number, params: Partial<BallControls> = {}) {
         super(body, id, params);
         this.maxSpeed = params.maxSpeed === undefined ? 5 : params.maxSpeed;
-        this.acceleration = params.acceleration === undefined ? this.maxSpeed * 5 : params.acceleration;
-        this.deceleration = params.deceleration === undefined ? this.maxSpeed * 5 : params.deceleration;
-        this.turningSpeed = params.turningSpeed === undefined ? 9 : params.turningSpeed;
+        this.deceleration = this.acc_dec_init("deceleration",params.deceleration);
+        this.acceleration = this.acc_dec_init("acceleration",params.acceleration);
+        this.turningSpeed = params.turningSpeed===undefined?1:params.turningSpeed;
+    }
+
+    acc_dec_init(name:string,param:number|undefined):number
+    {
+        if(param === undefined)
+            return 1;
+        if(param <0)
+        {
+            console.log(name+" should be between 0 and 1, it will automatically set to 0.");
+            return 0;
+        }
+        if(param > 1)
+        {
+            console.log(name+" should be between 0 and 1, it will automatically set to 1.");
+            return 1;
+        }
+        return param;
     }
 
     override onInit(): void {
-        super.onInit();
+        super.onInit();      
         GameplayScene.instance.dispatcher.addListener("drag", this);
     }
 
     initBallGuide() {
-        //this.ballGuide = GameplayScene.instance.bodies.find(b => {b.body.name === "CameraGuide"});
-
         for (let i of GameplayScene.instance.bodies)
             if (i.body.name === "CameraGuide")
                 this.ballGuide = i;
@@ -69,21 +84,40 @@ export class BallControls extends AvatarBase implements DragGestureHandler {
     }
 
     Roll() {
-        if (this.ballGuide === undefined) return;
+
         if (this.dragDy != 0) {
-            let forceVal = this.acceleration * -this.dragDy;
-            let moveTorque = Helpers.rightVector.applyQuaternion(this.ballGuide.body.getRotation()).multiplyScalar(forceVal);
-            this.body.body.setAngularVelocity(moveTorque);
-        }
+            this.accelerate();
+        }else this.deccelerate();
+
         this.dragDx = 0;
         this.dragDy = 0;
     }
 
-    handlePlayerOrientation() {
-        let angle = Math.atan2(-this.dragDx, -this.dragDy);
-        let quat = Helpers.NewQuaternion();
-        quat.setFromAxisAngle(Helpers.upVector, angle);
-        this.body.body.setRotation(quat);
+    deccelerate()
+    {
+        if (this.ballGuide === undefined) return;
+        if(Math.abs((this.body.body.getVelocity().clone().multiply(Helpers.upVector)).length()) > 1) return;
+        let angularVelo = this.body.body.getAngularVelocity();
+        angularVelo.lerp(Helpers.zeroVector,this.deceleration);
+        this.body.body.setAngularVelocity(angularVelo);
+        
+        this.body.body.applyTorque((Helpers.forwardVector.applyQuaternion(this.ballGuide.body.getRotation())).multiplyScalar(angularVelo.length()*this.dragDx));
+    }
+
+    accelerate()
+    {
+        if (this.ballGuide === undefined) return;
+        let dragDistance = Math.sqrt(Math.pow(this.dragDx,2)+Math.pow(this.dragDy,2));
+
+        let torqueFwd = Helpers.rightVector.applyQuaternion(this.ballGuide.body.getRotation()).multiplyScalar(-Math.sign(this.dragDy)*dragDistance);
+        let dxModified = this.dragDy<0?this.dragDx:-this.dragDx;
+        let torqueTurn = Helpers.forwardVector.applyQuaternion(this.ballGuide.body.getRotation()).multiplyScalar(dxModified*this.turningSpeed);
+        
+        let angularVelo = this.body.body.getAngularVelocity();
+        let targetVelo = (torqueFwd.add(torqueTurn)).normalize().multiplyScalar(this.maxSpeed);
+        angularVelo.lerp(targetVelo,this.acceleration);
+        
+        this.body.body.setAngularVelocity(angularVelo);
     }
 
     onDrag(dx: number, dy: number): void {

@@ -42,7 +42,7 @@ export class GuideBody extends LMent implements UpdateHandler
         this.move = params.move === undefined?true:params.move;
 
         this.rotationOffset = params.rotationOffset === undefined?{x:0,y:0,z:0}:params.rotationOffset;
-        this.rotationOffsetQuaternion = Helpers.NewQuatFromEuler(this.rotationOffset.x,this.rotationOffset.y,this.rotationOffset.z);
+        this.rotationOffsetQuaternion = Helpers.NewQuatFromEuler(Helpers.Rad(this.rotationOffset.x),Helpers.Rad(this.rotationOffset.y),Helpers.Rad(this.rotationOffset.z));
         this.rotate = params.rotate === undefined?true:params.rotate;
 
         this.offsetSpace = params.offsetSpace === undefined?"local":params.offsetSpace;

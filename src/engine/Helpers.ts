@@ -33,7 +33,7 @@ export class Helpers{
 
     static NewQuatFromEuler(x:number,y:number,z:number)
     {
-        return js_new(global.THREE.Quaternion).setFromEuler(js_new(global.THREE.Euler,this.Rad(x),this.Rad(y),this.Rad(z)));
+        return js_new(global.THREE.Quaternion).setFromEuler(js_new(global.THREE.Euler,x,y,z));
     }
 
     static Rad(degreeAngle:number):number
@@ -43,11 +43,42 @@ export class Helpers{
 
     static Deg(radianAngle:number):number
     {
-        return radianAngle*180/Math.PI;
+        return this.RoundToDecimal(radianAngle*180/Math.PI,2);
+    }
+
+    static RoundToDecimal(num:number,decimal:number)
+    {
+        return parseFloat(num.toFixed(decimal));
     }
 
     static GetYaw(q:Quaternion)
     {
-        return Math.atan2(2 * (q.w * q.y + q.x * q.z), q.x * q.x + q.w * q.w - q.y * q.y - q.z * q.z);
+        let siny_cosp = 2 * (q.w * q.y + q.z * q.x)
+        let cosy_cosp = 1 - 2 * (q.x * q.x + q.y * q.y)
+        return Math.atan2(siny_cosp, cosy_cosp);
+
+        //return Math.atan2(2 * (q.w * q.y + q.x * q.z), q.x * q.x + q.w * q.w - q.y * q.y - q.z * q.z);
     }
+
+    static GetRoll(q:Quaternion)
+    {
+
+        const sinr_cosp = 2 * (q.w * q.z + q.x * q.y);
+        const cosr_cosp = 1 - 2 * (q.y * q.y + q.z * q.z);
+        const roll = Math.atan2(sinr_cosp, cosr_cosp);
+        return roll;
+    }
+
+    static GetPitch(q:Quaternion)
+    {
+        let sinp = 2 * (q.w * q.x - q.z * q.y);
+        let pitch: number;
+        if (Math.abs(sinp) >= 1) {
+            pitch = Math.PI / 2 * Math.sign(sinp); // use 90 degrees if out of range
+        } else {
+            pitch = Math.asin(sinp);
+        }
+        return pitch;
+    }
+    
 }
