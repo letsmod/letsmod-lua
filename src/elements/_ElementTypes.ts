@@ -11,3 +11,4 @@ export { ColorFlicker } from "./ColorFlicker";
 export { LockRotationAxis } from "./LockRotationAxis";
 export { ContactForce } from "./ContactForce";
 export { ContactKnockback } from "./ContactKnockback";
+export { EnableElementOnCollision } from "./EnableElementOnCollision";
