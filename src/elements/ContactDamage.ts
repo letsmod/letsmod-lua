@@ -4,7 +4,7 @@ import { GameplayScene } from "engine/GameplayScene";
 import { HitPoints, DamageType } from "./HitPoints";
 import { CollisionHandler, CollisionInfo } from "engine/MessageHandlers";
 import { Vector3 } from "three";
-import { global, js_new } from "../js";
+import { global, js_new } from "js";
 
 export class ContactDamage extends LMent implements CollisionHandler {
     damageValue: number;
