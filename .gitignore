@@ -41,3 +41,6 @@ luac.out
 
 # node modules
 node_modules
+
+# derived files
+build

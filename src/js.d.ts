@@ -13,5 +13,6 @@ export declare const global : {
     Matrix4: THREE.Matrix4,
     Color: THREE.Color,
     Object3D: THREE.Object3D
+    Euler: THREE.Euler
   }
 };
