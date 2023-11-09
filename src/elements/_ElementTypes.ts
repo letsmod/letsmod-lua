@@ -6,3 +6,8 @@ export { CreatePrefabsOnDestroyed } from "./CreatePrefabsOnDestroyed";
 export { ExamplePlayer } from "./ExamplePlayer";
 export { TriggerOnCollision } from "./TriggerOnCollision";
 export { AutomaticSlidingDoor } from "./AutomaticSlidingDoor";
+export { VisibilityFlicker } from "./VisibilityFlicker";
+export { ColorFlicker } from "./ColorFlicker";
+export { LockRotationAxis } from "./LockRotationAxis";
+export { ContactForce } from "./ContactForce";
+export { ContactKnockback } from "./ContactKnockback";
