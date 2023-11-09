@@ -1,0 +1,60 @@
+name: Deploy to Production
+
+on:
+  # Trigger only for main branch
+  push:
+    branches:
+      - main
+  # Also allow this pipeline to be triggered manually
+  workflow_dispatch:
+
+jobs:
+  deploy-prod:
+    environment: Production
+    runs-on: ubuntu-latest
+    concurrency:
+      group: deploy-prod
+      cancel-in-progress: false
+    permissions:
+      id-token: write # This is required for requesting the JWT
+      contents: read # This is required for actions/checkout
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+
+      - name: Cache node_modules
+        id: node_modules
+        uses: actions/cache@v3
+        env:
+          cache-name: node_modules
+        with:
+          path: node_modules
+          key: node_modules-${{ hashFiles('package-lock.json') }}
+
+      - name: Install packages
+        if: steps.node_modules.outputs.cache-hit != 'true'
+        run: npm ci
+
+      - name: Build Lua files
+        run: ./build.sh
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: us-west-2
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          role-session-name: letsmod-lua-prod-${{ github.run_id }}
+
+      - name: Upload files to S3 bucket
+        run: |
+          aws s3 sync \
+            ./build \
+            s3://letsmod-static-dev/lua/prod \
+            --exact-timestamps \
+            --delete \
+            --no-progress \
+            --region us-west-2
