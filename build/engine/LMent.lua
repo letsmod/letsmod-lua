@@ -19,14 +19,4 @@ function LMent.prototype.____constructor(self, body, id, params)
     self.started = false
     self.id = id
 end
-function LMent.prototype.convertArray(self, arr)
-    if arr == nil then
-        return nil
-    end
-    local result = {}
-    for key in pairs(arr) do
-        result[#result + 1] = arr[key]
-    end
-    return result
-end
 return ____exports
