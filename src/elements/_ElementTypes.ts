@@ -17,3 +17,4 @@ export {PlatformerControls} from "./PlatformerControls";
 export {CameraTarget} from "./CameraTarget";
 export {BallControls} from "./BallControls";
 export {DragTurner} from "./DragTurner";
+export {WingSuitControls} from "./WingSuitControls";
