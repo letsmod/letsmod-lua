@@ -1,13 +1,13 @@
-import { Quaternion, Vector3} from "three";
+import { Quaternion, Vector3 } from "three";
 import { BodyHandle } from "../engine/BodyHandle";
 import { GameplayScene } from "../engine/GameplayScene";
 import { LMent } from "../engine/LMent";
 import { UpdateHandler } from "../engine/MessageHandlers";
 import { global, js_new } from "js";
+import { Helpers } from "engine/Helpers";
 
 
-export class SwingMotion extends LMent implements UpdateHandler
-{
+export class SwingMotion extends LMent implements UpdateHandler {
 
 	rotationAxis: Vector3;
 	amplitude: number;
@@ -34,10 +34,8 @@ export class SwingMotion extends LMent implements UpdateHandler
 	}
 
 	runSwing() {
-		let quat = js_new(global.THREE.Quaternion);
-		let rotAxis = js_new(global.THREE.Vector3, this.rotationAxis.x, this.rotationAxis.y, this.rotationAxis.z);
+		let rotAxis = Helpers.NewVector3(this.rotationAxis.x, this.rotationAxis.y, this.rotationAxis.z);
 		let angle = (this.amplitude * Math.sin(2 * Math.PI * this.frequency * GameplayScene.instance.memory.timeSinceStart + this.phase) * (Math.PI / 180));
-		quat.setFromAxisAngle(rotAxis, angle);
-		this.body.body.setRotation(quat);
+		this.body.body.setRotation(Helpers.NewQuatFromEuler(rotAxis.x * angle, rotAxis.y * angle, rotAxis.z * angle));
 	}
 }

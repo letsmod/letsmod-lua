@@ -9,7 +9,8 @@ type waypoints = {
     offset: Vector3,
     speed: number,
     delay: number,
-    interpolationFunction: string
+    interpolationFunction: string,
+    lerpBase?: number
 };
 
 export class Waypoint extends LMent implements UpdateHandler
@@ -67,7 +68,7 @@ export class Waypoint extends LMent implements UpdateHandler
 
         this.body.body.setPosition(this.body.body.getPosition().clone().add(movement));
 
-        if (this.body.body.getPosition().clone().add(movement).distanceTo(target.offset) < 0.01) {
+        if (this.body.body.getPosition().clone().distanceTo(target.offset) < target.speed / 40 ) {
             this.body.body.setPosition(target.offset);
             this.index += 1;
 
@@ -87,10 +88,11 @@ export class Waypoint extends LMent implements UpdateHandler
     sineMovement(target: waypoints): void {
         let currentDistance = this.body.body.getPosition().distanceTo(target.offset);
         let distanceFactor = 1 - currentDistance / this.totalDistanceToNextPoint;
-        let sineEaseInOut =(1 - Math.cos(Math.PI * distanceFactor));
-        this.body.body.setPosition(this.body.body.getPosition().clone().lerp(target.offset, 0.003 + sineEaseInOut * target.speed / 20));
+        let sineEaseInOut =(1 - Math.cos(Math.PI * distanceFactor/2));
+        const lerpBase = target.lerpBase ?? 0.008;
+        this.body.body.setPosition(this.body.body.getPosition().clone().lerp(target.offset, lerpBase + sineEaseInOut * target.speed / 20));
 
-        if (this.body.body.getPosition().distanceTo(target.offset) < target.speed / 20) {
+        if (this.body.body.getPosition().distanceTo(target.offset) < target.speed / 40) {
             this.body.body.setPosition(target.offset);
             this.index += 1;
 
