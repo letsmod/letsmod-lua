@@ -2,7 +2,7 @@ import { Vector3 } from "three";
 import { BodyHandle } from "../engine/BodyHandle";
 import { GameplayScene } from "../engine/GameplayScene";
 import { LMent } from "../engine/LMent";
-import { UpdateHandler } from "../engine/MessageHandlers";
+import { PhysicsSubstepHandler } from "../engine/MessageHandlers";
 import { global, js_new } from "js";
 
 type waypoints = {
@@ -13,7 +13,7 @@ type waypoints = {
     lerpBase?: number
 };
 
-export class Waypoint extends LMent implements UpdateHandler
+export class Waypoint extends LMent implements PhysicsSubstepHandler
 {
     points: waypoints[];
     totalDistanceToNextPoint: number;
@@ -32,7 +32,7 @@ export class Waypoint extends LMent implements UpdateHandler
     }
 
     onInit(): void {
-        GameplayScene.instance.dispatcher.addListener("update", this);
+        GameplayScene.instance.dispatcher.addListener("physicsSubstep", this);
     }
 
     onStart(): void {
@@ -47,7 +47,7 @@ export class Waypoint extends LMent implements UpdateHandler
         this.totalDistanceToNextPoint = this.body.body.getPosition().distanceTo(this.points[0].offset);
     }
 
-    onUpdate(): void {
+    onPhysicsSubstep(substepDt: number ): void {
         this.now = GameplayScene.instance.memory.timeSinceStart;
         if (this.points[this.index] != undefined) {
             if (this.now - this.delayPlusTime >= this.points[this.index].delay) {
