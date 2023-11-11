@@ -34,7 +34,7 @@ export abstract class LMent
   {
     this.body = body;
     this.body.elements.push(this);
-    this.enabled = params.enabled === undefined? true : params.enabled;
+    this._enabled = params.enabled === undefined? true : params.enabled;
     this.initialized = false;
     this.started = false;
     this.id = id;

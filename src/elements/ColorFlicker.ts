@@ -8,6 +8,7 @@ import { Color } from "three";
 
 export class ColorFlicker extends LMent implements UpdateHandler
 {
+    initiallyEnabled: boolean;
     frequency: number; 
     cooldown: number;
     color: Color;
@@ -19,6 +20,7 @@ export class ColorFlicker extends LMent implements UpdateHandler
     constructor(body: BodyHandle, id: number, params: Partial<ColorFlicker> = {})
     {
         super(body, id, params);
+        this.initiallyEnabled = params.initiallyEnabled === undefined? false : params.initiallyEnabled;
         this.frequency = params.frequency === undefined? 0.25 : params.frequency;
         this.cooldown = 0;
         this.color = params.color === undefined? js_new(global.THREE.Color,232, 5, 5): params.color;
@@ -34,9 +36,14 @@ export class ColorFlicker extends LMent implements UpdateHandler
         
     }
     onStart(): void {
+        this.enabled = this.initiallyEnabled;
         this.endTime = GameplayScene.instance.memory.timeSinceStart + this.duration;
     }
 
+    onEnable(): void {
+        this.endTime = GameplayScene.instance.memory.timeSinceStart + this.duration;
+    }
+    
     onUpdate(): void {
         const now = GameplayScene.instance.memory.timeSinceStart;
         let originalColor = js_new(global.THREE.Color, this.bodyColor.r, this.bodyColor.g, this.bodyColor.b);
@@ -44,7 +51,7 @@ export class ColorFlicker extends LMent implements UpdateHandler
 
         if (now > this.endTime) {
             this.body.body.getShapes()[0].setColor(originalColor)
-            return;
+            this.enabled = false;
         }
 
         if(this.cooldown === 0 || (now - this.cooldown >= this.frequency) && !this.isFlickerColorActive){

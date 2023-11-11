@@ -25,26 +25,25 @@ export class VisibilityFlicker extends LMent implements UpdateHandler
     }
     onStart(): void {
         this.enabled = this.initiallyEnabled;
-        this.timer = this.duration;
+        this.endTime = GameplayScene.instance.memory.timeSinceStart + this.duration;
     }
-    private timer = 0;
-    private freqTimer = 0;
-    private isVisible = false;
-    onUpdate(): void {
-        let deltaTime = 1/GameplayScene.instance.memory.frameRate;
-        this.timer -= deltaTime;
-        this.freqTimer -= deltaTime;
 
-        if (this.timer <= 0) {
-            this.timer = this.duration;
-            this.freqTimer = this.frequency;
+    onEnable(): void {
+        this.endTime = GameplayScene.instance.memory.timeSinceStart + this.duration;
+    }
+
+    onUpdate(): void {
+        const now = GameplayScene.instance.memory.timeSinceStart;
+
+        if (now > this.endTime) {
             this.body.body.setVisible(true);
             this.enabled = false;
-        } else if (this.freqTimer <= 0) {
-
-            this.freqTimer = this.frequency;
-            this.isVisible = !this.isVisible;
-            this.body.body.setVisible(this.isVisible);
         }
-    }
+
+        if(this.cooldown === 0 || now - this.cooldown >= this.frequency){
+            this.body.body.setVisible(!this.body.body.getVisible());
+            this.cooldown = now;
+        }
+    }  
+    
 }
