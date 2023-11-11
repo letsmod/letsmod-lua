@@ -12,6 +12,11 @@ export interface UpdateHandler extends GenericHandler
   onUpdate(dt? : number) : void;
 }
 
+export interface PhysicsSubstepHandler extends GenericHandler
+{
+  onPhysicsSubstep(substepDt? : number) : void;
+}
+
 export interface CollisionInfo
 {
   getOtherObjectId() : number;
@@ -103,6 +108,7 @@ export interface TriggerHandler extends GenericHandler
 
 export type HandlerTypeMap = {
   update: UpdateHandler,
+  physicsSubstep: PhysicsSubstepHandler,
   collision: CollisionHandler,
   button: ButtonHandler,
   drag: DragGestureHandler,
@@ -120,6 +126,7 @@ export type HandlerKey = keyof HandlerTypeMap;
 
 export const HandlerTypes : HandlerKey[] = [
   "update",
+  "physicsSubstep",
   "collision",
   "button",
   "drag",
