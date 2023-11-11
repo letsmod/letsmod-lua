@@ -35,6 +35,12 @@ export class Waypoint extends LMent implements UpdateHandler
     }
 
     onStart(): void {
+        for (let i = 0; i < this.points.length; i++) {
+            let offset = js_new(global.THREE.Vector3,this.points[i].offset.x,this.points[i].offset.y,this.points[i].offset.z);
+            offset.applyQuaternion(this.body.body.getRotation()); 
+            this.points[i].offset = js_new(global.THREE.Vector3,
+            this.body.body.getPosition().x + offset.x,this.body.body.getPosition().y + offset.y,this.body.body.getPosition().z + offset.z);
+        }
         let InitWayPoint: waypoints = { offset: this.body.body.getPosition().clone(), speed: this.points[0].speed, delay: this.points[0].delay, interpolationFunction: this.points[0].interpolationFunction };
         this.points.push(InitWayPoint);
         this.totalDistanceToNextPoint = this.body.body.getPosition().distanceTo(this.points[0].offset);
@@ -61,7 +67,7 @@ export class Waypoint extends LMent implements UpdateHandler
 
         this.body.body.setPosition(this.body.body.getPosition().clone().add(movement));
 
-        if (this.body.body.getPosition().clone().add(movement).distanceTo(target.offset) < target.speed / 20) {
+        if (this.body.body.getPosition().clone().add(movement).distanceTo(target.offset) < 0.01) {
             this.body.body.setPosition(target.offset);
             this.index += 1;
 
