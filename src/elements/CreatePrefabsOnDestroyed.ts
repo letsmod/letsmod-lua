@@ -12,7 +12,7 @@ export class CreatePrefabsOnDestroyed extends LMent implements ActorDestructionH
   {
     super(body, id, params);
     this.destroyed = false;
-    this.prefabNames = params.prefabNames === undefined? [] : params.prefabNames;
+    this.prefabNames = this.convertArray(params.prefabNames) || [];
   }
 
   onInit(): void {
