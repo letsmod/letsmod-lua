@@ -3,7 +3,6 @@ export { ContactDamage } from "./ContactDamage";
 export { Fragile } from "./Fragile";
 export { DestroyOnZeroHP } from "./DestroyOnZeroHP";
 export { CreatePrefabsOnDestroyed } from "./CreatePrefabsOnDestroyed";
-export { Test } from "./Test";
 export { SwingMotion } from "./SwingMotion";
 export { RadialForce } from "./RadialForce";
 export { RadialDamage } from "./RadialDamage";
