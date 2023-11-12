@@ -69,8 +69,7 @@ export class RotateMotion extends LMent implements UpdateHandler
     runRotation()
     {
       let quat = Helpers.NewQuaternion();
-      let timeElapsed = GameplayScene.instance.memory.timeSinceStart;
-      quat.setFromAxisAngle(this.rotateAxis,this.speed*timeElapsed);
-      this.body.body.setRotation(quat);
+      quat.setFromAxisAngle(this.rotateAxis,this.speed*Helpers.deltaTime);
+      this.body.body.applyRotation(quat);
     }
 }
