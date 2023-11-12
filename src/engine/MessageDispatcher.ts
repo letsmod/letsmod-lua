@@ -177,6 +177,18 @@ export class MessageDispatcher
     }
   }
 
+  // PhysicSubstepHandler
+  onPhysicsSubstep(dt: number)
+  {
+    // iterate over copy of listeners in case onPhysicsSubstep adds/removes listeners
+    for (let listener of this.listeners["physicsSubstep"].slice())
+    {
+      if (listener.enabled) {
+        listener.onPhysicsSubstep(dt);
+      }
+    }
+  }
+
   // CollisionHandler
 
   onCollision (infoFactory: CollisionInfoFactory)

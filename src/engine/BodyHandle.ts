@@ -66,7 +66,7 @@ export interface BodyPointer
 
   // internal use; use gameplayScene.destroyBody / cloneBody instead
   destroyBody() : void;
-  cloneBody() : BodyPointer;
+  cloneBody() : BodyHandle;
 }
 
 // lua object
