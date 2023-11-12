@@ -38,7 +38,7 @@ export class ShapeStateController extends LMent
 
     playState(name:string)
     {
-      if(name == this.activeState.stateName)
+      if(name == this.activeState.stateName && this.activeState.loop)
         return;
 
       let stateFound = false;

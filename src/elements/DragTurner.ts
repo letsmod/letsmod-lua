@@ -37,7 +37,7 @@ export class DragTurner extends LMent implements UpdateHandler, DragGestureHandl
 
     turn(value:number)
     {
-        this.body.body.applyRotation(Helpers.NewQuatFromEuler(0,Helpers.Rad(value),0));
+        this.body.body.setRotation(Helpers.NewQuatFromEuler(0,Helpers.Rad(value),0).multiply(this.body.body.getRotation()));
 
     }
 

@@ -47,8 +47,8 @@ export class GuideBody extends LMent implements UpdateHandler
 
         this.offsetSpace = params.offsetSpace === undefined?"local":params.offsetSpace;
 
-        this.followSpeed = params.followSpeed===undefined?1:params.followSpeed;
-        this.rotationSpeed = params.rotationSpeed===undefined?1:params.rotationSpeed;
+        this.followSpeed = params.followSpeed===undefined?GameplayScene.instance.memory.frameRate:params.followSpeed;
+        this.rotationSpeed = params.rotationSpeed===undefined?GameplayScene.instance.memory.frameRate:params.rotationSpeed;
     }
 
     onInit(): void {
