@@ -18,7 +18,7 @@ export class RotateMotion extends LMent implements UpdateHandler
     constructor(body: BodyHandle, id: number, params: Partial<RotateMotion> = {})
     {
       super(body, id,params);
-      this.speed = params.speed === undefined?10:params.speed;
+      this.speed = params.speed === undefined?5:params.speed;
       this.axis = params.axis === undefined?"z":params.axis;
       this.radius = params.radius === undefined?0:params.radius;
 
@@ -69,8 +69,7 @@ export class RotateMotion extends LMent implements UpdateHandler
     runRotation()
     {
       let quat = Helpers.NewQuaternion();
-      let timeElapsed = GameplayScene.instance.memory.timeSinceStart;
-      quat.setFromAxisAngle(this.rotateAxis,this.speed*timeElapsed);
-      this.body.body.setRotation(quat);
+      quat.setFromAxisAngle(this.rotateAxis,this.speed*Helpers.deltaTime);
+      this.body.body.applyRotation(quat);
     }
 }
