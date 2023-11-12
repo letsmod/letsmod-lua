@@ -8,9 +8,9 @@ import { Helpers } from "engine/Helpers";
 import { GuideBody } from "./GuideBody";
 
 export class WingSuitControls extends AvatarBase implements ButtonHandler, DragGestureHandler {
-  walkSpeed: number; 
-  walkAcc: number; 
-  walkDec: number; 
+  walkSpeed: number;
+  walkAcc: number;
+  walkDec: number;
   flapForce: number;
   glideSpeed: number;
   leanSpeed: number;
@@ -34,10 +34,10 @@ export class WingSuitControls extends AvatarBase implements ButtonHandler, DragG
     this.glideSpeed = params.glideSpeed === undefined ? 9 : params.glideSpeed;
     this.walkAcc = params.walkAcc === undefined ? this.walkSpeed * 5 : params.walkAcc;
     this.walkDec = params.walkDec === undefined ? this.walkSpeed * 5 : params.walkDec;
-    this.flapForce = params.flapForce === undefined ? 12 : params.flapForce;
-    this.maxFlaps = params.maxFlaps === undefined ? 60 : params.maxFlaps;
+    this.flapForce = params.flapForce === undefined ? 15 : params.flapForce;
+    this.maxFlaps = params.maxFlaps === undefined ? 6 : params.maxFlaps;
     this.glideGravity = params.glideGravity === undefined ? -2 : params.glideGravity; //-2.5
-    this.leanSpeed = params.leanSpeed === undefined ? 50 : params.leanSpeed;
+    this.leanSpeed = params.leanSpeed === undefined ? 65 : params.leanSpeed;
     this.maxLean = params.maxLean === undefined ? 60 : params.maxLean;
     this.flapFwdForceRaio = params.flapFwdForceRaio === undefined ? 0.4 : params.flapFwdForceRaio;
   }
@@ -86,10 +86,10 @@ export class WingSuitControls extends AvatarBase implements ButtonHandler, DragG
     this.move();
     this.ascendingCheck();
 
-    let leanRatio = Helpers.Deg(Helpers.GetPitch(this.body.body.getRotation()))/this.maxLean;
-    let velocityLengthRatio = this.body.body.getVelocity().length()/this.glideSpeed;
-    if(this.camGuide !== undefined)
-      this.camGuide.updateOffsetVector(0,3*leanRatio,-velocityLengthRatio,true);
+    let leanRatio = Helpers.Deg(Helpers.GetPitch(this.body.body.getRotation())) / this.maxLean;
+    let velocityLengthRatio = this.body.body.getVelocity().length() / this.glideSpeed;
+    if (this.camGuide !== undefined)
+      this.camGuide.updateOffsetVector(0, 3 * leanRatio, -velocityLengthRatio);
 
     this.dragDy = 0;
     this.dragDx = 0;
@@ -106,9 +106,9 @@ export class WingSuitControls extends AvatarBase implements ButtonHandler, DragG
     if (this.isAscending) return;
     this.leanControl();
 
-    let leanRatio = Helpers.Deg(Helpers.GetPitch(this.body.body.getRotation()))/this.maxLean;
+    let leanRatio = Helpers.Deg(Helpers.GetPitch(this.body.body.getRotation())) / this.maxLean;
     let fallVelo = Helpers.upVector.multiplyScalar(this.glideGravity);
-    let newVelo = Helpers.forwardVector.applyQuaternion(this.body.body.getRotation()).multiplyScalar(this.glideSpeed+this.glideSpeed*leanRatio).add(fallVelo);
+    let newVelo = Helpers.forwardVector.applyQuaternion(this.body.body.getRotation()).multiplyScalar(this.glideSpeed + this.glideSpeed * leanRatio).add(fallVelo);
     this.body.body.setVelocity(newVelo);
   }
 
@@ -162,8 +162,7 @@ export class WingSuitControls extends AvatarBase implements ButtonHandler, DragG
     this.body.body.setRotation(newQuat);
   }
 
-  resetLean()
-  {
+  resetLean() {
     let leanOffset = Helpers.NewQuaternion().setFromAxisAngle(Helpers.rightVector.applyQuaternion(this.body.body.getRotation()), -Helpers.GetPitch(this.body.body.getRotation()));
     let newQuat = (leanOffset.multiply(this.body.body.getRotation().clone()));
     this.body.body.setRotation(newQuat);
@@ -200,7 +199,7 @@ export class WingSuitControls extends AvatarBase implements ButtonHandler, DragG
 
   disableGlide() {
     this.body.body.setCustomGravity(Helpers.upVector.multiplyScalar(-9.81 * 2.5));
-    if(!this.isOnGround)
+    if (!this.isOnGround)
       this.playAnimation("Dive");
     this.freeFall = true;
     this.resetLean();
@@ -238,13 +237,13 @@ export class WingSuitControls extends AvatarBase implements ButtonHandler, DragG
   }
 
   onButtonHold(button: string): void {
-    if (button == "BButton") {
+    if (button == "BButton" && !this.isOnGround) {
       this.disableGlide();
     }
   }
 
   onButtonRelease(button: string): void {
-    if (button == "BButton") {
+    if (button == "BButton" && !this.isOnGround) {
       this.enableGlide();
     }
   }

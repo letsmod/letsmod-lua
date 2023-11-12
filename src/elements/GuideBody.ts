@@ -47,8 +47,8 @@ export class GuideBody extends LMent implements UpdateHandler
 
         this.offsetSpace = params.offsetSpace === undefined?"local":params.offsetSpace;
 
-        this.followSpeed = params.followSpeed===undefined?GameplayScene.instance.memory.frameRate:params.followSpeed;
-        this.rotationSpeed = params.rotationSpeed===undefined?GameplayScene.instance.memory.frameRate:params.rotationSpeed;
+        this.followSpeed = params.followSpeed===undefined?1:params.followSpeed;
+        this.rotationSpeed = params.rotationSpeed===undefined?1:params.rotationSpeed;
     }
 
     onInit(): void {
@@ -89,9 +89,9 @@ export class GuideBody extends LMent implements UpdateHandler
         },2*Helpers.deltaTime)
     }
 
-    updateOffsetVector(x:number,y:number,z:number,additive:boolean|false)
+    updateOffsetVector(x:number,y:number,z:number,additive:boolean = true)
     {
-        if(additive)
+        if(additive) ///---> Adding to the original offset OR set a completely new offset.
             this.offsetVector.set(this.offset.x+x,this.offset.y+y,this.offset.z+z);
         else this.offsetVector.set(x,y,z);
     }
