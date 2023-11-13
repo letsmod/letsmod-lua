@@ -26,6 +26,11 @@ export class Helpers{
         return js_new(global.THREE.Vector3,x,y,z);
     }
 
+    static ParamToVec3(param:{x:number,y:number,z:number})
+    {
+        return js_new(global.THREE.Vector3,param.x,param.y,param.z);
+    }
+
     static NewQuaternion()
     {
         return js_new(global.THREE.Quaternion);

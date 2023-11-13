@@ -9,10 +9,13 @@ export class DragTurner extends LMent implements UpdateHandler, DragGestureHandl
 {
     turnSpeed:number;
 
+    private activeTurnSpeed:number;
+
     constructor(body: BodyHandle, id: number, params: Partial<DragTurner> = {})
     {
         super(body, id,params);
         this.turnSpeed = params.turnSpeed === undefined?1:params.turnSpeed;
+        this.activeTurnSpeed = this.turnSpeed;
     }
 
     onInit(): void {
@@ -29,12 +32,22 @@ export class DragTurner extends LMent implements UpdateHandler, DragGestureHandl
     
     onDrag(dx: number, dy: number): void {
         
-        this.turn(-dx*this.turnSpeed);
+        this.turn(-dx*this.activeTurnSpeed);
     }
 
     turn(value:number)
     {
-        this.body.body.applyRotation(Helpers.NewQuatFromEuler(0,Helpers.Rad(value),0));
+        this.body.body.setRotation(Helpers.NewQuatFromEuler(0,Helpers.Rad(value),0).multiply(this.body.body.getRotation()));
 
+    }
+
+    invert()
+    {
+        this.activeTurnSpeed = -this.turnSpeed;
+    }
+
+    uninvert()
+    {
+        this.activeTurnSpeed = this.turnSpeed;
     }
 }
