@@ -3,6 +3,8 @@ import { GameplayScene } from "engine/GameplayScene";
 import { ButtonHandler, CollisionInfo, DragGestureHandler } from "engine/MessageHandlers";
 import { AvatarBase } from "./AvatarBase";
 import { Helpers } from "engine/Helpers";
+import { GuideBody } from "./GuideBody";
+import { DragTurner } from "./DragTurner";
 
 export class BallControls extends AvatarBase implements DragGestureHandler {
     maxSpeed: number;
@@ -15,7 +17,7 @@ export class BallControls extends AvatarBase implements DragGestureHandler {
     private isOnGround = false;
 
     private ballGuide: BodyHandle | undefined = undefined;
-
+    private ballDragTurner: DragTurner | undefined = undefined;
     constructor(body: BodyHandle, id: number, params: Partial<BallControls> = {}) {
         super(body, id, params);
         this.maxSpeed = params.maxSpeed === undefined ? 5 : params.maxSpeed;
@@ -53,8 +55,21 @@ export class BallControls extends AvatarBase implements DragGestureHandler {
 
         //TODO: Use the line below and delete the line above when Don applies his fix.
         //this.ballGuide = GameplayScene.instance.clonePrefab("RollerCamGuide");
+
         if (this.ballGuide === undefined)
+        {
             console.error("No ball guide found in prefabs.");
+            return;
+        }
+        
+        this.ballDragTurner =  this.ballGuide.getElement(DragTurner);
+        if (this.ballDragTurner === undefined)
+        {
+            console.error("Ball Guide has no 'DragTurner' element with guideName = Player.");
+            return;
+        }
+
+
     }
 
     override onCollision(info: CollisionInfo): void {
@@ -110,8 +125,13 @@ export class BallControls extends AvatarBase implements DragGestureHandler {
         let dragDistance = Math.sqrt(Math.pow(this.dragDx,2)+Math.pow(this.dragDy,2));
 
         let torqueFwd = Helpers.rightVector.applyQuaternion(this.ballGuide.body.getRotation()).multiplyScalar(-Math.sign(this.dragDy)*dragDistance);
-        let dxModified = this.dragDy<0?this.dragDx:-this.dragDx;
-        let torqueTurn = Helpers.forwardVector.applyQuaternion(this.ballGuide.body.getRotation()).multiplyScalar(dxModified*this.turningSpeed);
+        //let dxModified = this.dragDy<0?this.dragDx:-this.dragDx;
+        
+        if(this.dragDy>0)
+            this.ballDragTurner?.invert();
+        else this.ballDragTurner?.uninvert();
+
+        let torqueTurn = Helpers.forwardVector.applyQuaternion(this.ballGuide.body.getRotation()).multiplyScalar(this.dragDx*this.turningSpeed);
         
         let angularVelo = this.body.body.getAngularVelocity();
         let targetVelo = (torqueFwd.add(torqueTurn)).normalize().multiplyScalar(this.maxSpeed);
