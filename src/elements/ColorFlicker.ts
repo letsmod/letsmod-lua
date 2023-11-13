@@ -17,6 +17,8 @@ export class ColorFlicker extends LMent implements UpdateHandler
     bodyColor: Color;
     isFlickerColorActive: boolean;
     flickerDuration: number;
+    target: string | undefined;
+    private targetBody: BodyHandle | undefined;
     constructor(body: BodyHandle, id: number, params: Partial<ColorFlicker> = {})
     {
         super(body, id, params);
@@ -29,6 +31,7 @@ export class ColorFlicker extends LMent implements UpdateHandler
         this.bodyColor = this.body.body.getShapes()[0].getColor();
         this.flickerDuration = params.flickerDuration === undefined ? 0.3 : params.flickerDuration;
         this.isFlickerColorActive = false;
+        this.target = params.target === undefined? undefined : params.target;
     }
 
     onInit(): void {
@@ -38,6 +41,15 @@ export class ColorFlicker extends LMent implements UpdateHandler
     onStart(): void {
         this.enabled = this.initiallyEnabled;
         this.endTime = GameplayScene.instance.memory.timeSinceStart + this.duration;
+        if (this.target !== undefined) {
+            for (let i of this.body.bodyGroup){
+                if (i.body.name === this.target){
+                    this.targetBody = i;
+                }
+            }
+        }else{
+            this.targetBody = this.body;
+        }
     }
 
     onEnable(): void {
@@ -50,17 +62,23 @@ export class ColorFlicker extends LMent implements UpdateHandler
         let secondColor = js_new(global.THREE.Color, this.color.r, this.color.g, this.color.b);
 
         if (now > this.endTime) {
-            this.body.body.getShapes()[0].setColor(originalColor)
+            if (this.targetBody !== undefined){  
+                this.targetBody?.body.getShapes()[0].setColor(originalColor)
+            }
             this.enabled = false;
         }
 
         if(this.cooldown === 0 || (now - this.cooldown >= this.frequency) && !this.isFlickerColorActive){
-            this.body.body.getShapes()[0].setColor(secondColor);
+            if (this.targetBody !== undefined){
+                this.body.body.getShapes()[0].setColor(secondColor);
+            }
             this.isFlickerColorActive = true;
             this.cooldown = now;
         } 
         else if(this.isFlickerColorActive && now - this.cooldown >= this.flickerDuration){
-            this.body.body.getShapes()[0].setColor(originalColor);
+            if (this.targetBody !== undefined){
+                this.body.body.getShapes()[0].setColor(originalColor);
+            }
             this.isFlickerColorActive = false;
             this.cooldown = now;
         }

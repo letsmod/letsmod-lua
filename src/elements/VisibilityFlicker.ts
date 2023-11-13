@@ -10,6 +10,8 @@ export class VisibilityFlicker extends LMent implements UpdateHandler
     cooldown: number;
     duration: number;
     endTime: number;
+    target: string | undefined;
+    private targetBody: BodyHandle | undefined;
     constructor(body: BodyHandle, id: number, params: Partial<VisibilityFlicker> = {})
     {
         super(body, id, params);
@@ -18,6 +20,7 @@ export class VisibilityFlicker extends LMent implements UpdateHandler
         this.cooldown = 0;
         this.duration = params.duration === undefined? 2: params.duration;
         this.endTime = 0;
+        this.target = params.target === undefined? undefined : params.target;
     }
 
     onInit(): void {
@@ -26,7 +29,17 @@ export class VisibilityFlicker extends LMent implements UpdateHandler
     onStart(): void {
         this.enabled = this.initiallyEnabled;
         this.endTime = GameplayScene.instance.memory.timeSinceStart + this.duration;
+        if (this.target !== undefined) {
+            for (let i of this.body.bodyGroup){
+                if (i.body.name === this.target){
+                    this.targetBody = i;
+                }
+            }
+        }else{
+            this.targetBody = this.body;
+        }
     }
+    
 
     onEnable(): void {
         this.endTime = GameplayScene.instance.memory.timeSinceStart + this.duration;
@@ -41,7 +54,9 @@ export class VisibilityFlicker extends LMent implements UpdateHandler
         }
 
         if(this.cooldown === 0 || now - this.cooldown >= this.frequency){
-            this.body.body.setVisible(!this.body.body.getVisible());
+            if (this.targetBody !== undefined){
+                this.targetBody.body.setVisible(!this.body.body.getVisible());
+            }
             this.cooldown = now;
         }
     }  
