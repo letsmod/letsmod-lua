@@ -10,7 +10,7 @@ export class Collectible extends LMent implements UpdateHandler
     constructor(body: BodyHandle, id: number, params: Partial<Collectible> = {})
     {
       super(body, id,params);
-      this.collectDistance = params.collectDistance === undefined?0:params.collectDistance;
+      this.collectDistance = params.collectDistance === undefined?1:params.collectDistance;
 
     }
 

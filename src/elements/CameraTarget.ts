@@ -9,6 +9,7 @@ export class CameraTarget extends LMent implements UpdateHandler, DragGestureHan
 
     prefabName: string;
     dragSpeed: number;
+    sinkLevel: number;
     maxCamDrag: { x: number; y: number; z: number; };
     minCamDrag: { x: number; y: number; z: number; };
     resetDragOnRelease : boolean;
@@ -31,6 +32,7 @@ export class CameraTarget extends LMent implements UpdateHandler, DragGestureHan
         this.prefabName = params.prefabName === undefined ? "MainCamera" : params.prefabName;
         this.cameraIsMain = this.prefabName === "MainCamera";
         this.resetDragOnRelease = params.resetDragOnRelease === undefined?false:params.resetDragOnRelease;
+        this.sinkLevel = params.sinkLevel === undefined? 0 : params.sinkLevel;
     }
 
     onInit(): void {
@@ -50,7 +52,7 @@ export class CameraTarget extends LMent implements UpdateHandler, DragGestureHan
 
     onUpdate(): void {
         this.updateCameraDrag();
-        this.belowZeroCheck();
+        this.sinkCheck();
         this.dragDx = 0;
         this.dragDy = 0;
     }
@@ -96,11 +98,12 @@ export class CameraTarget extends LMent implements UpdateHandler, DragGestureHan
                 this.currentCamDrag.z = Helpers.NumLerp(this.currentCamDrag.z, this.minCamDrag.z, this.dragSpeed);
             else this.currentCamDrag.z = Helpers.NumLerp(this.currentCamDrag.z, 0, this.dragSpeed);
         }
-        this.cameraLead.updateOffsetVector(this.currentCamDrag.x, this.currentCamDrag.y, this.currentCamDrag.z, true);
+        if(this.currentCamDrag.length() !== 0)
+            this.cameraLead.updateOffsetVector(this.currentCamDrag.x, this.currentCamDrag.y, this.currentCamDrag.z);
     }
 
-    belowZeroCheck() {
-        if (this.body.body.getPosition().y < 1 && this.cameraLead !== undefined)
+    sinkCheck() {
+        if (this.body.body.getPosition().y < this.sinkLevel && this.cameraLead !== undefined)
             this.cameraLead.enabled = false;
     }
 }
