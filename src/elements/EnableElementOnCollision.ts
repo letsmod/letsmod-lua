@@ -31,7 +31,7 @@ export class EnableElementOnCollision extends LMent implements CollisionHandler
         const impulseSufficient = this.collisionMinImpulse === undefined || info.getImpulse().length() >= this.collisionMinImpulse;
         const deltaVSufficient = this.collisionMinDeltaV === undefined || info.getDeltaVOther().length() >= this.collisionMinDeltaV;
 
-        if (this.elementToEnable !== undefined && impulseSufficient && deltaVSufficient) {
+        if (this.elementToEnable !== undefined && impulseSufficient && deltaVSufficient || this.body.body.getPhysicsBodyType() === 2) {
             this.elementToEnable.enabled = true;
         }
     }
