@@ -32,3 +32,6 @@ export { ContactForce } from "./ContactForce";
 export { ContactKnockback } from "./ContactKnockback";
 export {AutoDestroy} from "./AutoDestroy";
 export {AutoHide} from "./AutoHide";
+export { PlatformerShooter } from "./PlatformerShooter";
+export { Tag } from "./Tag";
+export { Squishable } from "./Squishable";

@@ -34,7 +34,7 @@ export class WingSuitControls extends AvatarBase implements ButtonHandler, DragG
     this.glideSpeed = params.glideSpeed === undefined ? 9 : params.glideSpeed;
     this.walkAcc = params.walkAcc === undefined ? this.walkSpeed * 5 : params.walkAcc;
     this.walkDec = params.walkDec === undefined ? this.walkSpeed * 5 : params.walkDec;
-    this.flapForce = params.flapForce === undefined ? 15 : params.flapForce;
+    this.flapForce = params.flapForce === undefined ? 12 : params.flapForce;
     this.maxFlaps = params.maxFlaps === undefined ? 6 : params.maxFlaps;
     this.glideGravity = params.glideGravity === undefined ? -2 : params.glideGravity; //-2.5
     this.leanSpeed = params.leanSpeed === undefined ? 65 : params.leanSpeed;
