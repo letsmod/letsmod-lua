@@ -34,3 +34,4 @@ export { EnableElementOnCollision } from "./EnableElementOnCollision";
 export { EnableElementOnDamage } from "./EnableElementOnDamage";
 export {AutoDestroy} from "./AutoDestroy";
 export {AutoHide} from "./AutoHide";
+export {ProjectileSpawner} from "./ProjectileSpawner";
