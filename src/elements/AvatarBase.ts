@@ -3,13 +3,19 @@ import { GameplayMemory } from "engine/GameplayMemory";
 import { GameplayScene } from "engine/GameplayScene";
 import { Helpers } from "engine/Helpers";
 import { LMent } from "engine/LMent";
-import { CollisionHandler, CollisionInfo, HitPointChangeHandler, UpdateHandler } from "engine/MessageHandlers";
+import { ActorDestructionHandler, CollisionHandler, CollisionInfo, HitPointChangeHandler, UpdateHandler } from "engine/MessageHandlers";
 
-export class AvatarBase extends LMent implements UpdateHandler, HitPointChangeHandler, CollisionHandler
+export class AvatarBase extends LMent implements UpdateHandler, HitPointChangeHandler, CollisionHandler, ActorDestructionHandler
 {
   constructor(body: BodyHandle, id: number, params: Partial<AvatarBase> = {})
   {
     super(body, id, params);
+  }
+  onActorDestroyed(actor: BodyHandle): void {
+    this.lose();
+  }
+  hasSubtype?(subtype: string): boolean {
+    throw new Error("Method not implemented.");
   }
   
   onCollision(info: CollisionInfo): void {

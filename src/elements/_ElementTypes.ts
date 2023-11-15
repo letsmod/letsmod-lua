@@ -35,3 +35,6 @@ export { EnableElementOnDamage } from "./EnableElementOnDamage";
 export {AutoDestroy} from "./AutoDestroy";
 export {AutoHide} from "./AutoHide";
 export {ProjectileSpawner} from "./ProjectileSpawner";
+export { PlatformerShooter } from "./PlatformerShooter";
+export { Tag } from "./Tag";
+export { Squishable } from "./Squishable";

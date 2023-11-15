@@ -15,7 +15,9 @@ export class PlatformerControls extends AvatarBase implements ButtonHandler, Dra
   private dragDx = 0;
   private dragDy = 0;
   private isOnGround = false;
-  private anim: ShapeStateController | undefined;
+  private topAnim: ShapeStateController | undefined;
+  private bottomAnim: ShapeStateController | undefined;
+
   constructor(body: BodyHandle, id: number, params: Partial<PlatformerControls> = {}) {
     super(body, id, params);
     this.maxSpeed = params.maxSpeed === undefined ? 5 : params.maxSpeed;
@@ -31,6 +33,7 @@ export class PlatformerControls extends AvatarBase implements ButtonHandler, Dra
     GameplayScene.instance.dispatcher.addListener("drag", this);
     this.body.body.lockRotation(true, false, true);
   }
+
   override onCollision(info: CollisionInfo): void {
     super.onCollision(info);
 
@@ -42,10 +45,23 @@ export class PlatformerControls extends AvatarBase implements ButtonHandler, Dra
 
   override onStart(): void {
     super.onStart();
-    let x = this.body.getElement(ShapeStateController);
-    if (x !== undefined)
-      this.anim = x;
-    else console.error("No " + ShapeStateController.name + " is found on this body.");
+    let controllerLments = this.body.getAllElements(ShapeStateController);
+    let topAnimFound = false;
+    let bottomAnimFound = false;
+
+    for (let c of controllerLments)
+      if (c.name === "TopBody") {
+        topAnimFound = true;
+        this.topAnim = c;
+      } else if (c.name === "BottomBody") {
+        bottomAnimFound = true;
+        this.bottomAnim = c;
+      }
+
+    if (!topAnimFound)
+      console.error("No ShapeStateController of the name \"TopBody\" is found on body.");
+    if (!bottomAnimFound)
+      console.error("No ShapeStateController of the name \"BottomBody\" is found on body.");
   }
 
   override onUpdate(): void {
@@ -53,8 +69,10 @@ export class PlatformerControls extends AvatarBase implements ButtonHandler, Dra
 
     this.onGroundReset();
 
-    if (!this.isOnGround)
-      this.playAnimation("Jump");
+    if (!this.isOnGround) {
+      this.playTopAnimation("Jump");
+      this.playBottomAnimation("Jump");
+    }
 
     this.Walk();
   }
@@ -79,16 +97,20 @@ export class PlatformerControls extends AvatarBase implements ButtonHandler, Dra
 
     if (this.dragDx == 0 && this.dragDy == 0) {
       accel = this.deceleration * Helpers.deltaTime;
-      if (this.isOnGround)
-        this.playAnimation("Idle");
+      if (this.isOnGround) {
+        this.playTopAnimation("Idle");
+        this.playBottomAnimation("Idle");
+      }
     }
     else {
       accel = this.acceleration * Helpers.deltaTime;
       this.handlePlayerOrientation();
       //Don :: For some reason, it gets some angular velocity while walking, I wrote this line to prevent it, thoughts?
       this.body.body.setAngularVelocity(Helpers.zeroVector);
-      if (this.isOnGround)
-        this.playAnimation("Walk");
+      if (this.isOnGround) {
+        this.playTopAnimation("Walk");
+        this.playBottomAnimation("Walk");
+      }
 
     }
 
@@ -104,7 +126,7 @@ export class PlatformerControls extends AvatarBase implements ButtonHandler, Dra
     this.dragDy = 0;
   }
 
-  
+
 
   handlePlayerOrientation() {
     let angle = Math.atan2(-this.dragDx, -this.dragDy);
@@ -141,12 +163,18 @@ export class PlatformerControls extends AvatarBase implements ButtonHandler, Dra
   }
 
   hasSubtype(button: string): boolean {
-    return button == "AButton";
+    return button == "AButton" || button == "BButton";
   }
 
-  playAnimation(state: string) {
-    if (this.anim !== undefined)
-      this.anim.playState(state);
-    else console.error("No " + ShapeStateController.name + " is found on this body.");
+  playTopAnimation(state: string) {
+    if (this.topAnim !== undefined)
+      this.topAnim.playState(state);
+    else console.error("No TopBody ShapeStateAnimator is found on this body.");
+  }
+
+  playBottomAnimation(state: string) {
+    if (this.bottomAnim !== undefined)
+      this.bottomAnim.playState(state);
+    else console.error("No BottomBody ShapeStateAnimator is found on this body.");
   }
 }
