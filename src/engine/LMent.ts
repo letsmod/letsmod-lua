@@ -6,6 +6,7 @@ export abstract class LMent
   initialized: boolean;
   started: boolean;
   id: number;
+  name: string;
 
   private _enabled : boolean;
 
@@ -38,6 +39,7 @@ export abstract class LMent
     this.initialized = false;
     this.started = false;
     this.id = id;
+    this.name = params.name || "";
   }
 
   convertArray(arr : any)
