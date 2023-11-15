@@ -11,7 +11,6 @@ type waypoints = {
     speed: number,
     delay: number,
     interpolationFunction: string,
-    lerpBase?: number
 };
 
 export class Waypoint extends LMent implements PhysicsSubstepHandler {

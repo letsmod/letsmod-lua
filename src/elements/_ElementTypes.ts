@@ -33,3 +33,4 @@ export { ContactKnockback } from "./ContactKnockback";
 export {AutoDestroy} from "./AutoDestroy";
 export {AutoHide} from "./AutoHide";
 export {ScaleAnim} from "./ScaleAnim";
+export {AutoDisable} from "./AutoDisable";
