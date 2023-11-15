@@ -5,25 +5,30 @@ import { CollisionHandler, CollisionInfo } from "engine/MessageHandlers";
 
 
 export class EnableElementOnCollision extends LMent implements CollisionHandler {
-    elementName: string;
+    elementNames: string [] | undefined;
     collisionMinImpulse: number;
     collisionMinDeltaV: number;
-    elementToEnable: any;
+    elementToEnable: any [];
     constructor(body: BodyHandle, id: number, params: Partial<EnableElementOnCollision> = {}) {
         super(body, id, params);
-        this.elementName = params.elementName === undefined ? "" : params.elementName;
-        this.elementToEnable = undefined;
+        this.elementNames = this.convertArray(params.elementNames) || undefined;
+        this.elementToEnable = [];
         this.collisionMinDeltaV = params.collisionMinDeltaV === undefined ? 1 : params.collisionMinDeltaV;
         this.collisionMinImpulse = params.collisionMinImpulse === undefined ? 1 : params.collisionMinImpulse;
 
     }
     onInit(): void {
         GameplayScene.instance.dispatcher.addListener("collision", this);
-        this.elementToEnable = this.body.getElementByTypeName(this.elementName) as LMent;
-        if (this.elementToEnable !== undefined){
-            this.elementToEnable.enabled = false;
-        }
-        else{
+        if (this.elementNames !== undefined){
+            for (let i = 0; i < this.elementNames.length; i++){
+                    let element = this.body.getElementByTypeName(this.elementNames[i]);
+                if ( element !== undefined){
+                    this.elementToEnable.push(element as LMent);   
+                    element.enabled = false;
+                }
+            }
+            }
+            else{
             console.log("Element not found");
         }
     }
@@ -40,8 +45,12 @@ export class EnableElementOnCollision extends LMent implements CollisionHandler 
                 inBodyGroup = true;
         }
         if (!inBodyGroup) {
-            if (this.elementToEnable !== undefined && impulseSufficient && deltaVSufficient || this.body.body.getPhysicsBodyType() === 2) {
-                this.elementToEnable.enabled = true;
+            if (impulseSufficient && deltaVSufficient || this.body.body.getPhysicsBodyType() === 2) {
+                for (let i = 0; this.elementToEnable !== undefined && i < this.elementToEnable.length; i++) {
+                    if (this.elementToEnable[i] !== undefined) {
+                        this.elementToEnable[i].enabled = true;
+                    }
+                }
             }
         }
     }
