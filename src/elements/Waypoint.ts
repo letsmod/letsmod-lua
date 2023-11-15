@@ -58,7 +58,7 @@ export class Waypoint extends LMent implements PhysicsSubstepHandler {
         if (this.points[this.index] != undefined) {
             if (this.now - this.delayPlusTime >= this.points[this.index].delay) {
                 if (this.points[this.index].interpolationFunction === "linear") {
-                    this.linearMovement(this.points[this.index]);
+                    this.linearMovement(this.points[this.index], substepDt);
                 } else if (this.points[this.index].interpolationFunction === "sine") {
                     this.sineMovement(this.points[this.index], substepDt);
                 } else {
@@ -68,13 +68,13 @@ export class Waypoint extends LMent implements PhysicsSubstepHandler {
         }
     }
 
-    linearMovement(target: waypoints): void {
+    linearMovement(target: waypoints,dt:number): void {
         let direction = js_new(global.THREE.Vector3).subVectors(target.offset, this.body.body.getPosition()).normalize();
-        let movement = direction.clone().multiplyScalar(target.speed / 20);
+        let movement = direction.clone().multiplyScalar(target.speed * dt);
 
         this.body.body.setPosition(this.body.body.getPosition().clone().add(movement));
 
-        if (this.body.body.getPosition().clone().distanceTo(target.offset) < target.speed / 40) {
+        if (this.body.body.getPosition().clone().distanceTo(target.offset) < target.speed * dt) {
             this.body.body.setPosition(target.offset);
             this.index += 1;
 

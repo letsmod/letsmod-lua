@@ -7,23 +7,18 @@ export class AutoDisable extends LMent implements UpdateHandler {
     disableDelay: number;
     targets: string[] | undefined;
     elementName: string;
-    initiallyEnabled: boolean;
     private isDisabled: boolean;
 
     constructor(body: BodyHandle, id: number, params: Partial<AutoDisable> = {}) {
         super(body, id, params);
         this.disableDelay = params.disableDelay === undefined ? 0 : params.disableDelay;
         this.targets = this.convertArray(params.targets) || undefined;
-        this.initiallyEnabled = params.initiallyEnabled === undefined ? true : params.initiallyEnabled;
         this.isDisabled = false;
         this.elementName = params.elementName === undefined ? "" : params.elementName;
     }
 
     onInit(): void {
         GameplayScene.instance.dispatcher.addListener("update", this);
-        if (!this.initiallyEnabled) {
-            this.enabled = false;
-        }
     }
 
     onStart(): void {

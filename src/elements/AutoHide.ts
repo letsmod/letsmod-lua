@@ -6,21 +6,16 @@ import { UpdateHandler } from "engine/MessageHandlers";
 export class AutoHide extends LMent implements UpdateHandler {
     hideDelay: number;
     targets: string[] | undefined;
-    initiallyEnabled: boolean;
     private isHidden: boolean;
 
     constructor(body: BodyHandle, id: number, params: Partial<AutoHide> = {}) {
         super(body, id, params);
         this.hideDelay = params.hideDelay === undefined ? 0 : params.hideDelay;
         this.targets = this.convertArray(params.targets) || undefined;
-        this.initiallyEnabled = params.initiallyEnabled === undefined ? true : params.initiallyEnabled;
         this.isHidden = false;
     }
     onInit(): void {
         GameplayScene.instance.dispatcher.addListener("update", this);
-        if (!this.initiallyEnabled) {
-            this.enabled = false;
-        }
     }
 
     onStart(): void {
