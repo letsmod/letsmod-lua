@@ -6,14 +6,12 @@ import { UpdateHandler } from "engine/MessageHandlers";
 export class AutoHide extends LMent implements UpdateHandler {
     hideDelay: number;
     targets: string[] | undefined;
-    private targetBody: BodyHandle[];
     private isHidden: boolean;
 
     constructor(body: BodyHandle, id: number, params: Partial<AutoHide> = {}) {
         super(body, id, params);
         this.hideDelay = params.hideDelay === undefined ? 0 : params.hideDelay;
         this.targets = this.convertArray(params.targets) || undefined;
-        this.targetBody = [];
         this.isHidden = false;
     }
     onInit(): void {
@@ -32,11 +30,10 @@ export class AutoHide extends LMent implements UpdateHandler {
 
     doHide() {
         if (this.targets !== undefined) {
-            for (let i of this.body.bodyGroup)
-                if (this.targets.includes(i.body.name))
-                    i.body.setVisible(false);
-        } else {
+            for (let i = this.body.bodyGroup.length; i > 0; i--)
+                if (this.targets.includes(this.body.bodyGroup[i - 1].body.name))
+                    this.body.bodyGroup[i - 1].body.setVisible(false);
+        } else
             this.body.body.setVisible(false);
-        }
     }
 }

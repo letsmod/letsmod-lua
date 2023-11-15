@@ -35,3 +35,5 @@ export {AutoHide} from "./AutoHide";
 export { PlatformerShooter } from "./PlatformerShooter";
 export { Tag } from "./Tag";
 export { Squishable } from "./Squishable";
+export {ScaleAnim} from "./ScaleAnim";
+export {AutoDisable} from "./AutoDisable";
