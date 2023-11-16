@@ -3,7 +3,6 @@ import { BodyHandle } from "../engine/BodyHandle";
 import { GameplayScene } from "../engine/GameplayScene";
 import { LMent } from "../engine/LMent";
 import { PhysicsSubstepHandler } from "../engine/MessageHandlers";
-import { global, js_new } from "js";
 import { Helpers } from "engine/Helpers";
 
 type waypoints = {
@@ -38,13 +37,13 @@ export class Waypoint extends LMent implements PhysicsSubstepHandler {
 
     onStart(): void {
         for (let i = 0; i < this.points.length; i++) {
-            let offset = js_new(global.THREE.Vector3, this.points[i].offset.x, this.points[i].offset.y, this.points[i].offset.z);
+            let offset = Helpers.NewVector3(this.points[i].offset.x, this.points[i].offset.y, this.points[i].offset.z);
             offset.applyQuaternion(this.body.body.getRotation());
             if (i == 0) {
-                this.points[i].offset = js_new(global.THREE.Vector3,
+                this.points[i].offset = Helpers.NewVector3(
                     this.body.body.getPosition().x + offset.x, this.body.body.getPosition().y + offset.y, this.body.body.getPosition().z + offset.z);
             } else {
-                this.points[i].offset = js_new(global.THREE.Vector3,
+                this.points[i].offset = Helpers.NewVector3(
                     this.points[i - 1].offset.x + offset.x, this.points[i - 1].offset.y + offset.y, this.points[i - 1].offset.z + offset.z);
             }
         }
@@ -68,8 +67,8 @@ export class Waypoint extends LMent implements PhysicsSubstepHandler {
         }
     }
 
-    linearMovement(target: waypoints,dt:number): void {
-        let direction = js_new(global.THREE.Vector3).subVectors(target.offset, this.body.body.getPosition()).normalize();
+    linearMovement(target: waypoints, dt: number): void {
+        let direction = Helpers.zeroVector.subVectors(target.offset, this.body.body.getPosition()).normalize();
         let movement = direction.clone().multiplyScalar(target.speed * dt);
 
         this.body.body.setPosition(this.body.body.getPosition().clone().add(movement));
@@ -92,6 +91,5 @@ export class Waypoint extends LMent implements PhysicsSubstepHandler {
     }
 
     sineMovement(target: waypoints, dt: number): void {
-       
     }
 }

@@ -3,12 +3,11 @@ import { GameplayScene } from "engine/GameplayScene";
 import { LMent } from "engine/LMent";
 import { CollisionHandler, CollisionInfo } from "engine/MessageHandlers";
 
-
 export class EnableElementOnCollision extends LMent implements CollisionHandler {
-    elementNames: string [] | undefined;
+    elementNames: string[] | undefined;
     collisionMinImpulse: number;
     collisionMinDeltaV: number;
-    elementToEnable: any [];
+    elementToEnable: any[];
     constructor(body: BodyHandle, id: number, params: Partial<EnableElementOnCollision> = {}) {
         super(body, id, params);
         this.elementNames = this.convertArray(params.elementNames) || undefined;
@@ -19,16 +18,16 @@ export class EnableElementOnCollision extends LMent implements CollisionHandler 
     }
     onInit(): void {
         GameplayScene.instance.dispatcher.addListener("collision", this);
-        if (this.elementNames !== undefined){
-            for (let i = 0; i < this.elementNames.length; i++){
-                    let element = this.body.getElementByTypeName(this.elementNames[i]);
-                if ( element !== undefined){
-                    this.elementToEnable.push(element as LMent);   
+        if (this.elementNames !== undefined) {
+            for (let i = 0; i < this.elementNames.length; i++) {
+                let element = this.body.getElementByTypeName(this.elementNames[i]);
+                if (element !== undefined) {
+                    this.elementToEnable.push(element as LMent);
                     element.enabled = false;
                 }
             }
-            }
-            else{
+        }
+        else {
             console.log("Element not found");
         }
     }

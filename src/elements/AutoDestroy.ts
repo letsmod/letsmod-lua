@@ -32,7 +32,7 @@ export class AutoDestroy extends LMent implements UpdateHandler {
     doDestroy() {
         if (this.targets !== undefined) {
             for (let i = this.body.bodyGroup.length; i > 0; i--)
-                if (this.targets.includes(this.body.bodyGroup[i - 1].body.name)) 
+                if (this.targets.includes(this.body.bodyGroup[i - 1].body.name))
                     GameplayScene.instance.destroyBody(this.body.bodyGroup[i - 1]);
         } else
             GameplayScene.instance.destroyBody(this.body);

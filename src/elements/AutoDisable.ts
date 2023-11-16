@@ -37,7 +37,6 @@ export class AutoDisable extends LMent implements UpdateHandler {
                 const element = this.body.bodyGroup[i - 1].getElementByTypeName(this.elementName);
                 if (element !== undefined)
                     element.enabled = false;
-
             }
         } else {
             const element = this.body.getElementByTypeName(this.elementName);

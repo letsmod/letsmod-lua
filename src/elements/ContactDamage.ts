@@ -4,7 +4,7 @@ import { GameplayScene } from "engine/GameplayScene";
 import { HitPoints, DamageType } from "./HitPoints";
 import { CollisionHandler, CollisionInfo } from "engine/MessageHandlers";
 import { Vector3 } from "three";
-import { global, js_new } from "js";
+import { Helpers } from "engine/Helpers";
 
 export class ContactDamage extends LMent implements CollisionHandler {
     damageValue: number;
@@ -22,14 +22,14 @@ export class ContactDamage extends LMent implements CollisionHandler {
         this.damageType = params.damageType;
         this.teamFlags = params.teamFlags;
         this.cooldown = params.cooldown === undefined ? 0 : params.cooldown;
-        this.contactDirection = params.contactDirection === undefined ? js_new(global.THREE.Vector3, 0, 1, 0) : params.contactDirection;
+        this.contactDirection = params.contactDirection === undefined ? Helpers.upVector : params.contactDirection;
         this.dotMinimum = params.dotMinimum;
         this.contactCooldowns = {};
     }
 
     onInit() {
         GameplayScene.instance.dispatcher.addListener("collision", this);
-        this.contactDirection = js_new(global.THREE.Vector3, this.contactDirection.x, this.contactDirection.y, this.contactDirection.z);
+        this.contactDirection = Helpers.NewVector3( this.contactDirection.x, this.contactDirection.y, this.contactDirection.z);
     }
 
     onStart() {

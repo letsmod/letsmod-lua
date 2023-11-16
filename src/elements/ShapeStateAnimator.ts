@@ -85,7 +85,6 @@ export class ShapeStateAnimator extends LMent implements UpdateHandler {
             shape.setVisible(true);
     }
 
-
     onUpdate(): void {
         this.fpsCounter--;
         if (this.fpsCounter <= 0) {
