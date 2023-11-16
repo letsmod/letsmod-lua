@@ -41,3 +41,4 @@ export { ScaleAnim} from "./ScaleAnim";
 export { AutoDisable} from "./AutoDisable";
 export { TriggerOnButton} from "./TriggerOnButton";
 export { DelayTrigger} from "./DelayTrigger";
+export { OneFingerActionControls } from "./OneFingerActionControls";

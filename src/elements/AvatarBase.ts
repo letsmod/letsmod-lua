@@ -42,7 +42,7 @@ export class AvatarBase extends LMent implements UpdateHandler, HitPointChangeHa
     this.body.body.setAngularVelocity(Helpers.zeroVector);
   }
 
-  onUpdate(): void {
+  onUpdate(dt?: number): void {
     this.sinkCheck();
   }
 

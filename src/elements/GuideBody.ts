@@ -12,7 +12,6 @@ export class GuideBody extends LMent implements UpdateHandler
     guideName:string; /* HACK: There's no way to access the chip's name, so I'm using this temporarily until an update is applied */
     
     target:string; /* The target body _this_ needs to follow */
-    private targetBody:BodyHandle|undefined = undefined;
     
     offset:{x:number,y:number,z:number}; /* The position offset from target */
     private offsetVector; /* To generate a Vector3 from the previous param*/
@@ -30,6 +29,7 @@ export class GuideBody extends LMent implements UpdateHandler
 
     private leader:BodyHandle|undefined;
     private follower:BodyHandle|undefined;
+    private targetBody:BodyHandle|undefined = undefined;
 
     constructor(body: BodyHandle, id: number, params: Partial<GuideBody> = {})
     {
@@ -69,6 +69,11 @@ export class GuideBody extends LMent implements UpdateHandler
         }},Helpers.deltaTime);
     }
 
+    getTargetBody()
+    {
+        return this.targetBody;
+    }
+
     onStart(): void {
         this.initTargetBody();
         this.initLeadership();
@@ -86,6 +91,18 @@ export class GuideBody extends LMent implements UpdateHandler
                 this.leader = this.body;
                 this.follower = this.targetBody;
             }
+
+            if (this.leader !== undefined && this.follower !== undefined)
+            {
+                let offset = this.offsetVector.clone();
+        
+                if(this.offsetSpace.toLowerCase() === "local")
+                    offset.copy(this.offsetVector.clone().applyQuaternion(this.leader.body.getRotation()));
+                let targetVector = this.leader.body.getPosition().clone().add(offset);
+                this.follower.body.setPosition(targetVector);
+                let targetOrientation = this.leader.body.getRotation().clone().multiply(this.rotationOffsetQuaternion).normalize();
+                this.follower.body.setRotation(targetOrientation);
+            }
         },2*Helpers.deltaTime)
     }
 
@@ -96,7 +113,7 @@ export class GuideBody extends LMent implements UpdateHandler
         else this.offsetVector.set(x,y,z);
     }
 
-    updateTargetPosition()
+    updateTargetPosition(dt: number)
     {
         if(this.targetBody === undefined || this.leader === undefined || this.follower === undefined)
             return;
@@ -106,10 +123,10 @@ export class GuideBody extends LMent implements UpdateHandler
         if(this.offsetSpace.toLowerCase() === "local")
             offset.copy(this.offsetVector.clone().applyQuaternion(this.leader.body.getRotation()));
         let targetVector = this.leader.body.getPosition().clone().add(offset);
-        this.follower.body.setPosition(this.follower.body.getPosition().clone().lerp(targetVector,this.followSpeed*Helpers.deltaTime));
+        this.follower.body.setPosition(this.follower.body.getPosition().clone().lerp(targetVector, this.followSpeed * dt));
     }
 
-    updateTargetOrientation()
+    updateTargetOrientation(dt: number)
     {
         if(this.targetBody === undefined || this.leader === undefined || this.follower === undefined)
             return;
@@ -117,15 +134,15 @@ export class GuideBody extends LMent implements UpdateHandler
         if(this.rotationSpeed==0)
             this.follower.body.setRotation(this.rotationOffsetQuaternion);
         let targetOrientation = this.leader.body.getRotation().clone().multiply(this.rotationOffsetQuaternion).normalize();
-        this.follower.body.setRotation(this.follower.body.getRotation().clone().slerp(targetOrientation,this.rotationSpeed*Helpers.deltaTime));
+        this.follower.body.setRotation(this.follower.body.getRotation().clone().slerp(targetOrientation, this.rotationSpeed * dt));
     }
 
-    onUpdate(): void {
+    onUpdate(dt: number): void {
         if(this.move)
-            this.updateTargetPosition();
+            this.updateTargetPosition(dt);
         
         if(this.rotate)
-            this.updateTargetOrientation();
+            this.updateTargetOrientation(dt);
     }
 
 }
