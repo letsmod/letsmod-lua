@@ -3,6 +3,7 @@ import { GameplayScene } from "engine/GameplayScene";
 import { LMent } from "engine/LMent";
 import { UpdateHandler } from "engine/MessageHandlers";
 import { ShapeStateController } from "./ShapeStateController";
+import { Helpers } from "engine/Helpers";
 
 export class ShapeStateAnimator extends LMent implements UpdateHandler {
     /*** THIS LMENT REQUIRES A ShapeStateController ELEMENT TO BE ATTACHED TO THE SAME BODY ***/
@@ -30,7 +31,7 @@ export class ShapeStateAnimator extends LMent implements UpdateHandler {
         this.priority = params.priority === undefined ? 1.1 : params.priority;
         this.priority = Math.round(this.priority);
         this.loop = params.loop === undefined ? true : params.loop;
-        this.controller = params.controller === undefined ? "default" : params.controller;
+        this.controller = params.controller === undefined ? Helpers.NA : params.controller;
     }
 
     onInit(): void {
@@ -39,7 +40,10 @@ export class ShapeStateAnimator extends LMent implements UpdateHandler {
 
     onStart(): void {
         this.fillFrames();
-
+        if (!Helpers.ValidateParams(this.controller, this, "controller")) {
+            this.enabled = false;
+            return;
+        }
         let controllerLments = this.body.getAllElements(ShapeStateController);
         let cFound = false;
         for (let c of controllerLments)

@@ -34,8 +34,8 @@ export class GuideBody extends LMent implements UpdateHandler
     constructor(body: BodyHandle, id: number, params: Partial<GuideBody> = {})
     {
         super(body, id,params);
-        this.target = params.target === undefined?"N/A":params.target;
-        this.guideName = params.guideName === undefined?"N/A":params.guideName;
+        this.target = params.target === undefined?Helpers.NA:params.target;
+        this.guideName = params.guideName === undefined?Helpers.NA:params.guideName;
         this.mode = params.mode === undefined?"follow":params.mode;
         this.offset = params.offset === undefined?{x:0,y:0,z:0}:params.offset;
         this.offsetVector = Helpers.NewVector3(this.offset.x,this.offset.y,this.offset.z);
