@@ -3,7 +3,6 @@ import { BodyHandle } from "../engine/BodyHandle";
 import { GameplayScene } from "../engine/GameplayScene";
 import { LMent } from "../engine/LMent";
 import { UpdateHandler } from "../engine/MessageHandlers";
-import { global, js_new } from "js";
 
 export class Drag extends LMent implements UpdateHandler {
     dragConefficient: number;

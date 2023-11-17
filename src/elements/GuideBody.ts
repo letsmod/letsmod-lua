@@ -29,16 +29,6 @@ export class GuideBody extends LMent implements UpdateHandler {
     private leader: BodyHandle | undefined;
     private follower: BodyHandle | undefined;
 
-<<<<<<< HEAD
-    constructor(body: BodyHandle, id: number, params: Partial<GuideBody> = {}) {
-        super(body, id, params);
-        this.target = params.target === undefined ? "N/A" : params.target;
-        this.guideName = params.guideName === undefined ? "N/A" : params.guideName;
-        this.mode = params.mode === undefined ? "follow" : params.mode;
-        this.offset = params.offset === undefined ? { x: 0, y: 0, z: 0 } : params.offset;
-        this.offsetVector = Helpers.NewVector3(this.offset.x, this.offset.y, this.offset.z);
-        this.move = params.move === undefined ? true : params.move;
-=======
     constructor(body: BodyHandle, id: number, params: Partial<GuideBody> = {})
     {
         super(body, id,params);
@@ -48,7 +38,6 @@ export class GuideBody extends LMent implements UpdateHandler {
         this.offset = params.offset === undefined?{x:0,y:0,z:0}:params.offset;
         this.offsetVector = Helpers.NewVector3(this.offset.x,this.offset.y,this.offset.z);
         this.move = params.move === undefined?true:params.move;
->>>>>>> develop
 
         this.rotationOffset = params.rotationOffset === undefined ? { x: 0, y: 0, z: 0 } : params.rotationOffset;
         this.rotationOffsetQuaternion = Helpers.NewQuatFromEuler(Helpers.Rad(this.rotationOffset.x), Helpers.Rad(this.rotationOffset.y), Helpers.Rad(this.rotationOffset.z));
