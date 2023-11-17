@@ -14,21 +14,25 @@ type waypoints = {
 
 export class Waypoint extends LMent implements PhysicsSubstepHandler {
     points: waypoints[];
+    pattern: string;
     private totalDistanceToNextPoint: number;
     private index: number;
     private delayPlusTime: number;
     private now: number;
     private timeFunctionStart: number;
+    private indexAddvalue: number;
 
     constructor(body: BodyHandle, id: number, params: Partial<Waypoint> = {}) {
         super(body, id, params);
 
         this.points = this.convertArray(params.points) || [];
+        this.pattern = params.pattern === undefined ? "loop" : params.pattern;
         this.totalDistanceToNextPoint = 0;
         this.index = 0;
         this.delayPlusTime = 0;
         this.now = 0;
         this.timeFunctionStart = 0;
+        this.indexAddvalue = 1;
     }
 
     onInit(): void {
@@ -47,8 +51,15 @@ export class Waypoint extends LMent implements PhysicsSubstepHandler {
                     this.points[i - 1].offset.x + offset.x, this.points[i - 1].offset.y + offset.y, this.points[i - 1].offset.z + offset.z);
             }
         }
-        let InitWayPoint: waypoints = { offset: this.body.body.getPosition().clone(), speed: this.points[0].speed, delay: this.points[0].delay, interpolationFunction: this.points[0].interpolationFunction };
-        this.points.push(InitWayPoint);
+        if (this.pattern !== "once") {
+            let InitWayPoint: waypoints = { offset: this.body.body.getPosition().clone(), speed: this.points[0].speed, delay: this.points[0].delay, interpolationFunction: this.points[0].interpolationFunction };
+            if (this.pattern === "pingpong") {
+                this.points.unshift(InitWayPoint);
+                this.indexAddvalue = -1;
+            }
+            else if (this.pattern === "loop")
+                this.points.push(InitWayPoint);
+        }
         this.totalDistanceToNextPoint = this.body.body.getPosition().distanceTo(this.points[0].offset);
     }
 
@@ -75,12 +86,20 @@ export class Waypoint extends LMent implements PhysicsSubstepHandler {
 
         if (this.body.body.getPosition().clone().distanceTo(target.offset) < target.speed * dt) {
             this.body.body.setPosition(target.offset);
-            this.index += 1;
+            if (this.pattern === "pingpong" && (this.index === 0 || this.index === this.points.length - 1))
+                this.indexAddvalue *= -1;
+            this.index += this.indexAddvalue;
 
             while (this.points[this.index] === undefined) {
                 this.index += 1;
                 if (this.index > this.points.length) {
-                    this.index = 0;
+                    if (this.pattern === "once")
+                        this.index = this.points.length - 1;
+                    else if (this.pattern === "pingpong")
+                        this.index = this.points.length - 2;
+                    else if (this.pattern === "loop")
+                        this.index = 0;
+                    else console.log("Wrong pattern");
                     break;
                 }
             }
