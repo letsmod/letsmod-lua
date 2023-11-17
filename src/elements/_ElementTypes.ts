@@ -42,3 +42,4 @@ export { AutoDisable } from "./AutoDisable";
 export { PrefabSpawner} from "./PrefabSpawner";
 export { TriggerOnButton} from "./TriggerOnButton";
 export { DelayTrigger} from "./DelayTrigger";
+export { EnableOnTrigger} from "./EnableOnTrigger";

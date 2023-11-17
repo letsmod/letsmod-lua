@@ -56,7 +56,9 @@ export class PrefabSpawner extends LMent implements TriggerHandler {
             return;
         }
         
-        let position = this.body.body.getPosition().clone().add(this.spawnOffset);
+        let offset = this.spawnOffset.clone().applyQuaternion(this.body.body.getRotation());
+
+        let position = this.body.body.getPosition().clone().add(offset);
         projectile.body.setPosition(position);
         let spread = js_new(global.THREE.Vector3,
             (Math.random() - 0.5) * 2,
