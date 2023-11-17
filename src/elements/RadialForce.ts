@@ -31,5 +31,4 @@ export class RadialForce extends LMent implements CollisionHandler {
             other.body.applyCentralForce(directionFromCenter.multiplyScalar(forceMagnitude));
         }
     }
-
 }

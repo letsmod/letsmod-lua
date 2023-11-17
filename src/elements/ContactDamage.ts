@@ -29,7 +29,7 @@ export class ContactDamage extends LMent implements CollisionHandler {
 
     onInit() {
         GameplayScene.instance.dispatcher.addListener("collision", this);
-        this.contactDirection = Helpers.NewVector3( this.contactDirection.x, this.contactDirection.y, this.contactDirection.z);
+        this.contactDirection = Helpers.NewVector3(this.contactDirection.x, this.contactDirection.y, this.contactDirection.z);
     }
 
     onStart() {
