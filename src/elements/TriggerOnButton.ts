@@ -45,7 +45,7 @@ export class TriggerOnButton extends LMent implements ButtonHandler {
     }
 
     hasSubtype(button: string): boolean {
-        return button == button;
+        return button == this.button;
     }
 
     sendTrigger() {
