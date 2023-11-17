@@ -103,6 +103,8 @@ export interface TriggerHandler extends GenericHandler
 {
   hasSubtype(trigger: string) : boolean;
 
+  receivesTriggersWhenDisabled?: boolean;
+
   onTrigger(source: LMent, triggerId: string) : void;
 }
 
