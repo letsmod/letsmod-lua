@@ -1,6 +1,7 @@
 import { global, js_new } from "js";
 import { Quaternion, Vector3 } from "three";
 import { GameplayScene } from "./GameplayScene";
+import { LMent } from "./LMent";
 
 export class Helpers{
 
@@ -12,7 +13,7 @@ export class Helpers{
     static get xzVector() {return js_new(global.THREE.Vector3,1,0,1);}
     static get xyVector() {return js_new(global.THREE.Vector3,1,1,0);}
     static get yzVector() {return js_new(global.THREE.Vector3,0,1,1);}
-
+    static get NA(){return "N/A";}
 
     static get deltaTime() {return 1/GameplayScene.instance.memory.frameRate;}
 
@@ -84,6 +85,14 @@ export class Helpers{
             pitch = Math.asin(sinp);
         }
         return pitch;
+    }
+
+    static ValidateParams(paramVal:any|undefined,element:LMent,param:string=""):boolean
+    {
+        param = param == ""?"":" \""+param+"\"";
+        if(paramVal !== undefined && paramVal !== Helpers.NA) return true;
+        console.log(element.constructor.name+" requires a param"+param+" to be included in the params list.");
+        return false;
     }
     
 }
