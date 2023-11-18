@@ -13,6 +13,8 @@ export class PrefabSpawner extends LMent implements TriggerHandler {
     initialVelocity: Vector3;
     spreadAngle: number;
     speedRandomFactor: number;
+    cooldown: number;
+    private lastSpawnTime: number;
 
     constructor(body: BodyHandle, id: number, params: Partial<PrefabSpawner> = {}) {
         super(body, id, params);
@@ -23,10 +25,12 @@ export class PrefabSpawner extends LMent implements TriggerHandler {
         this.initialVelocity = params.initialVelocity === undefined ? Helpers.NewVector3(0, 1, 10) : params.initialVelocity;
         this.spreadAngle = params.spreadAngle === undefined ? 5 : params.spreadAngle;
         this.speedRandomFactor = params.speedRandomFactor === undefined ? 0.1 : params.speedRandomFactor;
+        this.cooldown = params.cooldown === undefined ? 0.3 : params.cooldown;
+        this.lastSpawnTime = 0;
     }
 
     validateElement() {
-        return Helpers.ValidateParams(this.triggerId,this,"triggerId") && Helpers.ValidateParams(this.prefabName,this,"prefabName");
+        return Helpers.ValidateParams(this.triggerId, this, "triggerId") && Helpers.ValidateParams(this.prefabName, this, "prefabName");
     }
 
     onInit(): void {
@@ -45,17 +49,24 @@ export class PrefabSpawner extends LMent implements TriggerHandler {
     onTrigger(source: LMent, triggerId: string): void {
         if (!this.validateElement())
             return;
-        this.spawn();
+        let now = GameplayScene.instance.memory.timeSinceStart;
+        if (now - this.lastSpawnTime >= this.cooldown) {
+            this.spawn();
+            this.lastSpawnTime = now;
+        }
     }
 
     spawn(): void {
-        let projectile = GameplayScene.instance.clonePrefab(this.prefabName);
-        if (projectile === undefined)
-        {
-            console.log("No prefab named: "+this.prefabName+" exists in the library.");
+        //let projectile = GameplayScene.instance.clonePrefab(this.prefabName);
+        let projectile = undefined;
+        for (let i = 0; i < GameplayScene.instance.bodies.length; i++)
+            if (GameplayScene.instance.bodies[i].body.name == this.prefabName)
+                projectile = GameplayScene.instance.bodies[i].body.cloneBody();
+        if (projectile === undefined) {
+            console.log("No prefab named: " + this.prefabName + " exists in the library.");
             return;
         }
-        
+
         let offset = this.spawnOffset.clone().applyQuaternion(this.body.body.getRotation());
 
         let position = this.body.body.getPosition().clone().add(offset);
