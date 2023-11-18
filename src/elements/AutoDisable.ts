@@ -9,6 +9,7 @@ export class AutoDisable extends LMent implements UpdateHandler, TriggerHandler 
     disableDelay: number;
     targets: string[] | undefined;
     elementName: string;
+    elementChipName: string;
     receivesTriggersWhenDisabled: boolean | undefined;
     private isDisabled: boolean;
 
@@ -20,6 +21,7 @@ export class AutoDisable extends LMent implements UpdateHandler, TriggerHandler 
         this.receivesTriggersWhenDisabled = params.receivesTriggersWhenDisabled === undefined ? true : params.receivesTriggersWhenDisabled;
         this.isDisabled = false;
         this.elementName = params.elementName === undefined ? "" : params.elementName;
+        this.elementChipName = params.elementChipName === undefined ? "" : params.elementChipName;
     }
 
     onInit(): void {
@@ -43,7 +45,7 @@ export class AutoDisable extends LMent implements UpdateHandler, TriggerHandler 
     onTrigger(source: LMent, triggerId: string): void {
         if (!this.validateElement())
             return;
-            GameplayScene.instance.dispatcher.queueDelayedFunction(this, () => { this.doDisable() }, this.disableDelay);
+        GameplayScene.instance.dispatcher.queueDelayedFunction(this, () => { this.doDisable() }, this.disableDelay);
     }
 
     onUpdate(dt: number): void {
@@ -56,13 +58,13 @@ export class AutoDisable extends LMent implements UpdateHandler, TriggerHandler 
     doDisable() {
         if (this.targets !== undefined) {
             for (let i = this.body.bodyGroup.length; i > 0; i--) {
-                const element = this.body.bodyGroup[i - 1].getElementByTypeName(this.elementName);
-                if (element !== undefined)
+                let element = this.body.bodyGroup[i - 1].getElementByTypeName(this.elementName);
+                if (element !== undefined && element.name === this.elementChipName)
                     element.enabled = false;
             }
         } else {
-            const element = this.body.getElementByTypeName(this.elementName);
-            if (element !== undefined)
+            let element = this.body.getElementByTypeName(this.elementName);
+            if (element !== undefined && element.name === this.elementChipName)
                 element.enabled = false;
         }
     }

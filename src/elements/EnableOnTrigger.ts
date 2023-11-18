@@ -7,6 +7,7 @@ import { TriggerHandler } from "engine/MessageHandlers";
 export class EnableOnTrigger extends LMent implements TriggerHandler {
     triggerId: string;
     elementName: string;
+    elementChipName: string;
     receivesTriggersWhenDisabled: boolean | undefined;
 
     constructor(body: BodyHandle, id: number, params: Partial<EnableOnTrigger> = {}) {
@@ -14,6 +15,7 @@ export class EnableOnTrigger extends LMent implements TriggerHandler {
         this.triggerId = params.triggerId === undefined ? Helpers.NA : params.triggerId;
         this.receivesTriggersWhenDisabled = params.receivesTriggersWhenDisabled === undefined ? false : params.receivesTriggersWhenDisabled;
         this.elementName = params.elementName === undefined ? "" : params.elementName;
+        this.elementChipName = params.elementChipName === undefined ? "" : params.elementChipName;
     }
 
     onInit(): void {
@@ -39,8 +41,7 @@ export class EnableOnTrigger extends LMent implements TriggerHandler {
 
     doEnable() {
         let element = this.body.getElementByTypeName(this.elementName);
-        if (element !== undefined) {
+        if (element !== undefined && element.name === this.elementChipName)
             element.enabled = true;
-        }
     }
 }

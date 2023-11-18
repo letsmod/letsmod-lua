@@ -16,43 +16,39 @@ export class AutoDestroy extends LMent implements UpdateHandler, TriggerHandler 
         this.destructionDelay = params.destructionDelay === undefined ? 0 : params.destructionDelay;
         this.triggerId = params.triggerId === undefined ? Helpers.NA : params.triggerId;
         this.targets = this.convertArray(params.targets) || undefined;
-        this.receivesTriggersWhenDisabled = params.receivesTriggersWhenDisabled === undefined? true:params.receivesTriggersWhenDisabled;
+        this.receivesTriggersWhenDisabled = params.receivesTriggersWhenDisabled === undefined ? true : params.receivesTriggersWhenDisabled;
         this.isDestroyed = false;
     }
-    
+
     onInit(): void {
         GameplayScene.instance.dispatcher.addListener("update", this);
         GameplayScene.instance.dispatcher.addListener("trigger", this);
-        if(this.triggerId !== Helpers.NA)
+        if (this.triggerId !== Helpers.NA)
             this.enabled = false;
     }
-    
+
     onStart(): void {
     }
 
     validateElement() {
-        return Helpers.ValidateParams(this.triggerId,this,"triggerId");
+        return Helpers.ValidateParams(this.triggerId, this, "triggerId");
     }
-    
+
     onUpdate(dt: number): void {
         if (!this.isDestroyed) {
             GameplayScene.instance.dispatcher.queueDelayedFunction(this, () => { this.doDestroy() }, this.destructionDelay);
             this.isDestroyed = true;
         }
     }
-    
+
     hasSubtype(trigger: string): boolean {
         return trigger == this.triggerId;
     }
 
     onTrigger(source: LMent, triggerId: string): void {
-
         if (!this.validateElement())
             return;
-            if (!this.isDestroyed) {
-                GameplayScene.instance.dispatcher.queueDelayedFunction(this, () => { this.doDestroy() }, this.destructionDelay);
-                this.isDestroyed = true;
-            }
+            GameplayScene.instance.dispatcher.queueDelayedFunction(this, () => { this.doDestroy() }, this.destructionDelay);
     }
 
     doDestroy() {
