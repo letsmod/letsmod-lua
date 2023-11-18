@@ -53,19 +53,18 @@ export class GuideBody extends LMent implements UpdateHandler {
         GameplayScene.instance.dispatcher.addListener("update", this);
     }
 
-    initTargetBody() {
-        GameplayScene.instance.dispatcher.queueDelayedFunction(this, () => {
-            this.targetBody = undefined;
-            if (this.target.toLowerCase() === "player")
-                this.targetBody = GameplayScene.instance.memory.player;
-            else if (this.target.toLowerCase() === "maincamera")
-                this.targetBody = GameplayScene.instance.memory.mainCamera;
-            else {
-                for (let i of this.body.bodyGroup)
-                    if (i.body.name === this.target)
-                        this.targetBody = i;
-            }
-        }, Helpers.deltaTime);
+    initTargetBody(){
+        GameplayScene.instance.dispatcher.queueDelayedFunction(this,()=>{
+        this.targetBody = undefined;
+        if(this.target.toLowerCase() === "player")
+            this.targetBody = GameplayScene.instance.memory.player;
+        else if(this.target.toLowerCase() === "maincamera_lua")
+            this.targetBody = GameplayScene.instance.memory.mainCamera;
+        else {
+            for(let i of this.body.bodyGroup)
+            if(i.body.name === this.target)
+                this.targetBody = i;
+        }},Helpers.deltaTime);
     }
 
     onStart(): void {
