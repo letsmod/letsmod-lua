@@ -29,8 +29,8 @@ export class CameraTarget extends LMent implements UpdateHandler, DragGestureHan
         this.maxCamDrag = params.maxCamDrag === undefined ? { x: 0, y: 0, z: 0 } : params.maxCamDrag;
         this.minCamDrag = params.minCamDrag === undefined ? { x: 0, y: 0, z: 0 } : params.minCamDrag;
         this.dragSpeed = params.dragSpeed === undefined ? 0 : params.dragSpeed;
-        this.prefabName = params.prefabName === undefined ? "MainCamera" : params.prefabName;
-        this.cameraIsMain = this.prefabName === "MainCamera";
+        this.prefabName = params.prefabName === undefined ? "MainCamera_Lua" : params.prefabName;
+        this.cameraIsMain = this.prefabName === "MainCamera_Lua";
         this.resetDragOnRelease = params.resetDragOnRelease === undefined?false:params.resetDragOnRelease;
         this.sinkLevel = params.sinkLevel === undefined? 0 : params.sinkLevel;
     }
@@ -74,7 +74,7 @@ export class CameraTarget extends LMent implements UpdateHandler, DragGestureHan
         let elements = this.body.getAllElements(GuideBody);
         let guideFound = false;
         for (let e of elements) {
-            if (e !== undefined && e.guideName === "MainCamera") {
+            if (e !== undefined && e.guideName === "MainCamera_Lua") {
                 this.cameraLead = e;
                 guideFound = true;
             }

@@ -49,7 +49,7 @@ export class BallControls extends AvatarBase implements DragGestureHandler {
     }
 
     initBallGuide() {
-        this.ballGuide = GameplayScene.instance.clonePrefab("RollerCamGuide");
+        this.ballGuide = GameplayScene.instance.clonePrefab("RollerCamGuide_Lua");
         if (this.ballGuide === undefined)
         {
             console.error("No ball guide found in prefabs.");

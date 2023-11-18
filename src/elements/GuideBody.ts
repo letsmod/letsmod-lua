@@ -60,7 +60,7 @@ export class GuideBody extends LMent implements UpdateHandler
         this.targetBody = undefined;
         if(this.target.toLowerCase() === "player")
             this.targetBody = GameplayScene.instance.memory.player;
-        else if(this.target.toLowerCase() === "maincamera")
+        else if(this.target.toLowerCase() === "maincamera_lua")
             this.targetBody = GameplayScene.instance.memory.mainCamera;
         else {
             for(let i of this.body.bodyGroup)
