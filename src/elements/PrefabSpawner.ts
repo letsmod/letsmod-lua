@@ -2,7 +2,6 @@ import { BodyHandle } from "engine/BodyHandle";
 import { LMent } from "engine/LMent";
 import { TriggerHandler, UpdateHandler } from "engine/MessageHandlers";
 import { Vector3 } from "three";
-import { global, js_new } from "js";
 import { GameplayScene } from "engine/GameplayScene";
 import { Helpers } from "engine/Helpers";
 
@@ -35,6 +34,7 @@ export class PrefabSpawner extends LMent implements TriggerHandler {
 
     onInit(): void {
         GameplayScene.instance.dispatcher.addListener("trigger", this);
+        this.initialVelocity = Helpers.NewVector3(this.initialVelocity.x, this.initialVelocity.y, this.initialVelocity.z);
         this.enabled = this.validateElement();
     }
 
@@ -71,7 +71,7 @@ export class PrefabSpawner extends LMent implements TriggerHandler {
 
         let position = this.body.body.getPosition().clone().add(offset);
         projectile.body.setPosition(position);
-        let spread = js_new(global.THREE.Vector3,
+        let spread = Helpers.NewVector3(
             (Math.random() - 0.5) * 2,
             (Math.random() - 0.5) * 2,
             (Math.random() - 0.5) * 0).multiplyScalar(this.spreadAngle);
