@@ -40,3 +40,4 @@ export { Tag } from "./Tag";
 export { Squishable } from "./Squishable";
 export {ScaleAnim} from "./ScaleAnim";
 export {AutoDisable} from "./AutoDisable";
+export {Shake} from "./Shake";
