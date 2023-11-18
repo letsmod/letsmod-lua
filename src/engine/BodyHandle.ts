@@ -109,6 +109,19 @@ export class BodyHandle
     return undefined;
   }
 
+  getElementByName(name:string)
+  {
+    for (let i = 0; i < this.elements.length; i++)
+    {
+      if (this.elements[i].name == name)
+      {
+        return this.elements[i];
+      }
+    }
+
+    return undefined;
+  }
+
   getAllElements <U extends LMent> (T : new (...args: any[]) => U ) : U[]
   {
     let arr =[];
@@ -123,6 +136,34 @@ export class BodyHandle
     return arr;
   }
 
+  getAllElementsByTypeName (typeName:string ) : LMent[]
+  {
+    let arr =[];
+    let count=0;
+    for (let i = 0; i < this.elements.length; i++)
+    {
+      if (this.elements[i].constructor.name == typeName)
+      {
+        arr.push(this.elements[i]);
+      }
+    }
+
+    return arr;
+  }
+
+  getAllElementsByName (name:string ) : LMent[]
+  {
+    let arr =[];
+    for (let i = 0; i < this.elements.length; i++)
+    {
+      if (this.elements[i].name == name)
+      {
+        arr.push(this.elements[i]);
+      }
+    }
+
+    return arr;
+  }
 
 
   addElement(elem : LMent)
