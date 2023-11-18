@@ -5,13 +5,12 @@ import { GameplayScene } from "engine/GameplayScene";
 import { Helpers } from "engine/Helpers";
 
 export class ShapeStateController extends LMent {
-  name: string;
+
   private animStates: ShapeStateAnimator[] = [];
   private activeState: ShapeStateAnimator |undefined;
 
   constructor(body: BodyHandle, id: number, params: Partial<ShapeStateController> = {}) {
     super(body, id, params);
-    this.name = params.name === undefined ? "default" : params.name;
   }
 
   onInit(): void {
