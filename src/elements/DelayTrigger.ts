@@ -13,7 +13,8 @@ export class DelayTrigger extends LMent {
     }
 
     onStart(): void {
-        this.sendTrigger();
+        if (this.enabled)
+            this.sendTrigger();
     }
 
     onEnable(): void {

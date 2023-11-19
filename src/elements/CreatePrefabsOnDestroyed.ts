@@ -3,13 +3,11 @@ import { LMent } from "engine/LMent";
 import { GameplayScene } from "engine/GameplayScene";
 import { ActorDestructionHandler, HitPointChangeHandler } from "engine/MessageHandlers";
 
-export class CreatePrefabsOnDestroyed extends LMent implements ActorDestructionHandler
-{
+export class CreatePrefabsOnDestroyed extends LMent implements ActorDestructionHandler {
   private destroyed: boolean;
   prefabNames: string[];
 
-  constructor(body: BodyHandle, id: number, params: Partial<CreatePrefabsOnDestroyed> = {})
-  {
+  constructor(body: BodyHandle, id: number, params: Partial<CreatePrefabsOnDestroyed> = {}) {
     super(body, id, params);
     this.destroyed = false;
     this.prefabNames = this.convertArray(params.prefabNames) || [];
@@ -20,21 +18,18 @@ export class CreatePrefabsOnDestroyed extends LMent implements ActorDestructionH
   }
 
   onStart(): void {
-    
+
   }
 
   onActorDestroyed(actor: BodyHandle): void {
-    if (!this.destroyed && actor == this.body)
-    {
+    if (!this.destroyed && actor == this.body) {
       this.destroyed = true;
-      for (let prefabName of this.prefabNames)
-      {
+      for (let prefabName of this.prefabNames) {
         let prefab = GameplayScene.instance.clonePrefab(prefabName);
-        if (prefab)
-        {
+        if (prefab) {
           prefab.body.setPosition(this.body.body.getPosition());
           prefab.body.setRotation(this.body.body.getRotation());
-        }  
+        }
       }
     }
   }

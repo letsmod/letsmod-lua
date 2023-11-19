@@ -3,7 +3,6 @@ import { GameplayScene } from "engine/GameplayScene";
 import { ButtonHandler, CollisionInfo, DragGestureHandler } from "engine/MessageHandlers";
 import { AvatarBase } from "./AvatarBase";
 import { Helpers } from "engine/Helpers";
-import { GuideBody } from "./GuideBody";
 import { DragTurner } from "./DragTurner";
 
 export class BallControls extends AvatarBase implements DragGestureHandler {
@@ -138,5 +137,4 @@ export class BallControls extends AvatarBase implements DragGestureHandler {
         this.dragDx = dx;
         this.dragDy = dy;
     }
-
 }

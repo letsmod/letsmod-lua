@@ -1,12 +1,10 @@
 import { BodyHandle } from "..";
 import { GameplayScene } from "../engine/GameplayScene";
 import { CollisionInfo } from "../engine/MessageHandlers";
-import { global, js_new } from "js";
 import { ContactDamage } from "./ContactDamage";
 import { HitPoints } from "./HitPoints";
 
-export class ForceDamage extends ContactDamage
-{
+export class ForceDamage extends ContactDamage {
     velocityMin: number;
 
     constructor(body: BodyHandle, id: number, params: Partial<ForceDamage> = {}) {

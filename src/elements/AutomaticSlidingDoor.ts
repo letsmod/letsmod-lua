@@ -3,31 +3,26 @@ import { LMent } from "engine/LMent";
 import { TriggerHandler, UpdateHandler } from "engine/MessageHandlers";
 import { StateMachineLMent, State } from "engine/StateMachineLMent";
 import { Vector3 } from "three";
-import { global, js_new } from "js";
+import { Helpers } from "engine/Helpers";
 
-class ClosedState extends State implements TriggerHandler
-{
+class ClosedState extends State implements TriggerHandler {
   triggerId: string | undefined;
 
-  constructor(stateMachine: StateMachineLMent, triggerId: string | undefined)
-  {
+  constructor(stateMachine: StateMachineLMent, triggerId: string | undefined) {
     super("closed", stateMachine);
     this.triggerId = triggerId;
   }
 
-  onEnterState(previousState: State | undefined)
-  {
+  onEnterState(previousState: State | undefined) {
     // console.log("ClosedState.onEnter");
   }
 
-  onExitState(nextState: State | undefined)
-  {
+  onExitState(nextState: State | undefined) {
     // console.log("ClosedState.onExit");
   }
 
   onTrigger(source: LMent, triggerId: string): void {
-    if (triggerId == this.triggerId)
-    {
+    if (triggerId == this.triggerId) {
       this.stateMachine.switchState("opening");
     }
   }
@@ -37,68 +32,58 @@ class ClosedState extends State implements TriggerHandler
   }
 }
 
-class OpeningState extends State implements UpdateHandler
-{
+class OpeningState extends State implements UpdateHandler {
   targetPosition: Vector3;
   speed: number;
 
-  constructor(stateMachine: StateMachineLMent, initialPosition: Vector3, targetOffset: Vector3, speed: number)
-  {
+  constructor(stateMachine: StateMachineLMent, initialPosition: Vector3, targetOffset: Vector3, speed: number) {
     super("opening", stateMachine);
     this.targetPosition = initialPosition.clone().add(targetOffset);
     this.speed = speed;
   }
 
-  onEnterState(previousState: State | undefined)
-  {
+  onEnterState(previousState: State | undefined) {
     // console.log("OpeningState.onEnter");
   }
 
-  onExitState(nextState: State | undefined)
-  {
+  onExitState(nextState: State | undefined) {
     // console.log("OpeningState.onExit");
   }
 
-  onUpdate(dt : number): void {
+  onUpdate(dt: number): void {
     let delta = this.targetPosition.clone().sub(this.stateMachine.body.body.getPosition());
     let length = delta.length();
     let speedDt = this.speed * dt;
 
-    if (length < speedDt)
-    {
+    if (length < speedDt) {
       this.stateMachine.body.body.setPosition(this.targetPosition);
       this.stateMachine.switchState("open");
     }
-    else
-    {
+    else {
       delta.normalize().multiplyScalar(speedDt);
       this.stateMachine.body.body.offsetPosition(delta);
     }
   }
 }
 
-class OpenState extends State implements TriggerHandler, UpdateHandler
-{
+class OpenState extends State implements TriggerHandler, UpdateHandler {
   triggerId: string | undefined;
   stayOpenDuration: number;
   currentOpenDuration: number;
 
-  constructor(stateMachine: StateMachineLMent, triggerId: string | undefined, stayOpenDuration: number)
-  {
+  constructor(stateMachine: StateMachineLMent, triggerId: string | undefined, stayOpenDuration: number) {
     super("open", stateMachine);
     this.triggerId = triggerId;
     this.stayOpenDuration = stayOpenDuration;
     this.currentOpenDuration = 0;
   }
 
-  onEnterState(previousState: State | undefined)
-  {
+  onEnterState(previousState: State | undefined) {
     this.currentOpenDuration = 0;
     // console.log("OpenState.onEnter");
   }
 
-  onExitState(nextState: State | undefined)
-  {
+  onExitState(nextState: State | undefined) {
     // console.log("OpenState.onExit");
   }
 
@@ -112,8 +97,7 @@ class OpenState extends State implements TriggerHandler, UpdateHandler
   }
 
   onTrigger(source: LMent, triggerId: string): void {
-    if (triggerId == this.triggerId)
-    {
+    if (triggerId == this.triggerId) {
       this.currentOpenDuration = 0;
     }
   }
@@ -123,27 +107,23 @@ class OpenState extends State implements TriggerHandler, UpdateHandler
   }
 }
 
-class ClosingState extends State implements UpdateHandler, TriggerHandler
-{
+class ClosingState extends State implements UpdateHandler, TriggerHandler {
   triggerId: string | undefined;
   initialPosition: Vector3;
   speed: number;
 
-  constructor(stateMachine: StateMachineLMent, triggerId: string | undefined, initialPosition: Vector3, speed: number)
-  {
+  constructor(stateMachine: StateMachineLMent, triggerId: string | undefined, initialPosition: Vector3, speed: number) {
     super("closing", stateMachine);
     this.triggerId = triggerId;
     this.initialPosition = initialPosition.clone();
     this.speed = speed;
   }
 
-  onEnterState(previousState: State | undefined)
-  {
+  onEnterState(previousState: State | undefined) {
     // console.log("ClosingState.onEnter");
   }
 
-  onExitState(nextState: State | undefined)
-  {
+  onExitState(nextState: State | undefined) {
     // console.log("ClosingState.onExit");
   }
 
@@ -152,21 +132,18 @@ class ClosingState extends State implements UpdateHandler, TriggerHandler
     let length = delta.length();
     let speedDt = this.speed * dt;
 
-    if (length < speedDt)
-    {
+    if (length < speedDt) {
       this.stateMachine.body.body.setPosition(this.initialPosition);
       this.stateMachine.switchState("closed");
     }
-    else
-    {
+    else {
       delta.normalize().multiplyScalar(speedDt);
       this.stateMachine.body.body.offsetPosition(delta);
     }
   }
 
   onTrigger(source: LMent, triggerId: string): void {
-    if (triggerId == this.triggerId)
-    {
+    if (triggerId == this.triggerId) {
       this.stateMachine.switchState("opening");
     }
   }
@@ -176,31 +153,27 @@ class ClosingState extends State implements UpdateHandler, TriggerHandler
   }
 }
 
-export class AutomaticSlidingDoor extends StateMachineLMent
-{
+export class AutomaticSlidingDoor extends StateMachineLMent {
   openOnTrigger: string | undefined;
   openOffset: Vector3;
   openSpeed: number;
   closeSpeed: number;
   stayOpenDuration: number;
-  
-  constructor(body: BodyHandle, id: number, params: Partial<AutomaticSlidingDoor> = {})
-  {
+
+  constructor(body: BodyHandle, id: number, params: Partial<AutomaticSlidingDoor> = {}) {
     super(body, id, params);
     this.openOnTrigger = params.openOnTrigger;
-    this.openOffset = js_new(global.THREE.Vector3, 0, 0, 0);
-    if (params.openOffset !== undefined)
-    {
+    this.openOffset = Helpers.zeroVector;
+    if (params.openOffset !== undefined) {
       this.openOffset.copy(params.openOffset);
     }
 
-    this.openSpeed = params.openSpeed === undefined? 1 : params.openSpeed;
-    this.closeSpeed = params.closeSpeed === undefined? 1 : params.closeSpeed;
-    this.stayOpenDuration = params.stayOpenDuration === undefined? 1 : params.stayOpenDuration;
+    this.openSpeed = params.openSpeed === undefined ? 1 : params.openSpeed;
+    this.closeSpeed = params.closeSpeed === undefined ? 1 : params.closeSpeed;
+    this.stayOpenDuration = params.stayOpenDuration === undefined ? 1 : params.stayOpenDuration;
   }
 
-  onInit()
-  {
+  onInit() {
     this.states = {
       "closed": new ClosedState(this, this.openOnTrigger),
       "opening": new OpeningState(this, this.body.body.getPosition(), this.openOffset, this.openSpeed),
@@ -211,7 +184,6 @@ export class AutomaticSlidingDoor extends StateMachineLMent
     this.switchState("closed");
   }
 
-  onStart()
-  {
+  onStart() {
   }
 }
