@@ -11,7 +11,6 @@ export class Collectible extends LMent implements UpdateHandler
     {
       super(body, id,params);
       this.collectDistance = params.collectDistance === undefined?1:params.collectDistance;
-
     }
 
     onInit(): void {
@@ -19,7 +18,6 @@ export class Collectible extends LMent implements UpdateHandler
     }
   
     onStart(): void {
-      
     }
 
     onUpdate(): void {
@@ -52,7 +50,5 @@ export class Collectible extends LMent implements UpdateHandler
     }
 
     public onCollectAnimation(){
-
     }
-
 }

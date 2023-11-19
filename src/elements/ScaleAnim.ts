@@ -12,7 +12,6 @@ export class ScaleAnim extends LMent implements UpdateHandler {
     speed: number;
     speedRandomFactror: number;
     startShrinking: boolean;
-    initiallyEnabled: boolean;
     private speedRandom: number;
 
     constructor(body: BodyHandle, id: number, params: Partial<ScaleAnim> = {}) {
@@ -23,15 +22,11 @@ export class ScaleAnim extends LMent implements UpdateHandler {
         this.speed = params.speed === undefined ? 1 : params.speed;
         this.speedRandomFactror = params.speedRandomFactror === undefined ? 0 : params.speedRandomFactror;
         this.startShrinking = params.startShrinking === undefined ? false : params.startShrinking;
-        this.initiallyEnabled = params.initiallyEnabled === undefined ? true : params.initiallyEnabled;
         this.speedRandom = 0;
     }
 
     onInit(): void {
         GameplayScene.instance.dispatcher.addListener("update", this);
-        if (!this.initiallyEnabled) {
-            this.enabled = false;
-        }
         if (this.startShrinking) {
             this.body.body.setScale(Helpers.NewVector3(this.maxScale, this.maxScale, this.maxScale));
             let temp = this.maxScale;
@@ -44,7 +39,6 @@ export class ScaleAnim extends LMent implements UpdateHandler {
     }
     
     onStart(): void {
-
     }
 
     onUpdate(dt: number): void {
@@ -82,6 +76,4 @@ export class ScaleAnim extends LMent implements UpdateHandler {
         let scaleVector = Helpers.NewVector3(scale, scale, scale);
         this.body.body.setScale(scaleVector);
     }
-
-
 }
