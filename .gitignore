@@ -44,4 +44,3 @@ node_modules
 
 # derived files
 build
-src/elements/Shake.ts
