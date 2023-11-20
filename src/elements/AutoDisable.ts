@@ -58,14 +58,18 @@ export class AutoDisable extends LMent implements UpdateHandler, TriggerHandler 
     doDisable() {
         if (this.targets !== undefined) {
             for (let i = this.body.bodyGroup.length; i > 0; i--) {
-                let element = this.body.bodyGroup[i - 1].getElementByTypeName(this.elementName);
-                if (element !== undefined && element.name === this.elementChipName)
-                    element.enabled = false;
+                let elements = this.body.bodyGroup[i - 1].getAllElementsByTypeName(this.elementName);
+                for (let i = 0; i < elements.length; i++) {
+                    if (elements[i].name === this.elementChipName || this.elementChipName === "")
+                        elements[i].enabled = false;
+                }
             }
         } else {
-            let element = this.body.getElementByTypeName(this.elementName);
-            if (element !== undefined && element.name === this.elementChipName)
-                element.enabled = false;
+            let elements = this.body.getAllElementsByTypeName(this.elementName);
+            for (let i = 0; i < elements.length; i++) {
+                if (elements[i].name === this.elementChipName || this.elementChipName === "")
+                    elements[i].enabled = false;
+            }
         }
     }
 }

@@ -12,6 +12,9 @@ export class ScaleAnim extends LMent implements UpdateHandler {
     speed: number;
     speedRandomFactror: number;
     startShrinking: boolean;
+    triggerOnZeroScale: boolean;
+    triggerId: string;
+    triggerContext: "local" | "group" | "global";
     private speedRandom: number;
 
     constructor(body: BodyHandle, id: number, params: Partial<ScaleAnim> = {}) {
@@ -23,6 +26,9 @@ export class ScaleAnim extends LMent implements UpdateHandler {
         this.speedRandomFactror = params.speedRandomFactror === undefined ? 0 : params.speedRandomFactror;
         this.startShrinking = params.startShrinking === undefined ? false : params.startShrinking;
         this.speedRandom = 0;
+        this.triggerOnZeroScale = params.triggerOnZeroScale === undefined ? false : params.triggerOnZeroScale;
+        this.triggerId = params.triggerId === undefined ? Helpers.NA : params.triggerId;
+        this.triggerContext = params.triggerContext === undefined ? "local" : params.triggerContext;
     }
 
     onInit(): void {
@@ -33,16 +39,16 @@ export class ScaleAnim extends LMent implements UpdateHandler {
             this.maxScale = this.minScale;
             this.minScale = temp;
         }
-        else(
+        else (
             this.body.body.setScale(Helpers.NewVector3(this.minScale, this.minScale, this.minScale))
         )
     }
-    
+
     onStart(): void {
     }
 
     onUpdate(dt: number): void {
-        if(Math.random() > 0.5)
+        if (Math.random() > 0.5)
             this.speedRandomFactror = -this.speedRandomFactror;
         this.speedRandom = this.speed + Math.random() * this.speedRandomFactror;
         switch (this.style) {
@@ -55,6 +61,12 @@ export class ScaleAnim extends LMent implements UpdateHandler {
         }
     }
 
+    sendTrigger() {
+        if (Helpers.ValidateParams(this.triggerId, this, "triggerId")) {
+            GameplayScene.instance.dispatcher.onTrigger(this, this.triggerId, this.triggerContext);
+        }
+    }
+
     sineAnim(dt: number): void {
         let sineValue = (Math.sin(GameplayScene.instance.memory.timeSinceStart * this.speed) + 1) / 2;
         sineValue = sineValue * (this.maxScale - this.minScale) + this.minScale;
@@ -63,16 +75,23 @@ export class ScaleAnim extends LMent implements UpdateHandler {
     }
 
     linearAnim(dt: number): void {
-        let scale= this.body.body.getScale().x;
-        if(this.startShrinking){
-            if(scale !== undefined && scale <= this.maxScale)
-            return;
+        let scale = this.body.body.getScale().x;
+        if (this.startShrinking) {
+            if (scale !== undefined && scale <= this.maxScale) {
+                if (this.triggerOnZeroScale)
+                    this.sendTrigger();
+                return;
+            }
             scale = this.body.body.getScale().x - (0.01 * this.speedRandom);
-        }else{
-            if(scale !== undefined && scale >= this.maxScale)
-            return;
+        } else {
+            if (scale !== undefined && scale >= this.maxScale) {
+                if (this.triggerOnZeroScale)
+                    this.sendTrigger();
+                return;
+            }
             scale = this.body.body.getScale().x + (0.01 * this.speedRandom);
         }
+
         let scaleVector = Helpers.NewVector3(scale, scale, scale);
         this.body.body.setScale(scaleVector);
     }
