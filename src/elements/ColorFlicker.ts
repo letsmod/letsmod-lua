@@ -5,7 +5,6 @@ import { UpdateHandler } from "engine/MessageHandlers";
 import { global, js_new } from "js";
 import { Color } from "three";
 
-
 export class ColorFlicker extends LMent implements UpdateHandler {
     initiallyEnabled: boolean;
     frequency: number;
@@ -49,7 +48,6 @@ export class ColorFlicker extends LMent implements UpdateHandler {
         let originalColor = js_new(global.THREE.Color, this.bodyColor.r, this.bodyColor.g, this.bodyColor.b);
         let secondColor = js_new(global.THREE.Color, this.color.r, this.color.g, this.color.b);
 
-
         if (now > this.endTime) {
             if (this.targets !== undefined) {
                 for (let i = this.body.bodyGroup.length; i > 0; i--)
@@ -81,6 +79,4 @@ export class ColorFlicker extends LMent implements UpdateHandler {
             this.cooldown = now;
         }
     }
-
-
 }

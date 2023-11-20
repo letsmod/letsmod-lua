@@ -3,7 +3,6 @@ import { GameplayScene } from "engine/GameplayScene";
 import { ButtonHandler, CollisionInfo, DragGestureHandler } from "engine/MessageHandlers";
 import { AvatarBase } from "./AvatarBase";
 import { Helpers } from "engine/Helpers";
-import { GuideBody } from "./GuideBody";
 import { DragTurner } from "./DragTurner";
 
 export class BallControls extends AvatarBase implements DragGestureHandler {
@@ -49,13 +48,7 @@ export class BallControls extends AvatarBase implements DragGestureHandler {
     }
 
     initBallGuide() {
-        for (let i of GameplayScene.instance.bodies)
-            if (i.body.name === "CameraGuide")
-                this.ballGuide = i;
-
-        //TODO: Use the line below and delete the line above when Don applies his fix.
-        //this.ballGuide = GameplayScene.instance.clonePrefab("RollerCamGuide");
-
+        this.ballGuide = GameplayScene.instance.clonePrefab("RollerCamGuide_Lua");
         if (this.ballGuide === undefined)
         {
             console.error("No ball guide found in prefabs.");
@@ -144,5 +137,4 @@ export class BallControls extends AvatarBase implements DragGestureHandler {
         this.dragDx = dx;
         this.dragDy = dy;
     }
-
 }

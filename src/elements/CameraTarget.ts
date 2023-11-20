@@ -6,18 +6,15 @@ import { GuideBody } from "./GuideBody";
 import { Helpers } from "engine/Helpers";
 
 export class CameraTarget extends LMent implements UpdateHandler, DragGestureHandler {
-
     prefabName: string;
     dragSpeed: number;
     sinkLevel: number;
     maxCamDrag: { x: number; y: number; z: number; };
     minCamDrag: { x: number; y: number; z: number; };
-    resetDragOnRelease : boolean;
+    resetDragOnRelease: boolean;
 
     private cameraIsMain: boolean = false;
     private currentCamDrag = Helpers.zeroVector;
-
-
 
     private cameraLead: GuideBody | undefined;
 
@@ -29,8 +26,8 @@ export class CameraTarget extends LMent implements UpdateHandler, DragGestureHan
         this.maxCamDrag = params.maxCamDrag === undefined ? { x: 0, y: 0, z: 0 } : params.maxCamDrag;
         this.minCamDrag = params.minCamDrag === undefined ? { x: 0, y: 0, z: 0 } : params.minCamDrag;
         this.dragSpeed = params.dragSpeed === undefined ? 0 : params.dragSpeed;
-        this.prefabName = params.prefabName === undefined ? "MainCamera" : params.prefabName;
-        this.cameraIsMain = this.prefabName === "MainCamera";
+        this.prefabName = params.prefabName === undefined ? "MainCamera_Lua" : params.prefabName;
+        this.cameraIsMain = this.prefabName === "MainCamera_Lua";
         this.resetDragOnRelease = params.resetDragOnRelease === undefined?false:params.resetDragOnRelease;
         this.sinkLevel = params.sinkLevel === undefined? 0 : params.sinkLevel;
     }
@@ -58,23 +55,23 @@ export class CameraTarget extends LMent implements UpdateHandler, DragGestureHan
     }
 
     initCamera() {
-        if(this.cameraIsMain && GameplayScene.instance.memory.mainCamera !== undefined)
+        if (this.cameraIsMain && GameplayScene.instance.memory.mainCamera !== undefined)
             return;
-        
+
         let cameraInstance = GameplayScene.instance.clonePrefab(this.prefabName);
         if (cameraInstance !== undefined && this.cameraIsMain) {
             cameraInstance.body.setPosition(Helpers.forwardVector.multiplyScalar(-2).add(this.body.body.getPosition()));
             GameplayScene.instance.memory.mainCamera = cameraInstance;
             if (GameplayScene.instance.clientInterface !== undefined)
                 GameplayScene.instance.clientInterface.setCamera(cameraInstance.body.id);
-        } else console.error("No camera prefab named: "+this.prefabName+".");
+        } else console.error("No camera prefab named: " + this.prefabName + ".");
     }
 
     initBodyGuides() {
         let elements = this.body.getAllElements(GuideBody);
         let guideFound = false;
         for (let e of elements) {
-            if (e !== undefined && e.guideName === "MainCamera") {
+            if (e !== undefined && e.guideName === "MainCamera_Lua") {
                 this.cameraLead = e;
                 guideFound = true;
             }
@@ -85,7 +82,7 @@ export class CameraTarget extends LMent implements UpdateHandler, DragGestureHan
 
     updateCameraDrag() {
         if (this.cameraLead === undefined) return;
-        if(!this.resetDragOnRelease && (this.dragDx != 0 || this.dragDy != 0)) {
+        if (!this.resetDragOnRelease && (this.dragDx != 0 || this.dragDy != 0)) {
             if (this.dragDx > 0)
                 this.currentCamDrag.x = Helpers.NumLerp(this.currentCamDrag.x, -this.maxCamDrag.x, this.dragSpeed);
             else if (this.dragDx < 0)
@@ -98,7 +95,7 @@ export class CameraTarget extends LMent implements UpdateHandler, DragGestureHan
                 this.currentCamDrag.z = Helpers.NumLerp(this.currentCamDrag.z, this.minCamDrag.z, this.dragSpeed);
             else this.currentCamDrag.z = Helpers.NumLerp(this.currentCamDrag.z, 0, this.dragSpeed);
         }
-        if(this.currentCamDrag.length() !== 0)
+        if (this.currentCamDrag.length() !== 0)
             this.cameraLead.updateOffsetVector(this.currentCamDrag.x, this.currentCamDrag.y, this.currentCamDrag.z);
     }
 

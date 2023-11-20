@@ -404,7 +404,7 @@ export class MessageDispatcher
       let body = source.body;
       for (let listener of this.listeners["trigger"].slice())
       {
-        if (listener.enabled && listener.body == body && listener.hasSubtype(triggerId)) {
+        if ((listener.enabled || listener.receivesTriggersWhenDisabled) && listener.body == body && listener.hasSubtype(triggerId)) {
           listener.onTrigger(source, triggerId);
         }
       }
@@ -413,7 +413,7 @@ export class MessageDispatcher
     {
       for (let listener of this.listeners["trigger"].slice())
       {
-        if (listener.enabled && listener.hasSubtype(triggerId)) {
+        if ((listener.enabled || listener.receivesTriggersWhenDisabled) && listener.hasSubtype(triggerId)) {
           for (let body of source.body.bodyGroup)
           {
             if (listener.body == body)
@@ -428,7 +428,7 @@ export class MessageDispatcher
     {
       for (let listener of this.listeners["trigger"].slice())
       {
-        if (listener.enabled && listener.hasSubtype(triggerId)) {
+        if ((listener.enabled || listener.receivesTriggersWhenDisabled) && listener.hasSubtype(triggerId)) {
           listener.onTrigger(source, triggerId);
         }
       }  

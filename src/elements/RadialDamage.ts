@@ -4,8 +4,7 @@ import { HitPoints, DamageType } from "./HitPoints";
 import { LMent } from "../engine/LMent";
 import { CollisionHandler, CollisionInfo } from "../engine/MessageHandlers";
 
-export class RadialDamage extends LMent implements CollisionHandler
-{
+export class RadialDamage extends LMent implements CollisionHandler {
     damageValue: number;
     distance: number;
     damageType: DamageType | undefined;
@@ -23,7 +22,7 @@ export class RadialDamage extends LMent implements CollisionHandler
         this.cooldown = params.cooldown === undefined ? 0 : params.cooldown;
 
         this.contactCooldowns = {};
-	}
+    }
 
     onInit(): void {
         GameplayScene.instance.dispatcher.addListener("collision", this);
@@ -40,7 +39,7 @@ export class RadialDamage extends LMent implements CollisionHandler
             if (hpElement !== undefined) {
                 if (this.contactCooldowns[other.body.id] === undefined || now - this.contactCooldowns[other.body.id] >= this.cooldown) {
                     let distanceFromCenter = other.body.getPosition().distanceTo(this.body.body.getPosition());
-                    let damage = this.damageValue /  distanceFromCenter;
+                    let damage = this.damageValue / distanceFromCenter;
                     damage = Math.round(damage);
                     if (this.distance === 999999 || damage > this.damageValue) {
                         damage = this.damageValue;
@@ -53,5 +52,4 @@ export class RadialDamage extends LMent implements CollisionHandler
             }
         }
     }
-
 }

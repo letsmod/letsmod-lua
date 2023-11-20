@@ -1,11 +1,11 @@
 import { BodyHandle, ShapePointer } from "engine/BodyHandle";
 import { GameplayScene } from "engine/GameplayScene";
 import { LMent } from "engine/LMent";
-import { UpdateHandler } from "engine/MessageHandlers";
+import { TriggerHandler, UpdateHandler } from "engine/MessageHandlers";
 import { ShapeStateController } from "./ShapeStateController";
 import { Helpers } from "engine/Helpers";
 
-export class ShapeStateAnimator extends LMent implements UpdateHandler {
+export class ShapeStateAnimator extends LMent implements UpdateHandler, TriggerHandler {
     /*** THIS LMENT REQUIRES A ShapeStateController ELEMENT TO BE ATTACHED TO THE SAME BODY ***/
 
     // PARAMS
@@ -15,6 +15,10 @@ export class ShapeStateAnimator extends LMent implements UpdateHandler {
     loop: boolean;
     animFrames: { shapeName: string, frameSpan: number }[];
     controller: string;
+    controllerLMent: ShapeStateController | undefined;
+    triggerId: string;
+    receivesTriggersWhenDisabled: boolean | undefined;
+
     get FinishedPlaying() { return this.finishedPlaying; };
     private finishedPlaying = false;;
     //Element Local Variables
@@ -26,16 +30,30 @@ export class ShapeStateAnimator extends LMent implements UpdateHandler {
     constructor(body: BodyHandle, id: number, params: Partial<ShapeStateAnimator> = {}) {
         super(body, id, params);
         this.stateName = params.stateName === undefined ? "default" : params.stateName;
+        this.triggerId = params.triggerId === undefined ? Helpers.NA : params.triggerId;
         this.animFrames = this.convertArray(params.animFrames) || [];
         this.frameRate = params.frameRate === undefined ? 30 : params.frameRate;
         this.priority = params.priority === undefined ? 1.1 : params.priority;
         this.priority = Math.round(this.priority);
         this.loop = params.loop === undefined ? true : params.loop;
         this.controller = params.controller === undefined ? Helpers.NA : params.controller;
+        this.receivesTriggersWhenDisabled = params.receivesTriggersWhenDisabled === undefined? false:params.receivesTriggersWhenDisabled;
+    }
+
+    hasSubtype(trigger: string): boolean {
+        return trigger === this.triggerId;
+    }
+
+    onTrigger(source: LMent, triggerId: string): void {
+        if(this.triggerId === triggerId && Helpers.ValidateParams(this.controller,this,"ShapeStateController"))
+        {
+            this.controllerLMent?.playState(this.stateName,true);
+        }
     }
 
     onInit(): void {
         GameplayScene.instance.dispatcher.addListener("update", this);
+        GameplayScene.instance.dispatcher.addListener("trigger", this);
     }
 
     onStart(): void {
@@ -49,6 +67,7 @@ export class ShapeStateAnimator extends LMent implements UpdateHandler {
         for (let c of controllerLments)
             if (c.name === this.controller) {
                 cFound = true;
+                this.controllerLMent = c;
                 c.addState(this);
             }
 
@@ -88,7 +107,6 @@ export class ShapeStateAnimator extends LMent implements UpdateHandler {
         if (shape !== undefined)
             shape.setVisible(true);
     }
-
 
     onUpdate(): void {
         this.fpsCounter--;

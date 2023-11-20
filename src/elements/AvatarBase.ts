@@ -1,5 +1,4 @@
 import { BodyHandle } from "engine/BodyHandle";
-import { GameplayMemory } from "engine/GameplayMemory";
 import { GameplayScene } from "engine/GameplayScene";
 import { Helpers } from "engine/Helpers";
 import { LMent } from "engine/LMent";
