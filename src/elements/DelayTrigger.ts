@@ -8,6 +8,7 @@ export class DelayTrigger extends LMent {
     triggerId: string;
     triggerContext: "local" | "group" | "global";
     delay: number;
+    delayedFunc: any | undefined;
 
     onInit(): void {
     }
@@ -29,13 +30,17 @@ export class DelayTrigger extends LMent {
     }
 
     sendTrigger() {
-        GameplayScene.instance.dispatcher.queueDelayedFunction(this, () => {
-
-            if (Helpers.ValidateParams(this.triggerId, this, "triggerId")) {
-                GameplayScene.instance.dispatcher.onTrigger(this, this.triggerId, this.triggerContext);
-            }
+        if (this.delayedFunc !== undefined) {
+            GameplayScene.instance.dispatcher.removeQueuedFunction(this.delayedFunc);
             this.enabled = false;
-        }, this.delay)
+        }
+        this.delayedFunc = GameplayScene.instance.dispatcher.queueDelayedFunction(this, () => { this.doSendTrigger() }, this.delay);
     }
 
+    doSendTrigger() {
+        if (Helpers.ValidateParams(this.triggerId, this, "triggerId")) {
+            GameplayScene.instance.dispatcher.onTrigger(this, this.triggerId, this.triggerContext);
+        }
+        this.enabled = false;
+    }
 }
