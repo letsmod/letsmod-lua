@@ -60,11 +60,10 @@ export class Squishable extends LMent implements CollisionHandler, UpdateHandler
 
     squishMe() {
         let avatarElement = this.body.getElement(AvatarBase)
-        if(avatarElement === undefined){
+        if (avatarElement === undefined) {
             GameplayScene.instance.destroyBody(this.body);
             this.enabled = false;
-        }else avatarElement.lose();
+        } else avatarElement.lose();
 
-        }
     }
 }
