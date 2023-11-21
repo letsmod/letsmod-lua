@@ -45,3 +45,4 @@ export { DelayTrigger} from "./DelayTrigger";
 export { SetEnabledOnTrigger} from "./SetEnabledOnTrigger";
 export { Shake} from "./Shake";
 export {Equipment} from "./Equipment";
+export {HazardZone} from "./HazardZone";
