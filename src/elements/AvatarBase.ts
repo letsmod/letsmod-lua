@@ -14,8 +14,6 @@ export class AvatarBase extends LMent implements UpdateHandler, HitPointChangeHa
   private maxSafeSteps: number = 100;
   public isOnGround = false;
 
-  private isReviving = false;
-  private addStepDelayedFunc: any | undefined;
   private safeStepDelay: number = 2;
 
   constructor(body: BodyHandle, id: number, params: Partial<AvatarBase> = {}) {
@@ -91,7 +89,11 @@ export class AvatarBase extends LMent implements UpdateHandler, HitPointChangeHa
       
       for (let h of HazardZone.AllZones)
         if (step.distanceTo(h.body.body.getPosition()) < h.radius)
+        {
+          console.log("not safe .. ");
           break;
+        }
+          
         else {
           isSafe = true;
         }
@@ -108,7 +110,6 @@ export class AvatarBase extends LMent implements UpdateHandler, HitPointChangeHa
 
   respawnAt(pos: Vector3) {
     AvatarBase.safeSteps = [AvatarBase.safeSteps[0]];
-    this.isReviving = false;
 
     let hp = this.body.getElement(HitPoints);
     if (hp !== undefined)
