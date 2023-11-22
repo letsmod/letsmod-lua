@@ -47,6 +47,7 @@ export class AvatarBase extends LMent implements UpdateHandler, HitPointChangeHa
   }
 
   onActorDestroyed(actor: BodyHandle): void {
+    if (actor === this.body)
     this.lose();
   }
 
