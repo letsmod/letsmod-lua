@@ -59,6 +59,10 @@ export class CameraTarget extends LMent implements UpdateHandler, DragGestureHan
             return;
 
         let cameraInstance = GameplayScene.instance.clonePrefab(this.prefabName);
+        if (cameraInstance !== undefined)
+        {
+            cameraInstance.body.setVisible(false);
+        }
         if (cameraInstance !== undefined && this.cameraIsMain) {
             cameraInstance.body.setPosition(Helpers.forwardVector.multiplyScalar(-2).add(this.body.body.getPosition()));
             GameplayScene.instance.memory.mainCamera = cameraInstance;

@@ -8,8 +8,11 @@ export class Helpers{
     static get zeroVector() {return js_new(global.THREE.Vector3,0,0,0);}
     static get oneVector() {return js_new(global.THREE.Vector3,1,1,1);}
     static get upVector() {return js_new(global.THREE.Vector3,0,1,0);}
+    static get downVector() {return js_new(global.THREE.Vector3,0,-1,0);}
     static get rightVector() {return js_new(global.THREE.Vector3,1,0,0);}
+    static get leftVector() {return js_new(global.THREE.Vector3,-1,0,0);}
     static get forwardVector(){return js_new(global.THREE.Vector3,0,0,1);}
+    static get backwardVector(){return js_new(global.THREE.Vector3,0,0,-1);}
     static get xzVector() {return js_new(global.THREE.Vector3,1,0,1);}
     static get xyVector() {return js_new(global.THREE.Vector3,1,1,0);}
     static get yzVector() {return js_new(global.THREE.Vector3,0,1,1);}
