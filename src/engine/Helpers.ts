@@ -94,5 +94,10 @@ export class Helpers{
         console.log(element.constructor.name+" requires a param"+param+" to be included in the params list.");
         return false;
     }
+
+    static LogVector(v:Vector3)
+    {
+        console.log("x: "+v.x+", y:"+v.y+", z:"+v.z);
+    }
     
 }
