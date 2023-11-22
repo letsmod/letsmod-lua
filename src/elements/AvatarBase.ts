@@ -42,7 +42,7 @@ export class AvatarBase extends LMent implements UpdateHandler, HitPointChangeHa
     this.addSafeStep();
   }
 
-  onUpdate(): void {
+  onUpdate(dt?: number): void {
     this.sinkCheck();
   }
 

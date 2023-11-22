@@ -13,7 +13,7 @@ export class BallControls extends AvatarBase implements DragGestureHandler {
 
     private dragDx = 0;
     private dragDy = 0;
-    private isOnGround = false;
+    public isOnGround = false;
 
     private ballGuide: BodyHandle | undefined = undefined;
     private ballDragTurner: DragTurner | undefined = undefined;

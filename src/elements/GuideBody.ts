@@ -25,6 +25,7 @@ export class GuideBody extends LMent implements UpdateHandler {
     rotate: boolean; /*Default to TRUE, which allows it to update rotation to match target every frame*/
     move: boolean; /*Defaults to TRUE, which allows it to update position to match target every frame*/
     mode: string; /*To tell whether to leade the target or follow the target*/
+    makeInvisible: boolean; /*To make the body invisible*/
 
     private leader: BodyHandle | undefined;
     private follower: BodyHandle | undefined;
@@ -47,10 +48,16 @@ export class GuideBody extends LMent implements UpdateHandler {
 
         this.followSpeed = params.followSpeed === undefined ? 1 : params.followSpeed;
         this.rotationSpeed = params.rotationSpeed === undefined ? 1 : params.rotationSpeed;
+
+        this.makeInvisible = params.makeInvisible === undefined ? false : params.makeInvisible;
     }
 
     onInit(): void {
         GameplayScene.instance.dispatcher.addListener("update", this);
+        if (this.makeInvisible)
+        {
+            this.body.body.setVisible(false);
+        }
     }
 
     initTargetBody(){
@@ -65,6 +72,11 @@ export class GuideBody extends LMent implements UpdateHandler {
             if(i.body.name === this.target)
                 this.targetBody = i;
         }},Helpers.deltaTime);
+    }
+
+    getTargetBody()
+    {
+        return this.targetBody;
     }
 
     onStart(): void {

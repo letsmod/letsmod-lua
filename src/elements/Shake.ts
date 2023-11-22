@@ -10,12 +10,11 @@ export class Shake extends LMent implements UpdateHandler, TriggerHandler {
     movementAmplitude: Vector3;
     rotationAmplitude: number;
     duration: number;
-    startTime: number;
     isActive: boolean;
-    originalPosition: Vector3;
-    originalRotation: THREE.Quaternion;
     triggerId: string;
-    triggerContext: "local" | "group" | "global";
+    private startTime: number;
+    private originalPosition: Vector3;
+    private originalRotation: THREE.Quaternion;
 
     constructor(body: BodyHandle, id: number, params: Partial<Shake> = {}) {
         super(body, id, params);
@@ -24,11 +23,14 @@ export class Shake extends LMent implements UpdateHandler, TriggerHandler {
         this.rotationAmplitude = params.rotationAmplitude === undefined ? 0.1 : params.rotationAmplitude;
         this.duration = params.duration === undefined ? 1 : params.duration;
         this.startTime = 0;
-        this.isActive = true;
+        this.isActive = params.isActive === undefined ? false : params.isActive;
         this.originalPosition = this.body.body.getPosition().clone();
         this.originalRotation = this.body.body.getRotation().clone();
         this.triggerId = params.triggerId === undefined ? "" : params.triggerId;
-        this.triggerContext = params.triggerContext === undefined ? "local" : params.triggerContext;
+    }
+
+    validateElement() {
+        return Helpers.ValidateParams(this.triggerId, this, "triggerId");
     }
 
     hasSubtype(subtype: string): boolean {
@@ -36,11 +38,15 @@ export class Shake extends LMent implements UpdateHandler, TriggerHandler {
     }
 
     onTrigger(source: LMent, triggerId: string): void {
-            this.shake();
+        if (!this.validateElement())
+            return;
+        this.shake();
+        console.log("Shake triggered!");
     }
 
     onInit(): void {
         GameplayScene._instance.dispatcher.addListener("update", this);
+        GameplayScene.instance.dispatcher.addListener("trigger", this);
     }
 
     onStart(): void {
@@ -85,5 +91,6 @@ export class Shake extends LMent implements UpdateHandler, TriggerHandler {
     shake(): void {
         this.isActive = true;
         this.startTime = GameplayScene.instance.memory.timeSinceStart;
+        console.log("Shake!");
     }
 }
