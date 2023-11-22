@@ -57,11 +57,7 @@ export class PrefabSpawner extends LMent implements TriggerHandler {
     }
 
     spawn(): void {
-        //let projectile = GameplayScene.instance.clonePrefab(this.prefabName);
-        let projectile = undefined;
-        for (let i = 0; i < GameplayScene.instance.bodies.length; i++)
-            if (GameplayScene.instance.bodies[i].body.name == this.prefabName)
-                projectile = GameplayScene.instance.bodies[i].body.cloneBody();
+        let projectile = GameplayScene.instance.clonePrefab(this.prefabName);
         if (projectile === undefined) {
             console.log("No prefab named: " + this.prefabName + " exists in the library.");
             return;
