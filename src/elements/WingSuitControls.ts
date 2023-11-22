@@ -20,7 +20,7 @@ export class WingSuitControls extends AvatarBase implements ButtonHandler, DragG
 
   private dragDx = 0;
   private dragDy = 0;
-  private isOnGround = false;
+  public isOnGround = false;
   private freeFall = false;
   private isAscending: boolean = false;
   private flapsCounter = 0;
