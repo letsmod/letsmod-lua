@@ -42,12 +42,13 @@ export class AvatarBase extends LMent implements UpdateHandler, HitPointChangeHa
     this.addSafeStep();
   }
 
-  onUpdate(): void {
+  onUpdate(dt?: number): void {
     this.sinkCheck();
   }
 
   onActorDestroyed(actor: BodyHandle): void {
-    this.lose();
+    if(actor === this.body)
+      this.lose();
   }
 
   onCollision(info: CollisionInfo): void {
