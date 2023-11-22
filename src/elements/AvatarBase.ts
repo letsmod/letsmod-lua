@@ -47,8 +47,8 @@ export class AvatarBase extends LMent implements UpdateHandler, HitPointChangeHa
   }
 
   onActorDestroyed(actor: BodyHandle): void {
-    if (actor === this.body)
-    this.lose();
+    if(actor === this.body)
+      this.lose();
   }
 
   onCollision(info: CollisionInfo): void {
@@ -119,7 +119,8 @@ export class AvatarBase extends LMent implements UpdateHandler, HitPointChangeHa
     let camTarget = this.body.getElement(CameraTarget);
     if (camTarget !== undefined)
       camTarget.reset();
-
-    this.body.body.setPosition(pos.add(Helpers.NewVector3(0, 0.5, 0)));
+    this.body.body.setAngularVelocity(Helpers.zeroVector);
+    this.body.body.setVelocity(Helpers.zeroVector);
+    this.body.body.setPosition(pos.clone().add(Helpers.NewVector3(0, 0.5, 0)));
   }
 }
