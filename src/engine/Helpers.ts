@@ -2,6 +2,7 @@ import { global, js_new } from "js";
 import { Quaternion, Vector3 } from "three";
 import { GameplayScene } from "./GameplayScene";
 import { LMent } from "./LMent";
+import { BodyHandle } from "./BodyHandle";
 
 export class Helpers{
 
@@ -96,6 +97,21 @@ export class Helpers{
         if(paramVal !== undefined && paramVal !== Helpers.NA) return true;
         console.log(element.constructor.name+" requires a param"+param+" to be included in the params list.");
         return false;
+    }
+
+    static LogVector(v:Vector3)
+    {
+        console.log("x: "+v.x+", y:"+v.y+", z:"+v.z);
+    }
+
+    //This is not recommended to be used continuously ...
+    static findBodyByName(name: string): BodyHandle | undefined {
+        let body = GameplayScene.instance.bodies.find(b => b.body.name == name);
+        if (body === undefined) {
+            console.log("No body named: " + name + "was found.")
+            return undefined;
+        }
+        return body;
     }
     
 }

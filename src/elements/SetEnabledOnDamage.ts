@@ -4,21 +4,22 @@ import { LMent } from "engine/LMent";
 import { CollisionHandler, CollisionInfo } from "engine/MessageHandlers";
 import { HitPoints } from "./HitPoints";
 
-export class EnableElementOnDamage extends LMent implements CollisionHandler {
+export class SetEnabledOnDamage extends LMent implements CollisionHandler {
     elementNames: string[] | undefined;
     minDamage: number;
     maxDamage: number;
     elementToEnable: any[];
     currentHP: number;
     hpElement: HitPoints | undefined;
-    constructor(body: BodyHandle, id: number, params: Partial<EnableElementOnDamage> = {}) {
+    setEnabled: boolean;
+    constructor(body: BodyHandle, id: number, params: Partial<SetEnabledOnDamage> = {}) {
         super(body, id, params);
         this.elementNames = this.convertArray(params.elementNames) || [];
         this.elementToEnable = [];
         this.maxDamage = params.maxDamage === undefined ? 20 : params.maxDamage;
         this.minDamage = params.minDamage === undefined ? 1 : params.minDamage;
         this.currentHP = 0;
-
+        this.setEnabled = params.setEnabled === undefined ? true : params.setEnabled;
     }
 
     onInit(): void {
@@ -48,7 +49,7 @@ export class EnableElementOnDamage extends LMent implements CollisionHandler {
             if (this.hpElement.hitpoints < this.currentHP) {
                 for (let i = 0; this.elementToEnable !== undefined && i < this.elementToEnable.length; i++) {
                     if (this.elementToEnable[i] !== undefined) {
-                        this.elementToEnable[i].enabled = true;
+                        this.elementToEnable[i].enabled = this.setEnabled;
                     }
                 }
             }

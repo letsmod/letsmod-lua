@@ -14,7 +14,6 @@ export class PlatformerControls extends AvatarBase implements ButtonHandler, Dra
 
   private dragDx = 0;
   private dragDy = 0;
-  private isOnGround = false;
   private topAnim: ShapeStateController | undefined;
   private bottomAnim: ShapeStateController | undefined;
 
