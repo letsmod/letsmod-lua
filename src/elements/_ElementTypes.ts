@@ -44,3 +44,6 @@ export { TriggerOnButton} from "./TriggerOnButton";
 export { DelayTrigger} from "./DelayTrigger";
 export { SetEnabledOnTrigger} from "./SetEnabledOnTrigger";
 export { Shake} from "./Shake";
+export {Equipment} from "./Equipment";
+export {HazardZone} from "./HazardZone";
+export {LookAt} from "./LookAt";

@@ -28,8 +28,8 @@ export class CameraTarget extends LMent implements UpdateHandler, DragGestureHan
         this.dragSpeed = params.dragSpeed === undefined ? 0 : params.dragSpeed;
         this.prefabName = params.prefabName === undefined ? "MainCamera_Lua" : params.prefabName;
         this.cameraIsMain = this.prefabName === "MainCamera_Lua";
-        this.resetDragOnRelease = params.resetDragOnRelease === undefined?false:params.resetDragOnRelease;
-        this.sinkLevel = params.sinkLevel === undefined? 0 : params.sinkLevel;
+        this.resetDragOnRelease = params.resetDragOnRelease === undefined ? false : params.resetDragOnRelease;
+        this.sinkLevel = params.sinkLevel === undefined ? 0 : params.sinkLevel;
     }
 
     onInit(): void {
@@ -102,5 +102,10 @@ export class CameraTarget extends LMent implements UpdateHandler, DragGestureHan
     sinkCheck() {
         if (this.body.body.getPosition().y < this.sinkLevel && this.cameraLead !== undefined)
             this.cameraLead.enabled = false;
+    }
+
+    reset() {
+        if (this.cameraLead !== undefined)
+            this.cameraLead.enabled = true;
     }
 }

@@ -14,6 +14,7 @@ export class HitPoints extends LMent {
   hitpoints: number;
   damageTypeMultipliers: { [D in DamageType]?: number };
   team: DamageTeam;
+  private defaultHP;
 
   constructor(body: BodyHandle, id: number, params: Partial<HitPoints> = {}) {
     super(body, id, params);
@@ -21,6 +22,7 @@ export class HitPoints extends LMent {
     this.hitpoints = params.hitpoints === undefined ? this.maxHitpoints : params.hitpoints;
     this.damageTypeMultipliers = params.damageTypeMultipliers === undefined ? {} : params.damageTypeMultipliers;
     this.team = params.team === undefined ? 0 : params.team;
+    this.defaultHP = this.hitpoints;
   }
 
   onInit() {
@@ -64,5 +66,10 @@ export class HitPoints extends LMent {
 
   heal(amount: number) {
     this.damage(-amount);
+  }
+
+  reset()
+  {
+    this.hitpoints = this.defaultHP;
   }
 }
