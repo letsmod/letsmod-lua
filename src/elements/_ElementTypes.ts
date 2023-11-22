@@ -49,3 +49,4 @@ export {HazardZone} from "./HazardZone";
 export {LookAt} from "./LookAt";
 export {BouncerEnemy} from "./BouncerEnemy";
 export {WalkerEnemy} from "./WalkerEnemy";
+export {InfoBar} from "./InfoBar";
