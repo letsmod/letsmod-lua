@@ -2,8 +2,9 @@ import { GameplayScene } from "engine/GameplayScene";
 import { Helpers } from "engine/Helpers";
 import { UpdateHandler } from "engine/MessageHandlers";
 import { State, StateMachineLMent } from "engine/StateMachineLMent";
-import { Vector3 } from "three";
+import { Quaternion, Vector3 } from "three";
 import { LookAt } from "./LookAt";
+import { ShapeStateController } from "./ShapeStateController";
 
 
 
@@ -14,28 +15,42 @@ export class PatrolState extends State implements UpdateHandler {
     detectionRadius: number;
     speed: number;
     patrolDelay;
-    lookAt: LookAt;
     isStationary: boolean = false;
+
+    protected anim: ShapeStateController | undefined;
+    protected lookAt: LookAt | undefined;
     private isFlying: boolean = false;
 
+    private initOrientation: Quaternion;
     private turnBackDelayFunc: any | undefined;
     private turnedBack: boolean = false;
-    constructor(name: string, stateMachine: StateMachineLMent, startPosition: Vector3, endPosition: Vector3, speed: number, patrolDelay: number, detectionRadius: number, lookAt: LookAt, flying: boolean = false) {
+    constructor(name: string, stateMachine: StateMachineLMent, startPosition: Vector3, endPosition: Vector3, speed: number, patrolDelay: number, detectionRadius: number, flying: boolean = false) {
         super(name, stateMachine);
         this.startPosition = startPosition;
         this.endPosition = endPosition;
         this.speed = speed;
         this.patrolDelay = patrolDelay;
         this.detectionRadius = detectionRadius;
-        this.lookAt = lookAt;
         this.isFlying = flying;
 
+        this.lookAt = this.stateMachine.body.getElement(LookAt);
+        if (this.lookAt === undefined)
+            console.log("No LookAt element is found");
+
+        this.anim = this.stateMachine.body.getElement(ShapeStateController);
+        if (this.anim === undefined)
+            console.log("No ShapeStateController Element is found, this would prevent chase state animations from playing.");
+
         this.isStationary = this.startPosition.distanceTo(this.endPosition) <= 0.1;
+        this.initOrientation = this.stateMachine.body.body.getRotation();
     }
 
     onEnterState(previousState: State | undefined) {
         this.turnedBack = false;
-        this.lookAt.changeTargetByVector(this.endPosition);
+        if (this.lookAt)
+            if (this.isStationary) {
+                this.lookAt.changeTargetByVector(this.endPosition.clone().add(Helpers.forwardVector.applyQuaternion(this.initOrientation)));
+            } else this.lookAt.changeTargetByVector(this.endPosition);
     }
 
     onExitState(nextState: State | undefined) {
@@ -43,13 +58,11 @@ export class PatrolState extends State implements UpdateHandler {
     }
 
     onUpdate(dt: number): void {
-        if (this.isStationary)
-            return;
 
         let distance = this.stateMachine.body.body.getPosition().distanceTo(this.endPosition);
-        let turnThreshold = 0.2;
+        let turnThreshold = 1;
 
-        if (distance < turnThreshold) {
+        if (distance <= turnThreshold) {
             this.stop();
             this.turnBack();
         }
@@ -92,6 +105,11 @@ export class PatrolState extends State implements UpdateHandler {
     turnBack() {
         if (this.turnedBack) return;
         this.turnedBack = true;
+        if (this.isStationary) {
+            if(this.lookAt)this.lookAt.changeTargetByVector(this.endPosition.clone().add(Helpers.forwardVector.applyQuaternion(this.initOrientation)));
+            return;
+        }
+
         this.turnBackDelayFunc = GameplayScene.instance.dispatcher.queueDelayedFunction(this.stateMachine, () => {
             if (this.name == "patrolForward")
                 this.stateMachine.switchState("patrolBackward");
@@ -112,21 +130,32 @@ export class PatrolState extends State implements UpdateHandler {
 export class ChaseState extends State implements UpdateHandler {
 
     speed: number;
-    lookAt: LookAt;
     chaseRange: number;
     delayedPatrolFunc: any | undefined;
+
+    protected lookAt: LookAt | undefined;
+    protected anim: ShapeStateController | undefined;
     private isFlying: boolean = false;
 
-    constructor(name: string, stateMachine: StateMachineLMent, speed: number, chaseRange: number, lookAt: LookAt, flying: boolean = false) {
+    constructor(name: string, stateMachine: StateMachineLMent, speed: number, chaseRange: number, flying: boolean = false) {
         super(name, stateMachine);
         this.speed = speed;
         this.chaseRange = chaseRange;
-        this.lookAt = lookAt;
         this.isFlying = flying;
+
+        this.lookAt = this.stateMachine.body.getElement(LookAt);
+        if (this.lookAt === undefined)
+            console.log("No LookAt element is found");
+
+        this.anim = this.stateMachine.body.getElement(ShapeStateController);
+        if (this.anim === undefined)
+            console.log("No ShapeStateController Element is found, this would prevent chase state animations from playing.");
     }
 
     onEnterState(previousState: State | undefined) {
-        this.lookAt.changeTargetByBodyName("player");
+        if (this.lookAt !== undefined)
+            this.lookAt.changeTargetByBodyName("player");
+        else console.log("No LookAt element is found");
     }
 
     onExitState(nextState: State | undefined) {
@@ -148,8 +177,8 @@ export class ChaseState extends State implements UpdateHandler {
 
     stop() {
         let newVelo = Helpers.zeroVector;
-        
-        if (!this.isFlying) 
+
+        if (!this.isFlying)
             newVelo = this.stateMachine.body.body.getVelocity().clone().multiply(Helpers.upVector);
 
         this.stateMachine.body.body.setVelocity(newVelo);
@@ -176,18 +205,27 @@ export class ChaseState extends State implements UpdateHandler {
 
 export class AlertState extends State implements UpdateHandler {
 
-    lookAt: LookAt;
     chaseRange: number;
     delayedPatrolFunc: any | undefined;
     alertCooldown: number;
+
+    protected anim: ShapeStateController | undefined;
+    protected lookAt: LookAt | undefined;
     private isFlying: boolean = false;
 
-    constructor(name: string, stateMachine: StateMachineLMent, speed: number, chaseRange: number, alertCooldown: number, lookAt: LookAt, flying:boolean=false) {
+    constructor(name: string, stateMachine: StateMachineLMent, speed: number, chaseRange: number, alertCooldown: number, flying: boolean = false) {
         super(name, stateMachine);
         this.chaseRange = chaseRange;
-        this.lookAt = lookAt;
         this.alertCooldown = alertCooldown;
         this.isFlying = flying;
+
+        this.lookAt = this.stateMachine.body.getElement(LookAt);
+        if (this.lookAt === undefined)
+            console.log("No LookAt element is found");
+
+        this.anim = this.stateMachine.body.getElement(ShapeStateController);
+        if (this.anim === undefined)
+            console.log("No ShapeStateController Element is found, this would prevent alert state animations from playing.");
     }
 
     onEnterState(previousState: State | undefined) {
@@ -220,7 +258,7 @@ export class AlertState extends State implements UpdateHandler {
 
     backToPatrol() {
         this.delayedPatrolFunc = GameplayScene.instance.dispatcher.queueDelayedFunction(this.stateMachine, () => {
-            this.stateMachine.switchState("patrolForward");
+            this.stateMachine.switchState("patrolBackward");
         }, this.alertCooldown);
     }
 
@@ -229,7 +267,7 @@ export class AlertState extends State implements UpdateHandler {
         /* Override by children if needed */
         /* Default is stopping in place */
         let newVelo = Helpers.zeroVector;
-        if(!this.isFlying)
+        if (!this.isFlying)
             newVelo = this.stateMachine.body.body.getVelocity().clone().multiply(Helpers.upVector);
         this.stateMachine.body.body.setVelocity(newVelo);
     }
