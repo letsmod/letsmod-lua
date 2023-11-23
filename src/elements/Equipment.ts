@@ -1,6 +1,7 @@
 import { Collectible } from "./Collectible";
 import { BodyHandle } from "engine/BodyHandle";
 import { GameplayScene } from "engine/GameplayScene";
+import { AvatarBase } from "./AvatarBase";
 
 export type AvatarType = "base" | "rollerball" | "slingshot" | "wingsuit";
 export class Equipment extends Collectible {
@@ -31,7 +32,7 @@ export class Equipment extends Collectible {
     }
 
     cloneAvatar() {
-        switch (this.equipment) {
+        switch (this.equipment.toLowerCase()) {
             case "wingsuit":
                 this.createNewAvatar("Wing Suit");
                 break;
@@ -42,6 +43,7 @@ export class Equipment extends Collectible {
                 this.createNewAvatar("Rollerball");
                 break;
             default:
+                console.log("equipment '"+this.equipment+"' is not found, will spawn the default player.");
                 this.createNewAvatar("Player");
                 break;
         }
@@ -50,14 +52,19 @@ export class Equipment extends Collectible {
     createNewAvatar(prefabName: string) {
         let player = GameplayScene.instance.memory.player;
         if (player === undefined) return;
+        let playerAvatarElement = player.getElement(AvatarBase);
+        if (!playerAvatarElement) {
+            console.log("No Avatar LMent is attached to the player");
+            return;
 
+        }
         let newPlayer = GameplayScene.instance.clonePrefab(prefabName);
         if (newPlayer === undefined)
             console.log("No prefab named " + prefabName + " is found.");
         else {
             newPlayer.body.setPosition(player.body.getPosition());
             newPlayer.body.setRotation(player.body.getRotation());
-            GameplayScene.instance.destroyBody(player);
+            playerAvatarElement.UnequipAvatar();
         }
     }
 }

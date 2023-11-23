@@ -123,4 +123,9 @@ export class AvatarBase extends LMent implements UpdateHandler, HitPointChangeHa
     this.body.body.setVelocity(Helpers.zeroVector);
     this.body.body.setPosition(pos.clone().add(Helpers.NewVector3(0, 0.5, 0)));
   }
+
+  UnequipAvatar()
+  {
+    GameplayScene.instance.destroyBody(this.body);
+  }
 }

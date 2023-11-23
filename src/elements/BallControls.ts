@@ -136,4 +136,10 @@ export class BallControls extends AvatarBase implements DragGestureHandler {
         this.dragDx = dx;
         this.dragDy = dy;
     }
+
+    override UnequipAvatar(): void {
+        if(this.ballGuide)
+            GameplayScene.instance.destroyBody(this.ballGuide);
+        super.UnequipAvatar();
+    }
 }
