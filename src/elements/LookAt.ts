@@ -45,7 +45,6 @@ export class LookAt extends LMent implements UpdateHandler {
 
     doLookAt() {
         if (this.targetVector === undefined) return;
-        console.log("Looking");
 
         let myPos = this.body.body.getPosition();
         let myQuat = this.body.body.getRotation().clone();
