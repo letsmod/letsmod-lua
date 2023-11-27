@@ -2,243 +2,323 @@ import { GameplayScene } from "engine/GameplayScene";
 import { Helpers } from "engine/Helpers";
 import { UpdateHandler } from "engine/MessageHandlers";
 import { State, StateMachineLMent } from "engine/StateMachineLMent";
-import { Vector3 } from "three";
+import { Quaternion, Vector3 } from "three";
 import { LookAt } from "./LookAt";
+import { ShapeStateController } from "./ShapeStateController";
 
-
-
-export class PatrolState extends State implements UpdateHandler {
-
-    startPosition: Vector3;
-    endPosition: Vector3;
-    detectionRadius: number;
-    speed: number;
-    patrolDelay;
-    lookAt: LookAt;
-    isStationary: boolean = false;
-    private isFlying: boolean = false;
-
-    private turnBackDelayFunc: any | undefined;
-    private turnedBack: boolean = false;
-    constructor(name: string, stateMachine: StateMachineLMent, startPosition: Vector3, endPosition: Vector3, speed: number, patrolDelay: number, detectionRadius: number, lookAt: LookAt, flying: boolean = false) {
-        super(name, stateMachine);
-        this.startPosition = startPosition;
-        this.endPosition = endPosition;
-        this.speed = speed;
-        this.patrolDelay = patrolDelay;
-        this.detectionRadius = detectionRadius;
-        this.lookAt = lookAt;
-        this.isFlying = flying;
-
-        this.isStationary = this.startPosition.distanceTo(this.endPosition) <= 0.1;
-    }
-
-    onEnterState(previousState: State | undefined) {
-        this.turnedBack = false;
-        this.lookAt.changeTargetByVector(this.endPosition);
-    }
-
-    onExitState(nextState: State | undefined) {
-        // Nothing so far.
-    }
-
-    onUpdate(dt: number): void {
-        if (this.isStationary)
-            return;
-
-        let distance = this.stateMachine.body.body.getPosition().distanceTo(this.endPosition);
-        let turnThreshold = 0.2;
-
-        if (distance < turnThreshold) {
-            this.stop();
-            this.turnBack();
-        }
-        else this.move(dt);
-
-        this.chaseCheck();
-    }
-
-    chaseCheck() {
-        let player = GameplayScene.instance.memory.player;
-
-        if (player === undefined || this.stateMachine.body.body.getPosition().distanceTo(player.body.getPosition()) > this.detectionRadius)
-            return;
-
-        GameplayScene.instance.dispatcher.removeQueuedFunction(this.turnBackDelayFunc);
-        this.stateMachine.switchState("chase");
-    }
-
-    move(dt: number) {
-        let gravity = this.stateMachine.body.body.getVelocity().clone().multiply(Helpers.upVector);
-        let fwdVelo = Helpers.forwardVector.multiplyScalar(this.speed).applyQuaternion(this.stateMachine.body.body.getRotation());
-
-        if (!this.isFlying)
-            fwdVelo.add(gravity);
-
-        this.stateMachine.body.body.setVelocity(fwdVelo);
-        this.moveAnimation(dt);
-    }
-
-    stop() {
-
-        let newVelo = Helpers.zeroVector;
-        if (!this.isFlying)
-            newVelo = this.stateMachine.body.body.getVelocity().clone().multiply(Helpers.upVector);
-
-        this.stateMachine.body.body.setVelocity(newVelo);
-        this.idleAnimation();
-    }
-
-    turnBack() {
-        if (this.turnedBack) return;
-        this.turnedBack = true;
-        this.turnBackDelayFunc = GameplayScene.instance.dispatcher.queueDelayedFunction(this.stateMachine, () => {
-            if (this.name == "patrolForward")
-                this.stateMachine.switchState("patrolBackward");
-            else this.stateMachine.switchState("patrolForward");
-        }, this.patrolDelay);
-
-    }
-
-    moveAnimation(dt: number) {
-        /* To be overridden by children */
-    }
-
-    idleAnimation() {
-        /* To be overridden by children */
-    }
+export enum EnemyStates {
+    idle = "enemyIdle",
+    patrol = "enemyPatrol",
+    alert = "enemyAlert",
+    chase = "enemyChase",
+    charge = "enemyCharge"
 }
 
-export class ChaseState extends State implements UpdateHandler {
+export abstract class EnemyStateBase extends State implements UpdateHandler {
 
-    speed: number;
-    lookAt: LookAt;
-    chaseRange: number;
-    delayedPatrolFunc: any | undefined;
-    private isFlying: boolean = false;
-
-    constructor(name: string, stateMachine: StateMachineLMent, speed: number, chaseRange: number, lookAt: LookAt, flying: boolean = false) {
-        super(name, stateMachine);
-        this.speed = speed;
-        this.chaseRange = chaseRange;
-        this.lookAt = lookAt;
-        this.isFlying = flying;
-    }
-
-    onEnterState(previousState: State | undefined) {
-        this.lookAt.changeTargetByBodyName("player");
-    }
-
-    onExitState(nextState: State | undefined) {
+    onEnterState(previousState: State | undefined): void {
 
     }
 
-    onUpdate(dt: number): void {
+    onExitState(nextState: State | undefined): void {
+
+    }
+
+    protected reachDestinationThreshold: number = 0.5;
+    protected movementSpeed: number = 0;
+    protected alertZoneRadius: number = 0;
+    protected anim: ShapeStateController | undefined;
+    protected lookAt: LookAt | undefined;
+    protected isFlyingEnemy: boolean = false;
+    protected get playerIsClose() {
         let player = GameplayScene.instance.memory.player;
-        if (player === undefined) return;
-        let distance = this.stateMachine.body.body.getPosition().distanceTo(player.body.getPosition());
-        if (distance > this.chaseRange)
-            this.setAlert();
-        else {
-            if (this.delayedPatrolFunc !== undefined)
-                GameplayScene.instance.dispatcher.removeQueuedFunction(this.delayedPatrolFunc);
-            this.move(dt);
-        }
+        return player !== undefined && this.stateMachine.body.body.getPosition().distanceTo(player.body.getPosition()) < this.alertZoneRadius;
     }
 
-    stop() {
+    protected get myPosition() { return this.stateMachine.body.body.getPosition(); }
+
+    constructor(name: string, stateMachine: StateMachineLMent, alertZoneRadius: number) {
+        super(name, stateMachine);
+
+        this.alertZoneRadius = alertZoneRadius;
+
+        this.lookAt = this.stateMachine.body.getElement(LookAt);
+        if (!this.lookAt)
+            console.log("No LookAt element is found on enemy state: " + name);
+
+        this.anim = this.stateMachine.body.getElement(ShapeStateController);
+        if (!this.anim)
+            console.log("No ShapeStateController Element is found on enemy state: " + name + ", this would prevent animations from playing.");
+    }
+
+    stopMoving() {
         let newVelo = Helpers.zeroVector;
         
-        if (!this.isFlying) 
+        if(!this.isFlyingEnemy)
             newVelo = this.stateMachine.body.body.getVelocity().clone().multiply(Helpers.upVector);
 
-        this.stateMachine.body.body.setVelocity(newVelo);
+        this.stateMachine.body.body.setVelocity(Helpers.zeroVector);
+        this.stateMachine.body.body.setAngularVelocity(Helpers.zeroVector);
     }
 
-    move(dt: number) {
-        let gravity = this.stateMachine.body.body.getVelocity().clone().multiply(Helpers.upVector);
-        let fwdVelo = Helpers.forwardVector.multiplyScalar(this.speed).applyQuaternion(this.stateMachine.body.body.getRotation());
-        if (!this.isFlying)
+    moveForward() {
+        let fwdVelo = Helpers.forwardVector.multiplyScalar(this.movementSpeed).applyQuaternion(this.stateMachine.body.body.getRotation());
+
+        if (!this.isFlyingEnemy) {
+            let gravity = this.stateMachine.body.body.getVelocity().clone().multiply(Helpers.upVector);
             fwdVelo.add(gravity);
+        }
+
         this.stateMachine.body.body.setVelocity(fwdVelo);
-        this.chaseAnimation(dt);
-    }
-
-    setAlert() {
-        this.stop();
-        this.stateMachine.switchState("alert");
-    }
-
-    chaseAnimation(dt: number) {
-        /* Override by children */
-    }
-}
-
-export class AlertState extends State implements UpdateHandler {
-
-    lookAt: LookAt;
-    chaseRange: number;
-    delayedPatrolFunc: any | undefined;
-    alertCooldown: number;
-    private isFlying: boolean = false;
-
-    constructor(name: string, stateMachine: StateMachineLMent, speed: number, chaseRange: number, alertCooldown: number, lookAt: LookAt, flying:boolean=false) {
-        super(name, stateMachine);
-        this.chaseRange = chaseRange;
-        this.lookAt = lookAt;
-        this.alertCooldown = alertCooldown;
-        this.isFlying = flying;
-    }
-
-    onEnterState(previousState: State | undefined) {
-        this.setLookAtTarget();
-        this.backToPatrol();
-    }
-
-    onExitState(nextState: State | undefined) {
-
     }
 
     onUpdate(dt: number): void {
-        let player = GameplayScene.instance.memory.player;
-        if (player === undefined) return;
-        let distance = this.stateMachine.body.body.getPosition().distanceTo(player.body.getPosition());
-        if (distance <= this.chaseRange) {
-            if (this.delayedPatrolFunc !== undefined)
-                GameplayScene.instance.dispatcher.removeQueuedFunction(this.delayedPatrolFunc);
-            this.backToChase();
-        } else {
-            this.alertMovement(dt);
-            this.alertAnimation(dt);
+        /* Override by children */
+    }
+
+    setLookAtTarget(target: Vector3) {
+        if (this.lookAt)
+            this.lookAt.changeTargetByVector(target);
+    }
+
+    lookAtPlayer() {
+        if (this.lookAt)
+            this.lookAt.changeTargetByBodyName("player");
+    }
+
+    playStateAnimation(dt: number) {
+        /* Override by children */
+    }
+
+    switchToAlert() {
+        this.stateMachine.switchState(EnemyStates.alert);
+    }
+
+    switchToIdle() {
+        this.stateMachine.switchState(EnemyStates.idle);
+    }
+
+    switchToPatrol() {
+        this.stateMachine.switchState(EnemyStates.patrol);
+    }
+
+    switchToAttack(attackState: EnemyStates) {
+        this.stateMachine.switchState(attackState);
+    }
+}
+
+export class EnemyPatrolState extends EnemyStateBase implements UpdateHandler {
+
+    points: Vector3[] = [];
+    currentPointIndex: number = 0;
+    get activePoint() { return this.points[this.currentPointIndex] };
+
+    constructor(stateMachine: StateMachineLMent, points: Vector3[], patrolSpeed: number, alertZone: number) {
+        super(EnemyStates.patrol, stateMachine, alertZone);
+
+        this.points = points;
+        this.movementSpeed = patrolSpeed;
+    }
+
+    onEnterState(previousState: State | undefined) {
+        this.currentPointIndex++;
+        if (this.currentPointIndex >= this.points.length)
+            this.currentPointIndex = 0;
+        if (this.lookAt)
+            this.lookAt.changeTargetByVector(this.activePoint);
+    }
+
+    onExitState(nextState: State | undefined) {
+        this.stopMoving();
+    }
+
+    onUpdate(dt: number): void {
+
+        let distance = this.stateMachine.body.body.getPosition().distanceTo(this.activePoint);
+
+        if (distance <= this.reachDestinationThreshold) {
+            this.switchToIdle();
+        }
+        else {
+            this.moveForward();
+            this.playStateAnimation(dt);
         }
 
+        if (this.playerIsClose)
+            this.switchToAlert();
     }
 
-    backToChase() {
-        this.stateMachine.switchState("chase");
+}
+
+export class EnemyAlertState extends EnemyStateBase implements UpdateHandler {
+
+    alertZoneRadius: number;
+    alertCooldown: number;
+    alertWarmUp: number;
+    attackState: EnemyStates;
+    private alertCooldownTimer: number = 0;
+
+    constructor(stateMachine: StateMachineLMent, alertZoneRadius: number, alertCooldown: number, alertWarmUp: number, attackState: EnemyStates) {
+        super(EnemyStates.alert, stateMachine, alertZoneRadius);
+        this.alertZoneRadius = alertZoneRadius;
+        this.alertCooldown = alertCooldown;
+        this.alertWarmUp = alertWarmUp;
+        this.attackState = attackState;
     }
 
-    backToPatrol() {
-        this.delayedPatrolFunc = GameplayScene.instance.dispatcher.queueDelayedFunction(this.stateMachine, () => {
-            this.stateMachine.switchState("patrolForward");
-        }, this.alertCooldown);
+    onEnterState(previousState: State | undefined) {
+        this.stopMoving();
+        this.lookAtPlayer();
     }
 
+    onExitState(nextState: State | undefined) {
+        this.stopMoving();
+    }
+
+    onUpdate(dt: number): void {
+
+        if (this.playerIsClose)
+            this.warmUp(dt);
+        else this.coolDown(dt);
+
+        this.alertMovement(dt);
+        this.playStateAnimation(dt);
+    }
 
     alertMovement(dt: number) {
         /* Override by children if needed */
         /* Default is stopping in place */
-        let newVelo = Helpers.zeroVector;
-        if(!this.isFlying)
-            newVelo = this.stateMachine.body.body.getVelocity().clone().multiply(Helpers.upVector);
-        this.stateMachine.body.body.setVelocity(newVelo);
+        this.stopMoving();
     }
 
-    setLookAtTarget() {
-        /* Override by children if needed */
+    isWarmingUp: boolean = false;
+    warmUp(dt: number) {
+        if (!this.isWarmingUp) {
+            this.alertCooldownTimer = this.alertWarmUp;
+            this.isWarmingUp = true;
+            this.isCoolingDown = false;
+        }
+        this.alertCooldownTimer -= dt;
+        if (this.alertCooldownTimer <= 0) {
+            this.alertCooldownTimer = this.alertWarmUp;
+            this.switchToAttack(this.attackState);
+        }
     }
 
-    alertAnimation(dt: number) {
-        /* Override by children */
+    isCoolingDown: boolean = false;
+    coolDown(dt: number) {
+        if (!this.isCoolingDown) {
+            this.alertCooldownTimer = this.alertCooldown;
+            this.isCoolingDown = true;
+            this.isWarmingUp = false;
+        }
+        this.alertCooldownTimer -= dt;
+        if (this.alertCooldownTimer <= 0) {
+            this.alertCooldownTimer = this.alertCooldown;
+            this.switchToPatrol();
+        }
+    }
+
+}
+
+export class EnemyChaseState extends EnemyStateBase implements UpdateHandler {
+
+    constructor(stateMachine: StateMachineLMent, chaseSpeed: number, alertZoneRadius: number) {
+        super(EnemyStates.chase, stateMachine, alertZoneRadius);
+
+        this.movementSpeed = chaseSpeed;
+    }
+
+    onEnterState(previousState: State | undefined) {
+        this.stopMoving();
+        this.lookAtPlayer();
+    }
+
+    onExitState(nextState: State | undefined) {
+        this.stopMoving();
+    }
+
+    onUpdate(dt: number): void {
+        if (this.playerIsClose) {
+            this.moveForward();
+            this.playStateAnimation(dt);
+        }
+        else this.switchToAlert();
+
+    }
+}
+
+export class EnemyChargeState extends EnemyStateBase implements UpdateHandler {
+
+    targetPosition: Vector3 = Helpers.zeroVector;
+
+    constructor(stateMachine: StateMachineLMent, chargeSpeed: number, alertZoneRadius: number) {
+        super(EnemyStates.chase, stateMachine, alertZoneRadius);
+
+        this.movementSpeed = chargeSpeed;
+    }
+
+    onEnterState(previousState: State | undefined) {
+        this.stopMoving();
+        let player = GameplayScene.instance.memory.player;
+        if (player)
+            this.targetPosition = player.body.getPosition().clone();
+        this.setLookAtTarget(this.targetPosition);
+    }
+
+    onExitState(nextState: State | undefined) {
+        this.stopMoving();
+    }
+
+    onUpdate(dt: number): void {
+
+        let distance = this.myPosition.distanceTo(this.targetPosition);
+        if (distance > this.reachDestinationThreshold) {
+            this.moveForward();
+            this.playStateAnimation(dt);
+        }
+        else this.switchToAlert();
+
+    }
+}
+
+export class EnemyIdleState extends EnemyStateBase implements UpdateHandler {
+
+    idleCooldown: number;
+    idleQuat: Quaternion | undefined;
+    private idleTimer: number = 0;
+
+    constructor(stateMachine: StateMachineLMent, alertZoneRadius: number, idleCooldown: number, idleQuat: Quaternion | undefined = undefined) {
+        super(EnemyStates.idle, stateMachine, alertZoneRadius);
+        this.idleQuat = idleQuat;
+        this.idleCooldown = idleCooldown;
+    }
+
+    onEnterState(previousState: State | undefined) {
+        this.stopMoving();
+        if (this.lookAt)
+            this.lookAt.enabled = false;
+        this.idleTimer = this.idleCooldown;
+    }
+
+    onExitState(nextState: State | undefined) {
+        if (this.lookAt)
+            this.lookAt.enabled = true;
+    }
+
+    onUpdate(dt: number): void {
+        this.idleTimer -= dt;
+        if (this.idleTimer <= 0) {
+            this.switchToPatrol();
+        }
+        else this.playStateAnimation(dt);
+
+        if (this.idleQuat) {
+            let thisBody = this.stateMachine.body.body;
+            thisBody.setRotation(thisBody.getRotation().slerp(this.idleQuat, 0.15));
+        }
+
+        if (this.playerIsClose)
+            this.switchToAlert();
     }
 }

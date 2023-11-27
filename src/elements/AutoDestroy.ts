@@ -9,6 +9,7 @@ export class AutoDestroy extends LMent implements UpdateHandler, TriggerHandler 
     destructionDelay: number;
     targets: string[] | undefined;
     receivesTriggersWhenDisabled: boolean | undefined;
+    delayedFunc: any | undefined;
     private isDestroyed: boolean;
 
     constructor(body: BodyHandle, id: number, params: Partial<AutoDestroy> = {}) {
@@ -48,7 +49,10 @@ export class AutoDestroy extends LMent implements UpdateHandler, TriggerHandler 
     onTrigger(source: LMent, triggerId: string): void {
         if (!this.validateElement())
             return;
-        GameplayScene.instance.dispatcher.queueDelayedFunction(this, () => { this.doDestroy() }, this.destructionDelay);
+        if (this.delayedFunc !== undefined) {
+            GameplayScene.instance.dispatcher.removeQueuedFunction(this.delayedFunc);
+            this.delayedFunc = GameplayScene.instance.dispatcher.queueDelayedFunction(this, () => { this.doDestroy() }, this.destructionDelay);
+        }
     }
 
     doDestroy() {

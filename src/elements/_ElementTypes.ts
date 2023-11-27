@@ -49,5 +49,7 @@ export {Equipment} from "./Equipment";
 export {HazardZone} from "./HazardZone";
 export {LookAt} from "./LookAt";
 export {BouncerEnemy} from "./BouncerEnemy";
-export {WalkerEnemy} from "./WalkerEnemy";
+export {WalkerChaserEnemy} from "./WalkerChaserEnemy";
+export {StationaryChaserEnemy} from "./StationaryChaserEnemy";
+export {FlyingChargingEnemy} from "./FlyingChargingEnemy";
 export {InfoBar} from "./InfoBar";

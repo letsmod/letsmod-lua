@@ -35,7 +35,7 @@ export interface LuaClientInterface
   nextRandomNumberForElement(elementId: number) : number;
 
   // raycasts in the scene from the origin, in the direction, and returns information about the first object hit
-  raycast(origin: THREE.Vector3, direction: THREE.Vector3, excludeId: number, requireVisible?: boolean) :
+  raycast(origin: THREE.Vector3, direction: THREE.Vector3, excludeId?: number, requireVisible?: boolean) :
     {
       name: string | undefined,
       body: BodyHandle | undefined,
