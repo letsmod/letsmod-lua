@@ -84,6 +84,7 @@ export class CameraTarget extends LMent implements UpdateHandler, DragGestureHan
             console.error("No GuideBody LMent with MainCamera name is found.");
     }
 
+    //TODO:: I don't like this, I should refactor --> Ahmad.
     updateCameraDrag() {
         if (this.cameraLead === undefined) return;
         if (!this.resetDragOnRelease && (this.dragDx != 0 || this.dragDy != 0)) {
@@ -109,7 +110,9 @@ export class CameraTarget extends LMent implements UpdateHandler, DragGestureHan
     }
 
     reset() {
-        if (this.cameraLead !== undefined)
-            this.cameraLead.enabled = true;
+        if (!this.cameraLead) return;
+        this.cameraLead.enabled = true;
+        this.currentCamDrag.set(0,0,0);
+        this.cameraLead.updateOffsetVector(0,0,0,true);
     }
 }

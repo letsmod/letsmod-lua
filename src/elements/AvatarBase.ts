@@ -11,10 +11,10 @@ import { CameraTarget } from "./CameraTarget";
 export class AvatarBase extends LMent implements UpdateHandler, HitPointChangeHandler, CollisionHandler, ActorDestructionHandler {
 
   public static safeSteps: Vector3[] = [];
-  private maxSafeSteps: number = 100;
+  private maxSafeSteps: number = 300;
   public isOnGround = false;
 
-  private safeStepDelay: number = 2;
+  private safeStepDelay: number = 1;
 
   constructor(body: BodyHandle, id: number, params: Partial<AvatarBase> = {}) {
     super(body, id, params);

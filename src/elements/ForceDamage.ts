@@ -12,13 +12,12 @@ export class ForceDamage extends ContactDamage {
         this.velocityMin = params.velocityMin === undefined ? 5 : params.velocityMin;
     }
 
+    //Anas: Is there a reason for not overriding?
     onInit() {
         GameplayScene.instance.dispatcher.addListener("collision", this);
     }
 
-    onStart() {
-    }
-
+    //TODO:: Needs refactoring to correctly inherit the ContactDamage --> Anas.
     onCollision(info: CollisionInfo) {
         let other = GameplayScene.instance.getBodyById(info.getOtherObjectId());
         if (other !== undefined) {
