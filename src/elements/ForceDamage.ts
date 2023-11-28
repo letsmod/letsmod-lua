@@ -12,14 +12,11 @@ export class ForceDamage extends ContactDamage {
         this.velocityMin = params.velocityMin === undefined ? 5 : params.velocityMin;
     }
 
-    onInit() {
-        GameplayScene.instance.dispatcher.addListener("collision", this);
+    override onInit() {
+        super.onInit();
     }
-
-    onStart() {
-    }
-
-    onCollision(info: CollisionInfo) {
+    
+    override onCollision(info: CollisionInfo) {
         let other = GameplayScene.instance.getBodyById(info.getOtherObjectId());
         if (other !== undefined) {
             const now = GameplayScene.instance.memory.timeSinceStart;
