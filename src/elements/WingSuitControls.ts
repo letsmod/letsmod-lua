@@ -5,6 +5,7 @@ import { AvatarBase } from "./AvatarBase";
 import { ShapeStateController } from "./ShapeStateController";
 import { Helpers } from "engine/Helpers";
 import { GuideBody } from "./GuideBody";
+import { InfoBar } from "./InfoBar";
 
 export class WingSuitControls extends AvatarBase implements ButtonHandler, DragGestureHandler {
   walkSpeed: number;
@@ -26,6 +27,7 @@ export class WingSuitControls extends AvatarBase implements ButtonHandler, DragG
   private flapsCounter = 0;
   private anim: ShapeStateController | undefined;
   private camGuide: GuideBody | undefined;
+  private staminaBarControl: InfoBar | undefined;
 
   constructor(body: BodyHandle, id: number, params: Partial<WingSuitControls> = {}) {
     super(body, id, params);
@@ -46,6 +48,7 @@ export class WingSuitControls extends AvatarBase implements ButtonHandler, DragG
     GameplayScene.instance.dispatcher.addListener("button", this);
     GameplayScene.instance.dispatcher.addListener("drag", this);
     this.body.body.lockRotation(true, false, true);
+    this.initStaminaBar();
   }
 
   override onCollision(info: CollisionInfo): void {
@@ -54,6 +57,7 @@ export class WingSuitControls extends AvatarBase implements ButtonHandler, DragG
     if (info.getDeltaVSelf().normalize().dot(Helpers.upVector) > 0.7) {
       this.isOnGround = true;
       this.flapsCounter = 0;
+      this.resetStamina();
       this.disableGlide();
     }
 
@@ -75,6 +79,29 @@ export class WingSuitControls extends AvatarBase implements ButtonHandler, DragG
     if (guideLmnt !== undefined)
       this.camGuide = guideLmnt;
     else console.error("No " + GuideBody.name + " is found on this body.");
+  }
+
+  initStaminaBar() {
+    let staminaBarBody = GameplayScene.instance.clonePrefab("Stamina Bar_Lua");
+    if (!staminaBarBody) {
+      console.log("no Stamina Bar prefab is found.");
+      return;
+    }
+
+    this.staminaBarControl = staminaBarBody.getElement(InfoBar);
+    
+    if (!this.staminaBarControl)
+      console.log("No Stamina Bar is found for the WingSuit controls.");
+  }
+
+  useStamina() {
+    if (!this.staminaBarControl) return;
+    this.staminaBarControl.DecreaseBar();
+  }
+
+  resetStamina() {
+    if (!this.staminaBarControl) return;
+    this.staminaBarControl.ResetBar();
   }
 
   override onUpdate(): void {
@@ -108,6 +135,7 @@ export class WingSuitControls extends AvatarBase implements ButtonHandler, DragG
     let fallVelo = Helpers.upVector.multiplyScalar(this.glideGravity);
     let newVelo = Helpers.forwardVector.applyQuaternion(this.body.body.getRotation()).multiplyScalar(this.glideSpeed + this.glideSpeed * leanRatio).add(fallVelo);
     this.body.body.setVelocity(newVelo);
+    this.playAnimation("Fly");
   }
 
   walk() {
@@ -178,6 +206,7 @@ export class WingSuitControls extends AvatarBase implements ButtonHandler, DragG
     this.flapsCounter++;
     this.isAscending = true;
     this.playAnimation("Fly");
+    this.useStamina();
   }
 
   hasSubtype(button: string): boolean {
