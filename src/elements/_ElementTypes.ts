@@ -53,3 +53,4 @@ export {WalkerChaserEnemy} from "./WalkerChaserEnemy";
 export {StationaryChaserEnemy} from "./StationaryChaserEnemy";
 export {FlyingChargingEnemy} from "./FlyingChargingEnemy";
 export {InfoBar} from "./InfoBar";
+export {GoalItem} from "./GoalItem";
