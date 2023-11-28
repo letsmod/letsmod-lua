@@ -15,8 +15,9 @@ export class ForceDamage extends ContactDamage {
     override onInit() {
         super.onInit();
     }
-    
-    override onCollision(info: CollisionInfo) {
+
+    //TODO:: Needs refactoring to correctly inherit the ContactDamage --> Anas.
+    onCollision(info: CollisionInfo) {
         let other = GameplayScene.instance.getBodyById(info.getOtherObjectId());
         if (other !== undefined) {
             const now = GameplayScene.instance.memory.timeSinceStart;
