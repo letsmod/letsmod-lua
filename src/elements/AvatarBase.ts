@@ -13,7 +13,8 @@ export class AvatarBase extends LMent implements UpdateHandler, HitPointChangeHa
   public static safeSteps: Vector3[] = [];
   private maxSafeSteps: number = 300;
   public isOnGround = false;
-
+  private revivingCooldown: number = 0.5;
+  protected isReviving = false;
   private safeStepDelay: number = 1;
 
   constructor(body: BodyHandle, id: number, params: Partial<AvatarBase> = {}) {
@@ -47,7 +48,7 @@ export class AvatarBase extends LMent implements UpdateHandler, HitPointChangeHa
   }
 
   onActorDestroyed(actor: BodyHandle): void {
-    if(actor === this.body)
+    if (actor === this.body)
       this.lose();
   }
 
@@ -84,17 +85,16 @@ export class AvatarBase extends LMent implements UpdateHandler, HitPointChangeHa
 
   revive() {
     let isSafe = false;
-    for (let i=AvatarBase.safeSteps.length-1;i >=0 ; i--) {
-      
+    for (let i = AvatarBase.safeSteps.length - 1; i >= 0; i--) {
+
       let step = AvatarBase.safeSteps[i];
-      
+
       for (let h of HazardZone.AllZones)
-        if (step.distanceTo(h.body.body.getPosition()) < h.radius)
-        {
+        if (step.distanceTo(h.body.body.getPosition()) < h.radius) {
           console.log("not safe .. ");
           break;
         }
-          
+
         else {
           isSafe = true;
         }
@@ -108,24 +108,33 @@ export class AvatarBase extends LMent implements UpdateHandler, HitPointChangeHa
       this.respawnAt(AvatarBase.safeSteps[0]);
   }
 
+  postReviveCallback() {
+    this.isReviving = false;
+    let camTarget = this.body.getElement(CameraTarget);
+    if (camTarget)
+      camTarget.enabled = true;
+  }
 
   respawnAt(pos: Vector3) {
     AvatarBase.safeSteps = [AvatarBase.safeSteps[0]];
+    this.isReviving = true;
 
     let hp = this.body.getElement(HitPoints);
     if (hp !== undefined)
       hp.reset();
 
     let camTarget = this.body.getElement(CameraTarget);
-    if (camTarget !== undefined)
+    if (camTarget !== undefined) {
       camTarget.reset();
+      camTarget.enabled = false;
+    }
     this.body.body.setAngularVelocity(Helpers.zeroVector);
     this.body.body.setVelocity(Helpers.zeroVector);
     this.body.body.setPosition(pos.clone().add(Helpers.NewVector3(0, 0.5, 0)));
+    GameplayScene.instance.dispatcher.queueDelayedFunction(this, () => { this.postReviveCallback(); }, this.revivingCooldown)
   }
 
-  UnequipAvatar()
-  {
+  UnequipAvatar() {
     GameplayScene.instance.destroyBody(this.body);
   }
 }
