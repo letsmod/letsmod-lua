@@ -41,7 +41,6 @@ export class Shake extends LMent implements UpdateHandler, TriggerHandler {
         if (!this.validateElement())
             return;
         this.shake();
-        console.log("Shake triggered!");
     }
 
     onInit(): void {
@@ -91,6 +90,5 @@ export class Shake extends LMent implements UpdateHandler, TriggerHandler {
     shake(): void {
         this.isActive = true;
         this.startTime = GameplayScene.instance.memory.timeSinceStart;
-        console.log("Shake!");
     }
 }

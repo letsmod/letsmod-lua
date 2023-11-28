@@ -9,49 +9,53 @@ export class ContactForce extends LMent implements CollisionHandler {
     forceValue: number;
     scaleWithMass: boolean;
     forceDirection: Vector3;
-    DotMinimum: number | undefined;
+    dotMinimum: number | undefined;
+    cooldown: number; // Cooldown duration
+    forceCooldowns: { [key: number]: number }; // Map for cooldowns
 
     constructor(body: BodyHandle, id: number, params: Partial<ContactForce> = {}) {
         super(body, id, params);
         this.forceValue = params.forceValue === undefined ? 1 : params.forceValue;
         this.scaleWithMass = params.scaleWithMass === undefined ? false : params.scaleWithMass;
         this.forceDirection = params.forceDirection === undefined ? Helpers.NewVector3(1, 0, 0) : params.forceDirection;
-        this.DotMinimum = params.DotMinimum;
+        this.dotMinimum = params.dotMinimum;
+        this.cooldown = params.cooldown === undefined ? 0 : params.cooldown; // Default cooldown duration
+        this.forceCooldowns = {}; // Initialize the cooldown map
     }
-
 
     onInit(): void {
         GameplayScene.instance.dispatcher.addListener("collision", this);
     }
+
     onStart(): void {
         this.forceDirection = Helpers.NewVector3(this.forceDirection.x, this.forceDirection.y, this.forceDirection.z);
     }
+
     onCollision(info: CollisionInfo): void {
         let other = GameplayScene.instance.getBodyById(info.getOtherObjectId());
         if (other !== undefined) {
+            const now = GameplayScene.instance.memory.timeSinceStart;
 
-            let forceMagnitude = this.forceValue;
+            // Check if cooldown has passed for this object
+            if (this.forceCooldowns[other.body.id] === undefined || now - this.forceCooldowns[other.body.id] >= this.cooldown) {
+                
+                let forceMagnitude = this.forceValue;
+                let collisionDirection = info.getDeltaVOther().normalize();
+                let myDirection = this.forceDirection.applyQuaternion(this.body.body.getRotation()).normalize();
+                let dotProduct = collisionDirection.dot(myDirection);
 
+                if (this.dotMinimum === undefined || dotProduct >= this.dotMinimum) {
+                    let mass = other.body.getMass();
+                    let forceToApply = this.forceDirection.clone().multiplyScalar(forceMagnitude).applyQuaternion(this.body.body.getRotation());
 
-            let collisionDirection = info.getDeltaVOther().normalize();
-            let myUp = Helpers.NewVector3(0, 1, 0).applyQuaternion(this.body.body.getRotation()).normalize();
+                    if (this.scaleWithMass) {
+                        forceToApply.multiplyScalar(mass);
+                    }
 
-            let dotProduct = collisionDirection.dot(myUp);
-            let mass = other.body.getMass();
-
-            let forceToApply = this.forceDirection.clone().multiplyScalar(forceMagnitude).applyQuaternion(this.body.body.getRotation());
-            if (this.DotMinimum == undefined) {
-                if (this.scaleWithMass) {
                     other.body.applyCentralForce(forceToApply);
-                } else {
-                    other.body.applyCentralForce(forceToApply.multiplyScalar(mass));
-                }
-            }
-            else if (dotProduct >= this.DotMinimum) {
-                if (this.scaleWithMass) {
-                    other.body.applyCentralForce(forceToApply);
-                } else {
-                    other.body.applyCentralForce(forceToApply.multiplyScalar(mass));
+
+                    // Update the last force application time for this object
+                    this.forceCooldowns[other.body.id] = now;
                 }
             }
         }
