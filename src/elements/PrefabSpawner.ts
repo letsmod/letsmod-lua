@@ -2,7 +2,6 @@ import { BodyHandle } from "engine/BodyHandle";
 import { LMent } from "engine/LMent";
 import { TriggerHandler, UpdateHandler } from "engine/MessageHandlers";
 import { Vector3 } from "three";
-import { global, js_new } from "js";
 import { GameplayScene } from "engine/GameplayScene";
 import { Helpers } from "engine/Helpers";
 
@@ -13,6 +12,8 @@ export class PrefabSpawner extends LMent implements TriggerHandler {
     initialVelocity: Vector3;
     spreadAngle: number;
     speedRandomFactor: number;
+    cooldown: number;
+    private lastSpawnTime: number;
 
     constructor(body: BodyHandle, id: number, params: Partial<PrefabSpawner> = {}) {
         super(body, id, params);
@@ -23,14 +24,17 @@ export class PrefabSpawner extends LMent implements TriggerHandler {
         this.initialVelocity = params.initialVelocity === undefined ? Helpers.NewVector3(0, 1, 10) : params.initialVelocity;
         this.spreadAngle = params.spreadAngle === undefined ? 5 : params.spreadAngle;
         this.speedRandomFactor = params.speedRandomFactor === undefined ? 0.1 : params.speedRandomFactor;
+        this.cooldown = params.cooldown === undefined ? 0.3 : params.cooldown;
+        this.lastSpawnTime = 0;
     }
 
     validateElement() {
-        return Helpers.ValidateParams(this.triggerId,this,"triggerId") && Helpers.ValidateParams(this.prefabName,this,"prefabName");
+        return Helpers.ValidateParams(this.triggerId, this, "triggerId") && Helpers.ValidateParams(this.prefabName, this, "prefabName");
     }
 
     onInit(): void {
         GameplayScene.instance.dispatcher.addListener("trigger", this);
+        this.initialVelocity = Helpers.NewVector3(this.initialVelocity.x, this.initialVelocity.y, this.initialVelocity.z);
         this.enabled = this.validateElement();
     }
 
@@ -45,20 +49,25 @@ export class PrefabSpawner extends LMent implements TriggerHandler {
     onTrigger(source: LMent, triggerId: string): void {
         if (!this.validateElement())
             return;
-        this.spawn();
+        let now = GameplayScene.instance.memory.timeSinceStart;
+        if (now - this.lastSpawnTime >= this.cooldown) {
+            this.spawn();
+            this.lastSpawnTime = now;
+        }
     }
 
     spawn(): void {
         let projectile = GameplayScene.instance.clonePrefab(this.prefabName);
-        if (projectile === undefined)
-        {
-            console.log("No prefab named: "+this.prefabName+" exists in the library.");
+        if (projectile === undefined) {
+            console.log("No prefab named: " + this.prefabName + " exists in the library.");
             return;
         }
-        
-        let position = this.body.body.getPosition().clone().add(this.spawnOffset);
+
+        let offset = this.spawnOffset.clone().applyQuaternion(this.body.body.getRotation());
+
+        let position = this.body.body.getPosition().clone().add(offset);
         projectile.body.setPosition(position);
-        let spread = js_new(global.THREE.Vector3,
+        let spread = Helpers.NewVector3(
             (Math.random() - 0.5) * 2,
             (Math.random() - 0.5) * 2,
             (Math.random() - 0.5) * 0).multiplyScalar(this.spreadAngle);

@@ -1,5 +1,4 @@
 import { BodyHandle } from "engine/BodyHandle";
-import { GameplayMemory } from "engine/GameplayMemory";
 import { GameplayScene } from "engine/GameplayScene";
 import { ButtonHandler, CollisionInfo, DragGestureHandler } from "engine/MessageHandlers";
 import { AvatarBase } from "./AvatarBase";
@@ -21,7 +20,7 @@ export class WingSuitControls extends AvatarBase implements ButtonHandler, DragG
 
   private dragDx = 0;
   private dragDy = 0;
-  private isOnGround = false;
+  public isOnGround = false;
   private freeFall = false;
   private isAscending: boolean = false;
   private flapsCounter = 0;
@@ -44,7 +43,6 @@ export class WingSuitControls extends AvatarBase implements ButtonHandler, DragG
 
   override onInit(): void {
     super.onInit();
-
     GameplayScene.instance.dispatcher.addListener("button", this);
     GameplayScene.instance.dispatcher.addListener("drag", this);
     this.body.body.lockRotation(true, false, true);
@@ -132,7 +130,6 @@ export class WingSuitControls extends AvatarBase implements ButtonHandler, DragG
       accel = this.walkAcc * Helpers.deltaTime;
       if (this.isOnGround)
         this.playAnimation("Walk");
-
     }
 
     let deltaLengthSq = delta.lengthSq();
@@ -169,7 +166,6 @@ export class WingSuitControls extends AvatarBase implements ButtonHandler, DragG
   }
 
   turnControl() {
-
   }
 
   flap() {
@@ -189,12 +185,10 @@ export class WingSuitControls extends AvatarBase implements ButtonHandler, DragG
   }
 
   enableGlide() {
-
     this.body.body.setVelocity(Helpers.zeroVector);
     this.body.body.setCustomGravity(Helpers.upVector.multiplyScalar(0));//;
     this.playAnimation("FlyIdle");
     this.freeFall = false;
-
   }
 
   disableGlide() {

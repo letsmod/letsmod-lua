@@ -2,14 +2,18 @@ import { global, js_new } from "js";
 import { Quaternion, Vector3 } from "three";
 import { GameplayScene } from "./GameplayScene";
 import { LMent } from "./LMent";
+import { BodyHandle } from "./BodyHandle";
 
 export class Helpers{
 
     static get zeroVector() {return js_new(global.THREE.Vector3,0,0,0);}
     static get oneVector() {return js_new(global.THREE.Vector3,1,1,1);}
     static get upVector() {return js_new(global.THREE.Vector3,0,1,0);}
+    static get downVector() {return js_new(global.THREE.Vector3,0,-1,0);}
     static get rightVector() {return js_new(global.THREE.Vector3,1,0,0);}
+    static get leftVector() {return js_new(global.THREE.Vector3,-1,0,0);}
     static get forwardVector(){return js_new(global.THREE.Vector3,0,0,1);}
+    static get backwardVector(){return js_new(global.THREE.Vector3,0,0,-1);}
     static get xzVector() {return js_new(global.THREE.Vector3,1,0,1);}
     static get xyVector() {return js_new(global.THREE.Vector3,1,1,0);}
     static get yzVector() {return js_new(global.THREE.Vector3,0,1,1);}
@@ -93,6 +97,21 @@ export class Helpers{
         if(paramVal !== undefined && paramVal !== Helpers.NA) return true;
         console.log(element.constructor.name+" requires a param"+param+" to be included in the params list.");
         return false;
+    }
+
+    static LogVector(v:Vector3)
+    {
+        console.log("x: "+v.x+", y:"+v.y+", z:"+v.z);
+    }
+
+    //This is not recommended to be used continuously ...
+    static findBodyByName(name: string): BodyHandle | undefined {
+        let body = GameplayScene.instance.bodies.find(b => b.body.name == name);
+        if (body === undefined) {
+            console.log("No body named: " + name + "was found.")
+            return undefined;
+        }
+        return body;
     }
     
 }

@@ -14,7 +14,6 @@ export class PlatformerControls extends AvatarBase implements ButtonHandler, Dra
 
   private dragDx = 0;
   private dragDy = 0;
-  private isOnGround = false;
   private topAnim: ShapeStateController | undefined;
   private bottomAnim: ShapeStateController | undefined;
 
@@ -73,7 +72,6 @@ export class PlatformerControls extends AvatarBase implements ButtonHandler, Dra
       this.playTopAnimation("Jump");
       this.playBottomAnimation("Jump");
     }
-
     this.Walk();
   }
 
@@ -111,7 +109,6 @@ export class PlatformerControls extends AvatarBase implements ButtonHandler, Dra
         this.playTopAnimation("Walk");
         this.playBottomAnimation("Walk");
       }
-
     }
 
     let deltaLengthSq = delta.lengthSq();
@@ -125,8 +122,6 @@ export class PlatformerControls extends AvatarBase implements ButtonHandler, Dra
     this.dragDx = 0;
     this.dragDy = 0;
   }
-
-
 
   handlePlayerOrientation() {
     let angle = Math.atan2(-this.dragDx, -this.dragDy);
@@ -150,11 +145,9 @@ export class PlatformerControls extends AvatarBase implements ButtonHandler, Dra
   }
 
   onButtonHold(button: string): void {
-
   }
 
   onButtonRelease(button: string): void {
-
   }
 
   onDrag(dx: number, dy: number): void {

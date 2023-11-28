@@ -13,7 +13,6 @@ export class BallControls extends AvatarBase implements DragGestureHandler {
 
     private dragDx = 0;
     private dragDy = 0;
-    private isOnGround = false;
 
     private ballGuide: BodyHandle | undefined = undefined;
     private ballDragTurner: DragTurner | undefined = undefined;
@@ -48,9 +47,7 @@ export class BallControls extends AvatarBase implements DragGestureHandler {
     }
 
     initBallGuide() {
-        
-        this.ballGuide = GameplayScene.instance.clonePrefab("RollerCamGuide");
-
+        this.ballGuide = GameplayScene.instance.clonePrefab("RollerCamGuide_Lua");
         if (this.ballGuide === undefined)
         {
             console.error("No ball guide found in prefabs.");
@@ -140,4 +137,9 @@ export class BallControls extends AvatarBase implements DragGestureHandler {
         this.dragDy = dy;
     }
 
+    override UnequipAvatar(): void {
+        if(this.ballGuide)
+            GameplayScene.instance.destroyBody(this.ballGuide);
+        super.UnequipAvatar();
+    }
 }
