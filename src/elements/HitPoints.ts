@@ -45,7 +45,7 @@ export class HitPoints extends LMent {
     let damage = amount * multiplier;
 
     // some damage may only affect certain teams. team 0 is always affected, and flags 0 affects everything
-    if (teamFlags != 0 && this.team != 0 && (teamFlags & this.team) != 0) {
+    if (teamFlags != 0 && this.team != 0 && (teamFlags & this.team) == 0) {
       damage = 0;
     }
 
