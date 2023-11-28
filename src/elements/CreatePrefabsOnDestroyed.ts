@@ -29,6 +29,7 @@ export class CreatePrefabsOnDestroyed extends LMent implements ActorDestructionH
         if (prefab) {
           prefab.body.setPosition(this.body.body.getPosition());
           prefab.body.setRotation(this.body.body.getRotation());
+          console.log(prefab.body.name);
         }
       }
     }
