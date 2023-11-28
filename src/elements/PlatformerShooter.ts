@@ -15,4 +15,8 @@ export class PlatformerShooter extends PlatformerControls {
     shoot() {
         this.playTopAnimation("Shoot");
     }
+
+    override hasSubtype(button: string): boolean {
+        return button == "AButton" || button == "BButton";
+    }
 }

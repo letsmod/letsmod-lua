@@ -156,7 +156,7 @@ export class PlatformerControls extends AvatarBase implements ButtonHandler, Dra
   }
 
   hasSubtype(button: string): boolean {
-    return button == "AButton" || button == "BButton";
+    return button == "AButton";
   }
 
   playTopAnimation(state: string) {
