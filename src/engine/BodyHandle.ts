@@ -19,6 +19,8 @@ export interface ShapePointer
   getVisible() : boolean;
 
   setVisible(visible: boolean) : void;
+
+  setCastShadow(shadowCasting: boolean) : void;
 }
 
 // interface to a javascript object which provides a lua-compatible interface for the js BodyView scene node
@@ -63,6 +65,8 @@ export interface BodyPointer
   getVisible() : boolean;
 
   setVisible(visible: boolean) : void;
+
+  setCastShadow(shadowCasting: boolean) : void;
 
   // internal use; use gameplayScene.destroyBody / cloneBody instead
   destroyBody() : void;
