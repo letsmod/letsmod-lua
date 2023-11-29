@@ -30,6 +30,9 @@ export abstract class EnemyStateBase extends State implements UpdateHandler {
     protected anim: ShapeStateController | undefined;
     protected lookAt: LookAt | undefined;
     protected isFlyingEnemy: boolean = false;
+    protected moveForce: number = 0;
+
+
     protected get playerIsClose() {
         let player = GameplayScene.instance.memory.player;
         return player !== undefined && this.stateMachine.body.body.getPosition().distanceTo(player.body.getPosition()) < this.alertZoneRadius;
@@ -53,23 +56,32 @@ export abstract class EnemyStateBase extends State implements UpdateHandler {
 
     stopMoving() {
         let newVelo = Helpers.zeroVector;
-        
-        if(!this.isFlyingEnemy)
+
+        if (!this.isFlyingEnemy)
             newVelo = this.stateMachine.body.body.getVelocity().clone().multiply(Helpers.upVector);
 
-        this.stateMachine.body.body.setVelocity(Helpers.zeroVector);
+        this.stateMachine.body.body.setVelocity(newVelo);
+        this.stateMachine.body.body.setAngularVelocity(Helpers.zeroVector);
+    }
+
+    flyForward() {
+        let fwdVelo = Helpers.forwardVector.multiplyScalar(this.movementSpeed).applyQuaternion(this.stateMachine.body.body.getRotation());
+        this.stateMachine.body.body.setVelocity(fwdVelo);
+    }
+
+    walkForward() {
+        let currentVelo = this.stateMachine.body.body.getVelocity().clone().multiply(Helpers.xzVector).length();
+        if (currentVelo < this.movementSpeed) {
+            let force = Helpers.forwardVector.multiplyScalar(this.moveForce).applyQuaternion(this.stateMachine.body.body.getRotation());
+            this.stateMachine.body.body.applyCentralForce(force)
+        }
         this.stateMachine.body.body.setAngularVelocity(Helpers.zeroVector);
     }
 
     moveForward() {
-        let fwdVelo = Helpers.forwardVector.multiplyScalar(this.movementSpeed).applyQuaternion(this.stateMachine.body.body.getRotation());
-
-        if (!this.isFlyingEnemy) {
-            let gravity = this.stateMachine.body.body.getVelocity().clone().multiply(Helpers.upVector);
-            fwdVelo.add(gravity);
-        }
-
-        this.stateMachine.body.body.setVelocity(fwdVelo);
+        if (this.isFlyingEnemy)
+            this.flyForward();
+        else this.walkForward();
     }
 
     onUpdate(dt: number): void {
@@ -113,11 +125,12 @@ export class EnemyPatrolState extends EnemyStateBase implements UpdateHandler {
     currentPointIndex: number = 0;
     get activePoint() { return this.points[this.currentPointIndex] };
 
-    constructor(stateMachine: StateMachineLMent, points: Vector3[], patrolSpeed: number, alertZone: number) {
+    constructor(stateMachine: StateMachineLMent, points: Vector3[], patrolSpeed: number, alertZone: number, movementForce: number) {
         super(EnemyStates.patrol, stateMachine, alertZone);
 
         this.points = points;
         this.movementSpeed = patrolSpeed;
+        this.moveForce = movementForce;
     }
 
     onEnterState(previousState: State | undefined) {
@@ -134,7 +147,9 @@ export class EnemyPatrolState extends EnemyStateBase implements UpdateHandler {
 
     onUpdate(dt: number): void {
 
-        let distance = this.stateMachine.body.body.getPosition().distanceTo(this.activePoint);
+        let distance = this.stateMachine.body.body.getPosition().clone().multiply(Helpers.xzVector).distanceTo(this.activePoint.clone().multiply(Helpers.xzVector));
+        if (this.isFlyingEnemy)
+            distance = this.stateMachine.body.body.getPosition().distanceTo(this.activePoint);
 
         if (distance <= this.reachDestinationThreshold) {
             this.switchToIdle();
@@ -223,10 +238,11 @@ export class EnemyAlertState extends EnemyStateBase implements UpdateHandler {
 
 export class EnemyChaseState extends EnemyStateBase implements UpdateHandler {
 
-    constructor(stateMachine: StateMachineLMent, chaseSpeed: number, alertZoneRadius: number) {
+    constructor(stateMachine: StateMachineLMent, chaseSpeed: number, alertZoneRadius: number, movementForce:number) {
         super(EnemyStates.chase, stateMachine, alertZoneRadius);
 
         this.movementSpeed = chaseSpeed;
+        this.moveForce = movementForce;
     }
 
     onEnterState(previousState: State | undefined) {
@@ -252,10 +268,11 @@ export class EnemyChargeState extends EnemyStateBase implements UpdateHandler {
 
     targetPosition: Vector3 = Helpers.zeroVector;
 
-    constructor(stateMachine: StateMachineLMent, chargeSpeed: number, alertZoneRadius: number) {
+    constructor(stateMachine: StateMachineLMent, chargeSpeed: number, alertZoneRadius: number, movementForce:number) {
         super(EnemyStates.chase, stateMachine, alertZoneRadius);
 
         this.movementSpeed = chargeSpeed;
+        this.moveForce = movementForce;
     }
 
     onEnterState(previousState: State | undefined) {

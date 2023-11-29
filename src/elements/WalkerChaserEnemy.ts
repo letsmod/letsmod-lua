@@ -44,6 +44,7 @@ export class WalkerChaserEnemy extends StateMachineLMent {
     alertZoneRadius: number;
     alertCooldown: number;
     alertWarmUp:number;
+    movementForce:number;
 
     private lookAtElement: LookAt | undefined;
     constructor(body: BodyHandle, id: number, params: Partial<WalkerChaserEnemy> = {}) {
@@ -55,6 +56,7 @@ export class WalkerChaserEnemy extends StateMachineLMent {
         this.alertZoneRadius = params.alertZoneRadius === undefined ? 5 : params.alertZoneRadius;
         this.alertCooldown = params.alertCooldown === undefined ? 3 : params.alertCooldown;
         this.alertWarmUp = params.alertWarmUp === undefined ? 0 : params.alertWarmUp;
+        this.movementForce = params.movementForce === undefined ? 100 : params.movementForce;
     }
 
     onInit() {
@@ -70,8 +72,8 @@ export class WalkerChaserEnemy extends StateMachineLMent {
         let point2 = point1.clone().add(Helpers.forwardVector.multiplyScalar(this.patrolDistance).applyQuaternion(this.body.body.getRotation()))
 
         this.states = {
-            [EnemyStates.patrol]: new WalkerPatrol(this, [point1, point2], this.patrolSpeed,this.alertZoneRadius),
-            [EnemyStates.chase]: new WalkerChase(this, this.chaseSpeed, this.alertZoneRadius),
+            [EnemyStates.patrol]: new WalkerPatrol(this, [point1, point2], this.patrolSpeed,this.alertZoneRadius,this.movementForce),
+            [EnemyStates.chase]: new WalkerChase(this, this.chaseSpeed, this.alertZoneRadius,this.movementForce),
             [EnemyStates.alert]: new WalkerAlert(this,this.alertZoneRadius,this.alertCooldown,this.alertWarmUp,EnemyStates.chase),
             [EnemyStates.idle]: new WalkerIdle(this,this.alertZoneRadius,this.idleCooldown)
         }
