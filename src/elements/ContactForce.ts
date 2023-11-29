@@ -35,27 +35,29 @@ export class ContactForce extends LMent implements CollisionHandler {
         let other = GameplayScene.instance.getBodyById(info.getOtherObjectId());
         if (other !== undefined) {
             const now = GameplayScene.instance.memory.timeSinceStart;
-
+            
             // Check if cooldown has passed for this object
             if (this.forceCooldowns[other.body.id] === undefined || now - this.forceCooldowns[other.body.id] >= this.cooldown) {
-                
-                let forceMagnitude = this.forceValue;
-                let collisionDirection = info.getDeltaVOther().normalize();
-                let myDirection = this.forceDirection.applyQuaternion(this.body.body.getRotation()).normalize();
-                let dotProduct = collisionDirection.dot(myDirection);
+                if (other.body.getPhysicsBodyType() === null || other.body.getPhysicsBodyType() === 0) {
 
-                if (this.dotMinimum === undefined || dotProduct >= this.dotMinimum) {
-                    let mass = other.body.getMass();
-                    let forceToApply = this.forceDirection.clone().multiplyScalar(forceMagnitude).applyQuaternion(this.body.body.getRotation());
+                    let forceMagnitude = this.forceValue;
+                    let collisionDirection = info.getDeltaVOther().normalize();
+                    let myDirection = this.forceDirection.applyQuaternion(this.body.body.getRotation()).normalize();
+                    let dotProduct = collisionDirection.dot(myDirection);
 
-                    if (this.scaleWithMass) {
-                        forceToApply.multiplyScalar(mass);
+                    if (this.dotMinimum === undefined || dotProduct >= this.dotMinimum) {
+                        let mass = other.body.getMass();
+                        let forceToApply = this.forceDirection.clone().multiplyScalar(forceMagnitude).applyQuaternion(this.body.body.getRotation());
+
+                        if (this.scaleWithMass) {
+                            forceToApply.multiplyScalar(mass);
+                        }
+
+                        other.body.applyCentralForce(forceToApply);
+
+                        // Update the last force application time for this object
+                        this.forceCooldowns[other.body.id] = now;
                     }
-
-                    other.body.applyCentralForce(forceToApply);
-
-                    // Update the last force application time for this object
-                    this.forceCooldowns[other.body.id] = now;
                 }
             }
         }
