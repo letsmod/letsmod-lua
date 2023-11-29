@@ -16,6 +16,9 @@ export class AvatarBase extends LMent implements UpdateHandler, HitPointChangeHa
   private revivingCooldown: number = 0.5;
   protected isReviving = false;
   private safeStepDelay: number = 1;
+  protected dragDx = 0;
+  protected dragDy = 0;
+  dragDelayFunc: any | undefined;
 
   constructor(body: BodyHandle, id: number, params: Partial<AvatarBase> = {}) {
     super(body, id, params);
@@ -26,6 +29,7 @@ export class AvatarBase extends LMent implements UpdateHandler, HitPointChangeHa
     GameplayScene.instance.dispatcher.addListener("hitPointsChanged", this);
     GameplayScene.instance.dispatcher.addListener("collision", this);
     GameplayScene.instance.dispatcher.addListener("actorDestroyed", this);
+    GameplayScene.instance.dispatcher.addListener("drag", this);
     GameplayScene.instance.memory.player = this.body;
   }
 
@@ -65,6 +69,14 @@ export class AvatarBase extends LMent implements UpdateHandler, HitPointChangeHa
     if (source === this.body && currentHP <= 0) {
       this.lose();
     }
+  }
+
+  onDrag(dx: number, dy: number): void {
+    this.dragDx = dx;
+    this.dragDy = dy;
+    if (this.dragDelayFunc)
+      GameplayScene.instance.dispatcher.removeQueuedFunction(this.dragDelayFunc);
+    this.dragDelayFunc = GameplayScene.instance.dispatcher.queueDelayedFunction(this, () => { this.dragDx = this.dragDy = 0; }, 0.05);
   }
 
   lose() {

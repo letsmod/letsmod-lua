@@ -5,14 +5,11 @@ import { AvatarBase } from "./AvatarBase";
 import { Helpers } from "engine/Helpers";
 import { DragTurner } from "./DragTurner";
 
-export class BallControls extends AvatarBase implements DragGestureHandler {
+export class BallControls extends AvatarBase {
     maxSpeed: number;
     acceleration:number;
     deceleration: number;
     turningSpeed: number;
-
-    private dragDx = 0;
-    private dragDy = 0;
 
     private ballGuide: BodyHandle | undefined = undefined;
     private ballDragTurner: DragTurner | undefined = undefined;
@@ -41,11 +38,6 @@ export class BallControls extends AvatarBase implements DragGestureHandler {
         return param;
     }
 
-    override onInit(): void {
-        super.onInit();      
-        GameplayScene.instance.dispatcher.addListener("drag", this);
-    }
-
     initBallGuide() {
         this.ballGuide = GameplayScene.instance.clonePrefab("RollerCamGuide_Lua");
         if (this.ballGuide === undefined)
@@ -53,6 +45,8 @@ export class BallControls extends AvatarBase implements DragGestureHandler {
             console.error("No ball guide found in prefabs.");
             return;
         }
+        this.ballGuide.body.setPosition(this.body.body.getPosition());
+        this.ballGuide.body.setRotation(this.body.body.getRotation());
         
         this.ballDragTurner =  this.ballGuide.getElement(DragTurner);
         if (this.ballDragTurner === undefined)
@@ -130,11 +124,6 @@ export class BallControls extends AvatarBase implements DragGestureHandler {
         angularVelo.lerp(targetVelo,this.acceleration);
         
         this.body.body.setAngularVelocity(angularVelo);
-    }
-
-    onDrag(dx: number, dy: number): void {
-        this.dragDx = dx;
-        this.dragDy = dy;
     }
 
     override UnequipAvatar(): void {

@@ -59,16 +59,20 @@ export class CameraTarget extends LMent implements UpdateHandler, DragGestureHan
             return;
 
         let cameraInstance = GameplayScene.instance.clonePrefab(this.prefabName);
-        if (cameraInstance !== undefined)
-        {
-            cameraInstance.body.setVisible(false);
+
+        if (cameraInstance === undefined) {
+            console.error("No camera prefab named: " + this.prefabName + ".");
+            return;
         }
-        if (cameraInstance !== undefined && this.cameraIsMain) {
+        cameraInstance.body.setVisible(false);
+
+        if (this.cameraIsMain) {
             cameraInstance.body.setPosition(Helpers.forwardVector.multiplyScalar(-2).add(this.body.body.getPosition()));
+            cameraInstance.body.setRotation(this.body.body.getRotation());
             GameplayScene.instance.memory.mainCamera = cameraInstance;
             if (GameplayScene.instance.clientInterface !== undefined)
                 GameplayScene.instance.clientInterface.setCamera(cameraInstance.body.id);
-        } else console.error("No camera prefab named: " + this.prefabName + ".");
+        }
     }
 
     initBodyGuides() {
@@ -112,7 +116,7 @@ export class CameraTarget extends LMent implements UpdateHandler, DragGestureHan
     reset() {
         if (!this.cameraLead) return;
         this.cameraLead.enabled = true;
-        this.currentCamDrag.set(0,0,0);
-        this.cameraLead.updateOffsetVector(0,0,0,true);
+        this.currentCamDrag.set(0, 0, 0);
+        this.cameraLead.updateOffsetVector(0, 0, 0, true);
     }
 }

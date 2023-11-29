@@ -5,15 +5,14 @@ import { ButtonHandler, CollisionInfo, DragGestureHandler } from "engine/Message
 import { AvatarBase } from "./AvatarBase";
 import { ShapeStateController } from "./ShapeStateController";
 import { Helpers } from "engine/Helpers";
+import { Vector3 } from "three";
 
-export class PlatformerControls extends AvatarBase implements ButtonHandler, DragGestureHandler {
+export class PlatformerControls extends AvatarBase implements ButtonHandler {
   maxSpeed: number; // meters per second
   acceleration: number; // meters per second per second
   deceleration: number; // meters per second per second
   jumpVelo: number;
-
-  private dragDx = 0;
-  private dragDy = 0;
+  
   private topAnim: ShapeStateController | undefined;
   private bottomAnim: ShapeStateController | undefined;
 
@@ -29,7 +28,6 @@ export class PlatformerControls extends AvatarBase implements ButtonHandler, Dra
     super.onInit();
 
     GameplayScene.instance.dispatcher.addListener("button", this);
-    GameplayScene.instance.dispatcher.addListener("drag", this);
     this.body.body.lockRotation(true, false, true);
   }
 
@@ -63,7 +61,9 @@ export class PlatformerControls extends AvatarBase implements ButtonHandler, Dra
       console.error("No ShapeStateController of the name \"BottomBody\" is found on body.");
   }
 
-  override onUpdate(): void {
+
+  decelDelayFunc: any | undefined;
+  override onUpdate(dt: number): void {
     super.onUpdate();
 
     this.onGroundReset();
@@ -72,7 +72,15 @@ export class PlatformerControls extends AvatarBase implements ButtonHandler, Dra
       this.playTopAnimation("Jump");
       this.playBottomAnimation("Jump");
     }
-    this.Walk();
+    else if (this.dragDx == 0 && this.dragDy == 0) {
+      this.playTopAnimation("Idle");
+      this.playBottomAnimation("Idle");
+    }
+
+    /**** FIX LATER: Deceleration keeps setting the player's velocity to zero, when external velocity affects the player it still decelerates until it reaches zero. ****/
+    //this.decelerate();
+
+
   }
 
   onGroundReset() {
@@ -81,7 +89,36 @@ export class PlatformerControls extends AvatarBase implements ButtonHandler, Dra
     }, Helpers.deltaTime);
   }
 
-  Walk() {
+  accelerate() {
+    let accel = this.acceleration * Helpers.deltaTime;
+    this.handlePlayerOrientation();
+    //Don :: For some reason, it gets some angular velocity while walking, I wrote this line to prevent it, thoughts?
+    this.body.body.setAngularVelocity(Helpers.zeroVector);
+    if (this.isOnGround) {
+      this.playTopAnimation("Walk");
+      this.playBottomAnimation("Walk");
+    }
+
+    let newVelocity = this.body.body.getVelocity().clone().add(this.getVelocityDelta(accel));
+    this.body.body.setVelocity(newVelocity);
+
+  }
+
+  decelerate() {
+    if (this.dragDx != 0 || this.dragDy != 0)return;
+    console.log("Meh");
+    let accel = this.deceleration * Helpers.deltaTime;
+    if (this.isOnGround) {
+      this.playTopAnimation("Idle");
+      this.playBottomAnimation("Idle");
+    }
+
+    let newVelocity = this.body.body.getVelocity().clone().add(this.getVelocityDelta(accel));
+    this.body.body.setVelocity(newVelocity);
+
+  }
+
+  getVelocityDelta(accel: number): Vector3 {
     let velocity = this.body.body.getVelocity();
     let planarVelocity = Helpers.NewVector3(velocity.x, 0, velocity.z);
 
@@ -91,36 +128,13 @@ export class PlatformerControls extends AvatarBase implements ButtonHandler, Dra
 
     let delta = target.sub(planarVelocity);
 
-    let accel: number;
-
-    if (this.dragDx == 0 && this.dragDy == 0) {
-      accel = this.deceleration * Helpers.deltaTime;
-      if (this.isOnGround) {
-        this.playTopAnimation("Idle");
-        this.playBottomAnimation("Idle");
-      }
-    }
-    else {
-      accel = this.acceleration * Helpers.deltaTime;
-      this.handlePlayerOrientation();
-      //Don :: For some reason, it gets some angular velocity while walking, I wrote this line to prevent it, thoughts?
-      this.body.body.setAngularVelocity(Helpers.zeroVector);
-      if (this.isOnGround) {
-        this.playTopAnimation("Walk");
-        this.playBottomAnimation("Walk");
-      }
-    }
-
     let deltaLengthSq = delta.lengthSq();
 
     if (deltaLengthSq > accel * accel) {
       delta = delta.normalize().multiplyScalar(accel);
     }
 
-    let newVelocity = velocity.add(delta);
-    this.body.body.setVelocity(newVelocity);
-    this.dragDx = 0;
-    this.dragDy = 0;
+    return delta;
   }
 
   handlePlayerOrientation() {
@@ -150,9 +164,9 @@ export class PlatformerControls extends AvatarBase implements ButtonHandler, Dra
   onButtonRelease(button: string): void {
   }
 
-  onDrag(dx: number, dy: number): void {
-    this.dragDx = dx;
-    this.dragDy = dy;
+  override onDrag(dx: number, dy: number): void {
+    super.onDrag(dx,dy);
+    this.accelerate();
   }
 
   hasSubtype(button: string): boolean {
