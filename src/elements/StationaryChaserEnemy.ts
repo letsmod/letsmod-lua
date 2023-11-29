@@ -10,6 +10,7 @@ export class StationaryChaserEnemy extends StateMachineLMent {
     alertZoneRadius: number;
     alertCooldown: number;
     alertWarmUp:number;
+    movementForce:number;
 
     private lookAtElement: LookAt | undefined;
 
@@ -20,6 +21,8 @@ export class StationaryChaserEnemy extends StateMachineLMent {
         this.alertZoneRadius = params.alertZoneRadius === undefined ? 3 : params.alertZoneRadius;
         this.alertCooldown = params.alertCooldown === undefined ? 2 : params.alertCooldown;
         this.alertWarmUp = params.alertWarmUp === undefined ? 0.2 : params.alertWarmUp;
+        this.movementForce = params.movementForce === undefined ? 50 : params.movementForce;
+        
     }
 
     onInit() {
@@ -27,8 +30,8 @@ export class StationaryChaserEnemy extends StateMachineLMent {
         let point1 = this.body.body.getPosition().clone();
         let initQuat = this.body.body.getRotation().clone();
         this.states = {
-            [EnemyStates.patrol]: new EnemyPatrolState(this, [point1], this.backSpeed,this.alertZoneRadius),
-            [EnemyStates.chase]: new EnemyChaseState(this, this.chaseSpeed, this.alertZoneRadius),
+            [EnemyStates.patrol]: new EnemyPatrolState(this, [point1], this.backSpeed,this.alertZoneRadius,this.movementForce),
+            [EnemyStates.chase]: new EnemyChaseState(this, this.chaseSpeed, this.alertZoneRadius,this.movementForce),
             [EnemyStates.alert]: new EnemyAlertState(this,this.alertZoneRadius,this.alertCooldown,this.alertWarmUp,EnemyStates.chase),
             [EnemyStates.idle]: new EnemyIdleState(this,this.alertZoneRadius,999999,initQuat)
         }
