@@ -45,6 +45,8 @@ export class BallControls extends AvatarBase {
             console.error("No ball guide found in prefabs.");
             return;
         }
+        this.ballGuide.body.setPosition(this.body.body.getPosition());
+        this.ballGuide.body.setRotation(this.body.body.getRotation());
         
         this.ballDragTurner =  this.ballGuide.getElement(DragTurner);
         if (this.ballDragTurner === undefined)
