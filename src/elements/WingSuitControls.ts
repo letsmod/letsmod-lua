@@ -6,6 +6,7 @@ import { ShapeStateController } from "./ShapeStateController";
 import { Helpers } from "engine/Helpers";
 import { GuideBody } from "./GuideBody";
 import { InfoBar } from "./InfoBar";
+import { Vector3 } from "three";
 
 export class WingSuitControls extends AvatarBase implements ButtonHandler, DragGestureHandler {
   walkSpeed: number;
@@ -19,8 +20,7 @@ export class WingSuitControls extends AvatarBase implements ButtonHandler, DragG
   glideGravity: number;
   flapFwdForceRaio: number;
 
-  private dragDx = 0;
-  private dragDy = 0;
+  
   public isOnGround = false;
   private freeFall = false;
   private isAscending: boolean = false;
@@ -46,7 +46,6 @@ export class WingSuitControls extends AvatarBase implements ButtonHandler, DragG
   override onInit(): void {
     super.onInit();
     GameplayScene.instance.dispatcher.addListener("button", this);
-    GameplayScene.instance.dispatcher.addListener("drag", this);
     this.body.body.lockRotation(true, false, true);
     this.initStaminaBar();
   }
@@ -89,7 +88,7 @@ export class WingSuitControls extends AvatarBase implements ButtonHandler, DragG
     }
 
     this.staminaBarControl = staminaBarBody.getElement(InfoBar);
-    
+
     if (!this.staminaBarControl)
       console.log("No Stamina Bar is found for the WingSuit controls.");
   }
@@ -121,8 +120,10 @@ export class WingSuitControls extends AvatarBase implements ButtonHandler, DragG
   }
 
   move() {
-    if (this.isOnGround)
-      this.walk();
+    if (this.isOnGround && this.dragDy == 0) {
+      /** FIX LATER: We should decelerate here, but this interfers with external forces or velocity and will keep decelerating until it reaches zero even if it's on a moving platform. **/
+      this.playAnimation("Idle");
+    }
     else if (!this.freeFall)
       this.glide();
   }
@@ -138,7 +139,23 @@ export class WingSuitControls extends AvatarBase implements ButtonHandler, DragG
     this.playAnimation("Fly");
   }
 
-  walk() {
+  walkAccelerate() {
+    let accel = this.walkAcc * Helpers.deltaTime;
+    if (this.isOnGround)
+      this.playAnimation("Walk");
+    let newVelocity = this.body.body.getVelocity().clone().add(this.walkDeltaVelocity(accel));
+    this.body.body.setVelocity(newVelocity);
+  }
+
+  walkDecelerate() {
+    let accel = this.walkDec * Helpers.deltaTime;
+    if (this.isOnGround)
+      this.playAnimation("Idle");
+    let newVelocity = this.body.body.getVelocity().clone().add(this.walkDeltaVelocity(accel));
+    this.body.body.setVelocity(newVelocity);
+  }
+
+  walkDeltaVelocity(accel: number): Vector3 {
     let velocity = this.body.body.getVelocity();
     let planarVelocity = Helpers.NewVector3(velocity.x, 0, velocity.z);
 
@@ -146,30 +163,12 @@ export class WingSuitControls extends AvatarBase implements ButtonHandler, DragG
     let target = Helpers.NewVector3(0, 0, targetZ).applyQuaternion(this.body.body.getRotation());
 
     let delta = target.sub(planarVelocity);
-
-    let accel: number;
-
-    if (this.dragDy == 0) {
-      accel = this.walkDec * Helpers.deltaTime;
-      if (this.isOnGround)
-        this.playAnimation("Idle");
-    }
-    else {
-      accel = this.walkAcc * Helpers.deltaTime;
-      if (this.isOnGround)
-        this.playAnimation("Walk");
-    }
-
     let deltaLengthSq = delta.lengthSq();
 
     if (deltaLengthSq > accel * accel) {
       delta = delta.normalize().multiplyScalar(accel);
     }
-
-    let newVelocity = velocity.add(delta);
-    this.body.body.setVelocity(newVelocity);
-    this.dragDx = 0;
-    this.dragDy = 0;
+    return delta;
   }
 
   leanControl() {
@@ -248,9 +247,9 @@ export class WingSuitControls extends AvatarBase implements ButtonHandler, DragG
     else console.error("No " + ShapeStateController.name + " is found on this body.");
   }
 
-  onDrag(dx: number, dy: number): void {
-    this.dragDx = dx;
-    this.dragDy = dy;
+  override onDrag(dx: number, dy: number): void {
+    super.onDrag(dx,dy);
+    this.walkAccelerate()
   }
 
   onButtonPress(button: string): void {

@@ -5,14 +5,11 @@ import { AvatarBase } from "./AvatarBase";
 import { Helpers } from "engine/Helpers";
 import { DragTurner } from "./DragTurner";
 
-export class BallControls extends AvatarBase implements DragGestureHandler {
+export class BallControls extends AvatarBase {
     maxSpeed: number;
     acceleration:number;
     deceleration: number;
     turningSpeed: number;
-
-    private dragDx = 0;
-    private dragDy = 0;
 
     private ballGuide: BodyHandle | undefined = undefined;
     private ballDragTurner: DragTurner | undefined = undefined;
@@ -39,11 +36,6 @@ export class BallControls extends AvatarBase implements DragGestureHandler {
             return 1;
         }
         return param;
-    }
-
-    override onInit(): void {
-        super.onInit();      
-        GameplayScene.instance.dispatcher.addListener("drag", this);
     }
 
     initBallGuide() {
@@ -130,11 +122,6 @@ export class BallControls extends AvatarBase implements DragGestureHandler {
         angularVelo.lerp(targetVelo,this.acceleration);
         
         this.body.body.setAngularVelocity(angularVelo);
-    }
-
-    onDrag(dx: number, dy: number): void {
-        this.dragDx = dx;
-        this.dragDy = dy;
     }
 
     override UnequipAvatar(): void {
