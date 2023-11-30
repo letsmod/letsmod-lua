@@ -25,8 +25,6 @@ export class OneFingerActionControls extends AvatarBase implements DragGestureHa
   aimJumpCancelLength: number;
   aimJumpMaxSpeed: number;
 
-  private dragDx = 0;
-  private dragDy = 0;
   private lastOnGround = Infinity;
   private topAnim: ShapeStateController | undefined;
   private bottomAnim: ShapeStateController | undefined;
