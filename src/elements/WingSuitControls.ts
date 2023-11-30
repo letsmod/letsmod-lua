@@ -269,4 +269,10 @@ export class WingSuitControls extends AvatarBase implements ButtonHandler, DragG
       this.enableGlide();
     }
   }
+
+  override UnequipAvatar(): void {
+    if(this.staminaBarControl)
+        GameplayScene.instance.destroyBody(this.staminaBarControl.body);
+    super.UnequipAvatar();
+}
 }
