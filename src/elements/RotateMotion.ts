@@ -2,9 +2,9 @@ import { BodyHandle } from "engine/BodyHandle";
 import { GameplayScene } from "engine/GameplayScene";
 import { Helpers } from "engine/Helpers";
 import { LMent } from "engine/LMent";
-import { UpdateHandler } from "engine/MessageHandlers";
+import { PhysicsSubstepHandler, UpdateHandler } from "engine/MessageHandlers";
 
-export class RotateMotion extends LMent implements UpdateHandler {
+export class RotateMotion extends LMent implements PhysicsSubstepHandler {
   //PARAMS:
   speed: number;
   axis: string;
@@ -23,19 +23,19 @@ export class RotateMotion extends LMent implements UpdateHandler {
     this.initPos = body.body.getPosition().clone();
     this.rotateAxis = this.initRotationAxis().clone();
   }
+  
+  onPhysicsSubstep(substepDt?: number | undefined): void {
+    if (this.radius > 0)
+      this.runMotion();
+    this.runRotation();
+  }
 
   onInit(): void {
-    GameplayScene.instance.dispatcher.addListener("update", this);
+    GameplayScene.instance.dispatcher.addListener("physicsSubstep", this);
   }
 
   onStart(): void {
 
-  }
-
-  onUpdate(): void {
-    if (this.radius > 0)
-      this.runMotion();
-    this.runRotation();
   }
 
   initRotationAxis(): THREE.Vector3 {
