@@ -21,6 +21,18 @@ export interface ShapePointer
   setVisible(visible: boolean) : void;
 
   setCastShadow(shadowCasting: boolean) : void;
+
+  // changing the position, rotation, or scale of a shape will not affect the physics body; this is for visual effects ONLY
+  getPosition() : THREE.Vector3;
+  setPosition(position: THREE.Vector3) : void;
+  offsetPosition(offset: THREE.Vector3) : void;
+
+  getRotation() : THREE.Quaternion;
+  setRotation(rotation: THREE.Quaternion) : void;
+  applyRotation(rotation: THREE.Quaternion) : void;
+
+  getScale() : THREE.Vector3;
+  setScale(scale: THREE.Vector3) : void;
 }
 
 // interface to a javascript object which provides a lua-compatible interface for the js BodyView scene node

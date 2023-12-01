@@ -1,6 +1,6 @@
 import { BodyHandle } from "engine/BodyHandle";
 import { GameplayScene } from "engine/GameplayScene";
-import { AimGetstureHandler, ButtonHandler, CollisionInfo, DragGestureHandler, SwipeGestureHandler, TapGestureHandler } from "engine/MessageHandlers";
+import { AimGetstureHandler, CollisionInfo, DragGestureHandler, SwipeGestureHandler, TapGestureHandler } from "engine/MessageHandlers";
 import { AvatarBase } from "./AvatarBase";
 import { ShapeStateController } from "./ShapeStateController";
 import { Helpers } from "engine/Helpers";
