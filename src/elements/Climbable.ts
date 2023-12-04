@@ -47,22 +47,20 @@ export class Climbable extends LMent implements CollisionHandler {
     noCollision() {
         this.controls.enabled = true;
         this.isColliding = false;
-
     }
 
     onDrag(dx: number, dy: number): void {
         if (!this.isColliding) return;
-        let playerForward = Helpers.NewVector3(dx, 0, dy).normalize();
+        let forceForward = Helpers.NewVector3(dx, 0, dy).normalize();
         let forward = Helpers.forwardVector.applyQuaternion(this.body.body.getRotation());
-        let dot = forward.dot(playerForward);
+        let dot = forward.dot(forceForward);
         let accel;
-        if (dot < 0 || dot > 0.9)
+        if (dot < 0 || dot > 0)
             accel = this.climbSpeed;
-        else if (dot == 0) {
+        else {
             this.noCollision();
             return;
-        } else
-            accel = -this.climbSpeed;
+        } 
         console.log(accel, dot);
         let newVelocity = Helpers.NewVector3(0, accel, 0);
         this.player.body.setVelocity(newVelocity);
