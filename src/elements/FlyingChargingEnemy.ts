@@ -3,8 +3,14 @@ import { StateMachineLMent, State } from "engine/StateMachineLMent";
 import { Helpers } from "engine/Helpers";
 import { LookAt } from "./LookAt";
 import { EnemyChaseState, EnemyPatrolState,EnemyAlertState, EnemyIdleState, EnemyStates, EnemyChargeState } from "./EnemyStates";
+import { Vector3 } from "three";
 
 class FlyingPatrol extends EnemyPatrolState {
+
+    constructor(stateMachine: StateMachineLMent, points: Vector3[], patrolSpeed: number, alertZone: number)
+    {
+        super(stateMachine,points,patrolSpeed,alertZone,0);
+    }
 
     override onEnterState(previousState: State | undefined): void {
         this.isFlyingEnemy = true;
@@ -44,6 +50,10 @@ class FlyingIdle extends EnemyIdleState{
 }
 
 class FlyingCharge extends EnemyChargeState{
+
+    constructor(stateMachine: StateMachineLMent, chargeSpeed: number, alertZoneRadius: number) {
+        super(stateMachine,chargeSpeed,alertZoneRadius,0);
+    }
     
     override onEnterState(previousState: State | undefined): void {
         this.isFlyingEnemy = true;
