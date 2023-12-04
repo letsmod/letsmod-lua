@@ -19,6 +19,8 @@ export interface ShapePointer
   getVisible() : boolean;
 
   setVisible(visible: boolean) : void;
+
+  setCastShadow(shadowCasting: boolean) : void;
 }
 
 // interface to a javascript object which provides a lua-compatible interface for the js BodyView scene node
@@ -64,9 +66,11 @@ export interface BodyPointer
 
   setVisible(visible: boolean) : void;
 
+  setCastShadow(shadowCasting: boolean) : void;
+
   // internal use; use gameplayScene.destroyBody / cloneBody instead
   destroyBody() : void;
-  cloneBody() : BodyPointer;
+  cloneBody() : BodyHandle;
 }
 
 // lua object
@@ -95,6 +99,76 @@ export class BodyHandle
 
     return undefined;
   }
+
+  getElementByTypeName(name: string)
+  {
+    for (let i = 0; i < this.elements.length; i++)
+    {
+      if (this.elements[i].constructor.name == name)
+      {
+        return this.elements[i];
+      }
+    }
+
+    return undefined;
+  }
+
+  getElementByName(name:string)
+  {
+    for (let i = 0; i < this.elements.length; i++)
+    {
+      if (this.elements[i].name == name)
+      {
+        return this.elements[i];
+      }
+    }
+
+    return undefined;
+  }
+
+  getAllElements <U extends LMent> (T : new (...args: any[]) => U ) : U[]
+  {
+    let arr =[];
+    for (let i = 0; i < this.elements.length; i++)
+    {
+      if (this.elements[i] instanceof T)
+      {
+        arr.push(this.elements[i] as U);
+      }
+    }
+
+    return arr;
+  }
+
+  getAllElementsByTypeName (typeName:string ) : LMent[]
+  {
+    let arr =[];
+    let count=0;
+    for (let i = 0; i < this.elements.length; i++)
+    {
+      if (this.elements[i].constructor.name == typeName)
+      {
+        arr.push(this.elements[i]);
+      }
+    }
+
+    return arr;
+  }
+
+  getAllElementsByName (name:string ) : LMent[]
+  {
+    let arr =[];
+    for (let i = 0; i < this.elements.length; i++)
+    {
+      if (this.elements[i].name == name)
+      {
+        arr.push(this.elements[i]);
+      }
+    }
+
+    return arr;
+  }
+
 
   addElement(elem : LMent)
   {

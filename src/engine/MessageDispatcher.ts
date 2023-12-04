@@ -9,8 +9,10 @@ import { LMent } from "./LMent";
 import { BodyHandle } from "./BodyHandle";
 import { GameplayScene } from "./GameplayScene";
 
+export type ListenerType<key extends keyof HandlerTypeMap> = LMent & HandlerTypeMap[key];
+
 export type ListenerDict = {
-  [key in keyof HandlerTypeMap]: HandlerTypeMap[key][]
+  [key in keyof HandlerTypeMap]: ListenerType<key>[];
 }
 
 export function MakeListenerDict()
@@ -81,7 +83,7 @@ export class MessageDispatcher
     }
   }
 
-  removeListener<T extends keyof HandlerTypeMap>(type: T, listener: HandlerTypeMap[T])
+  removeListener<T extends keyof HandlerTypeMap>(type: T, listener: ListenerType<T>)
   {
     let listeners = this.listeners[type];
     let index = listeners.indexOf(listener);
@@ -91,7 +93,7 @@ export class MessageDispatcher
     }
   }
 
-  addListener<T extends keyof HandlerTypeMap>(type: T, listener: HandlerTypeMap[T])
+  addListener<T extends keyof HandlerTypeMap>(type: T, listener: ListenerType<T>)
   {
     this.listeners[type].push(listener);
   }
@@ -164,13 +166,25 @@ export class MessageDispatcher
 
   // UpdateHandler
 
-  onUpdate()
+  onUpdate(dt: number)
   {
     // iterate over copy of listeners in case onUpdate adds/removes listeners
     for (let listener of this.listeners["update"].slice())
     {
       if (listener.enabled) {
-        listener.onUpdate();
+        listener.onUpdate(dt);
+      }
+    }
+  }
+
+  // PhysicSubstepHandler
+  onPhysicsSubstep(dt: number)
+  {
+    // iterate over copy of listeners in case onPhysicsSubstep adds/removes listeners
+    for (let listener of this.listeners["physicsSubstep"].slice())
+    {
+      if (listener.enabled) {
+        listener.onPhysicsSubstep(dt);
       }
     }
   }
@@ -390,7 +404,7 @@ export class MessageDispatcher
       let body = source.body;
       for (let listener of this.listeners["trigger"].slice())
       {
-        if (listener.enabled && listener.body == body && listener.hasSubtype(triggerId)) {
+        if ((listener.enabled || listener.receivesTriggersWhenDisabled) && listener.body == body && listener.hasSubtype(triggerId)) {
           listener.onTrigger(source, triggerId);
         }
       }
@@ -399,8 +413,8 @@ export class MessageDispatcher
     {
       for (let listener of this.listeners["trigger"].slice())
       {
-        if (listener.enabled && listener.hasSubtype(triggerId)) {
-          for (let body of listener.body.bodyGroup)
+        if ((listener.enabled || listener.receivesTriggersWhenDisabled) && listener.hasSubtype(triggerId)) {
+          for (let body of source.body.bodyGroup)
           {
             if (listener.body == body)
             {
@@ -414,7 +428,7 @@ export class MessageDispatcher
     {
       for (let listener of this.listeners["trigger"].slice())
       {
-        if (listener.enabled && listener.hasSubtype(triggerId)) {
+        if ((listener.enabled || listener.receivesTriggersWhenDisabled) && listener.hasSubtype(triggerId)) {
           listener.onTrigger(source, triggerId);
         }
       }  
