@@ -8,23 +8,22 @@ import { Helpers } from "engine/Helpers";
 
 export class ContactDamage extends LMent implements CollisionHandler {
     damageValue: number;
-    damageType: DamageType | undefined;
-    teamFlags: number | undefined;
+    damageType?: DamageType;
+    teamFlags?: number;
     cooldown: number;
     contactDirection: Vector3;
-    dotMinimum: number | undefined;
+    dotMinimum?: number;
 
-    contactCooldowns: { [key: number]: number };
+    contactCooldowns: { [key: number]: number } = {};
 
     constructor(body: BodyHandle, id: number, params: Partial<ContactDamage> = {}) {
         super(body, id, params);
-        this.damageValue = params.damageValue === undefined ? 1 : params.damageValue;
+        this.damageValue = params.damageValue ?? 1;
         this.damageType = params.damageType;
         this.teamFlags = params.teamFlags;
-        this.cooldown = params.cooldown === undefined ? 0 : params.cooldown;
-        this.contactDirection = params.contactDirection === undefined ? Helpers.upVector : params.contactDirection;
+        this.cooldown = params.cooldown ?? 0;
+        this.contactDirection = params.contactDirection ?? Helpers.upVector;
         this.dotMinimum = params.dotMinimum;
-        this.contactCooldowns = {};
     }
 
     onInit() {
@@ -36,28 +35,20 @@ export class ContactDamage extends LMent implements CollisionHandler {
     }
 
     onCollision(info: CollisionInfo) {
-        let other = GameplayScene.instance.getBodyById(info.getOtherObjectId());
-        if (other !== undefined) {
+        const other = GameplayScene.instance.getBodyById(info.getOtherObjectId());
+        if (other) {
             const now = GameplayScene.instance.memory.timeSinceStart;
             const hpElement = other.getElement(HitPoints);
 
-            let collisionDirection = info.getDeltaVOther().normalize();
-            let myDirection = this.contactDirection.applyQuaternion(this.body.body.getRotation()).normalize();
-            let dotProduct = collisionDirection.dot(myDirection);
+            const collisionDirection = info.getDeltaVOther().normalize();
+            const myDirection = this.contactDirection.clone().applyQuaternion(this.body.body.getRotation()).normalize();
+            const dotProduct = collisionDirection.dot(myDirection);
+            console.log(dotProduct);
 
-            if (this.dotMinimum === undefined) {
-                if (hpElement !== undefined) {
-                    if (this.contactCooldowns[other.body.id] === undefined || now - this.contactCooldowns[other.body.id] >= this.cooldown) {
-                        hpElement.damage(this.damageValue, this.damageType, this.teamFlags);
-                        this.contactCooldowns[other.body.id] = now;
-                    }
-                }
-            } else if (dotProduct >= this.dotMinimum) {
-                if (hpElement !== undefined) {
-                    if (this.contactCooldowns[other.body.id] === undefined || now - this.contactCooldowns[other.body.id] >= this.cooldown) {
-                        hpElement.damage(this.damageValue, this.damageType, this.teamFlags);
-                        this.contactCooldowns[other.body.id] = now;
-                    }
+            if (this.dotMinimum === undefined || dotProduct >= this.dotMinimum) {
+                if (hpElement && (this.contactCooldowns[other.body.id] === undefined || now - this.contactCooldowns[other.body.id] >= this.cooldown)) {
+                    hpElement.damage(this.damageValue, this.damageType, this.teamFlags);
+                    this.contactCooldowns[other.body.id] = now;
                 }
             }
         }
