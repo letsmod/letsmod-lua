@@ -5,24 +5,28 @@ import { CollisionHandler, CollisionInfo } from "engine/MessageHandlers";
 
 export class SetEnabledOnCollision extends LMent implements CollisionHandler {
     elementName: string;
-    collisionMinImpulse: number | undefined;
-    collisionMinDeltaV: number | undefined;
+    collisionMinImpulse?: number;
+    collisionMinDeltaV?: number;
     elementChipName: string;
     setEnabled: boolean;
+
     constructor(body: BodyHandle, id: number, params: Partial<SetEnabledOnCollision> = {}) {
         super(body, id, params);
-        this.elementName = params.elementName === undefined ? "" : params.elementName;
-        this.elementChipName = params.elementChipName === undefined ? "" : params.elementChipName;
+        this.elementName = params.elementName ?? "";
+        this.elementChipName = params.elementChipName ?? "";
         this.collisionMinDeltaV = params.collisionMinDeltaV;
         this.collisionMinImpulse = params.collisionMinImpulse;
-        this.setEnabled = params.setEnabled === undefined ? true : params.setEnabled;
+        this.setEnabled = params.setEnabled ?? true;
     }
+
     onInit(): void {
         GameplayScene.instance.dispatcher.addListener("collision", this);
     }
-    onStart(): void {
 
+    onStart(): void {
+        // Add implementation here
     }
+
     onCollision(info: CollisionInfo): void {
         const impulseSufficient = this.collisionMinImpulse === undefined || info.getImpulse().length() >= this.collisionMinImpulse;
         const deltaVSufficient = this.collisionMinDeltaV === undefined || info.getDeltaVOther().length() >= this.collisionMinDeltaV;
@@ -32,7 +36,7 @@ export class SetEnabledOnCollision extends LMent implements CollisionHandler {
             if (other !== undefined && i == other)
                 inBodyGroup = true;
         }
-        if (!inBodyGroup && other?.body.name !=="MainCamera_Lua") {
+        if (!inBodyGroup && other?.body.name !== "MainCamera_Lua") {
             if (impulseSufficient && deltaVSufficient || this.body.body.getPhysicsBodyType() === 2) {
                 let elements = this.body.getAllElementsByTypeName(this.elementName);
                 for (let i = 0; i < elements.length; i++) {
@@ -42,5 +46,4 @@ export class SetEnabledOnCollision extends LMent implements CollisionHandler {
             }
         }
     }
-
 }
