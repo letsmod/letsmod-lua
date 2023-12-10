@@ -32,12 +32,6 @@ export abstract class EnemyStateBase extends State implements UpdateHandler {
     protected isFlyingEnemy: boolean = false;
     protected moveForce: number = 0;
 
-
-    protected get playerIsClose() {
-        let player = GameplayScene.instance.memory.player;
-        return player !== undefined && this.stateMachine.body.body.getPosition().distanceTo(player.body.getPosition()) < this.alertZoneRadius;
-    }
-
     protected get myPosition() { return this.stateMachine.body.body.getPosition(); }
 
     constructor(name: string, stateMachine: StateMachineLMent, alertZoneRadius: number) {
@@ -85,7 +79,31 @@ export abstract class EnemyStateBase extends State implements UpdateHandler {
     }
 
     onUpdate(dt: number): void {
+        if (this.stateMachine.body.body.getPosition().y < -1)
+            GameplayScene.instance.destroyBody(this.stateMachine.body);
+
         /* Override by children */
+    }
+
+    playerInSight(): boolean {
+        const player = GameplayScene.instance.memory.player;
+        if (player === undefined)
+            return false;
+        const enemyFwd = Helpers.forwardVector.applyQuaternion(this.stateMachine.body.body.getRotation());
+        const dotCheck = enemyFwd.dot(player.body.getPosition().clone().sub(this.stateMachine.body.body.getPosition()).normalize());
+        return dotCheck > 0.5;
+    }
+
+    protected playerInRange():boolean{
+        const player = GameplayScene.instance.memory.player;
+        if (player === undefined)
+            return false;
+        return this.stateMachine.body.body.getPosition().distanceTo(player.body.getPosition()) < this.alertZoneRadius;
+    }
+
+    protected alertCondition(): boolean {
+        /** To be overwritten by children **/
+        return this.playerInRange(); // Default is player in range, could be changed to player in sight in child classes
     }
 
     setLookAtTarget(target: Vector3) {
@@ -146,7 +164,7 @@ export class EnemyPatrolState extends EnemyStateBase implements UpdateHandler {
     }
 
     onUpdate(dt: number): void {
-
+        super.onUpdate(dt);
         let distance = this.stateMachine.body.body.getPosition().clone().multiply(Helpers.xzVector).distanceTo(this.activePoint.clone().multiply(Helpers.xzVector));
         if (this.isFlyingEnemy)
             distance = this.stateMachine.body.body.getPosition().distanceTo(this.activePoint);
@@ -159,7 +177,7 @@ export class EnemyPatrolState extends EnemyStateBase implements UpdateHandler {
             this.playStateAnimation(dt);
         }
 
-        if (this.playerIsClose)
+        if (this.alertCondition())
             this.switchToAlert();
     }
 
@@ -191,8 +209,8 @@ export class EnemyAlertState extends EnemyStateBase implements UpdateHandler {
     }
 
     onUpdate(dt: number): void {
-
-        if (this.playerIsClose)
+        super.onUpdate(dt);
+        if (this.alertCondition())
             this.warmUp(dt);
         else this.coolDown(dt);
 
@@ -238,7 +256,7 @@ export class EnemyAlertState extends EnemyStateBase implements UpdateHandler {
 
 export class EnemyChaseState extends EnemyStateBase implements UpdateHandler {
 
-    constructor(stateMachine: StateMachineLMent, chaseSpeed: number, alertZoneRadius: number, movementForce:number) {
+    constructor(stateMachine: StateMachineLMent, chaseSpeed: number, alertZoneRadius: number, movementForce: number) {
         super(EnemyStates.chase, stateMachine, alertZoneRadius);
 
         this.movementSpeed = chaseSpeed;
@@ -255,7 +273,8 @@ export class EnemyChaseState extends EnemyStateBase implements UpdateHandler {
     }
 
     onUpdate(dt: number): void {
-        if (this.playerIsClose) {
+        super.onUpdate(dt);
+        if (this.alertCondition()) {
             this.moveForward();
             this.playStateAnimation(dt);
         }
@@ -268,7 +287,7 @@ export class EnemyChargeState extends EnemyStateBase implements UpdateHandler {
 
     targetPosition: Vector3 = Helpers.zeroVector;
 
-    constructor(stateMachine: StateMachineLMent, chargeSpeed: number, alertZoneRadius: number, movementForce:number) {
+    constructor(stateMachine: StateMachineLMent, chargeSpeed: number, alertZoneRadius: number, movementForce: number) {
         super(EnemyStates.chase, stateMachine, alertZoneRadius);
 
         this.movementSpeed = chargeSpeed;
@@ -288,7 +307,7 @@ export class EnemyChargeState extends EnemyStateBase implements UpdateHandler {
     }
 
     onUpdate(dt: number): void {
-
+        super.onUpdate(dt);
         let distance = this.myPosition.distanceTo(this.targetPosition);
         if (distance > this.reachDestinationThreshold) {
             this.moveForward();
@@ -324,6 +343,7 @@ export class EnemyIdleState extends EnemyStateBase implements UpdateHandler {
     }
 
     onUpdate(dt: number): void {
+        super.onUpdate(dt);
         this.idleTimer -= dt;
         if (this.idleTimer <= 0) {
             this.switchToPatrol();
@@ -335,7 +355,7 @@ export class EnemyIdleState extends EnemyStateBase implements UpdateHandler {
             thisBody.setRotation(thisBody.getRotation().slerp(this.idleQuat, 0.15));
         }
 
-        if (this.playerIsClose)
+        if (this.alertCondition())
             this.switchToAlert();
     }
 }
