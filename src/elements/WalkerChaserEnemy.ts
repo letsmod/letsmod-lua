@@ -10,6 +10,10 @@ class WalkerPatrol extends EnemyPatrolState {
         if (this.anim)
             this.anim.playState("walk");
     }
+
+    override alertCondition(): boolean {
+        return this.playerInRange() && this.playerInSight();
+    }
 }
 
 class WalkerChase extends EnemyChaseState {
@@ -27,12 +31,20 @@ class WalkerAlert extends EnemyAlertState{
         if(this.anim)
             this.anim.playState("idle")
     }
+
+    override alertCondition(): boolean {
+        return this.playerInRange() && this.playerInSight();
+    }
 }
 
 class WalkerIdle extends EnemyIdleState{
     override playStateAnimation(dt: number): void {
         if (this.anim)
             this.anim.playState("idle");
+    }
+
+    override alertCondition(): boolean {
+        return this.playerInRange() && this.playerInSight();
     }
 }
 
