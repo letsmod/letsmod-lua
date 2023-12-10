@@ -1,157 +1,152 @@
+import { BodyHandle } from "engine/BodyHandle";
+import { GameplayScene } from "engine/GameplayScene";
+import { Helpers, InterpolationType, MotionPattern } from "engine/Helpers";
+import { LMent } from "engine/LMent";
+import { PhysicsSubstepHandler, UpdateHandler } from "engine/MessageHandlers";
 import { Vector3 } from "three";
-import { BodyHandle } from "../engine/BodyHandle";
-import { GameplayScene } from "../engine/GameplayScene";
-import { LMent } from "../engine/LMent";
-import { PhysicsSubstepHandler } from "../engine/MessageHandlers";
-import { Helpers } from "engine/Helpers";
 
-type waypoints = {
-    offset: Vector3,
-    speed: number,
-    delay: number,
-    interpolationFunction: string,
+type WaypointType = {
+    offset: Vector3;
+    duration: number;
+    delay: number;
+    interpolate: InterpolationType;
+    targetPos: Vector3;
 };
 
 export class Waypoint extends LMent implements PhysicsSubstepHandler {
-    points: waypoints[];
-    pattern: string;
-    private totalDistanceToNextPoint: number;
-    private nextIndex: number;
-    private delayPlusTime: number;
-    private now: number;
-    private indexAddvalue: number;
-
-    constructor(body: BodyHandle, id: number, params: Partial<Waypoint> = {}) {
-        super(body, id, params);
-
-        this.points = this.convertArray(params.points) || [];
-        this.pattern = params.pattern === undefined ? "loop" : params.pattern;
-        this.totalDistanceToNextPoint = 0;
-        this.nextIndex = 0;
-        this.delayPlusTime = 0;
-        this.now = 0;
-        this.indexAddvalue = 1;
-    }
 
     onInit(): void {
         GameplayScene.instance.dispatcher.addListener("physicsSubstep", this);
         this.validatePattern();
+        this.validateWaypoints();
     }
 
     onStart(): void {
-        this.adjustOffsets();
-        this.adjustPatterns();
-
-        this.totalDistanceToNextPoint = this.body.body.getPosition().distanceTo(this.points[0].offset);
+        this.adjustTargets();
+        this.startingPosition = this.body.body.getPosition().clone();
     }
 
-    adjustPatterns() {
-        const InitWayPoint: waypoints = {
-            offset: this.body.body.getPosition().clone(),
-            speed: this.points[0].speed,
-            delay: this.points[0].delay,
-            interpolationFunction: this.points[0].interpolationFunction
-        };
+    points: WaypointType[];
+    pattern: MotionPattern
 
-        if (this.pattern === "pingpong") {
-            this.points.unshift(InitWayPoint);
-            this.indexAddvalue = -1;
-        } else if (this.pattern === "loop")
-            this.points.push(InitWayPoint);
+    private currentWaypointIndex: number = 0;
+    private timeSinceLastWaypoint: number = 0;
+    private forwardDirection: boolean = true; //--> Used for Ping-Pong pattern
+    private startingPosition: Vector3;
+    constructor(body: BodyHandle, id: number, params: Partial<Waypoint> = {}) {
+        super(body, id, params);
+        this.points = this.convertArray(params.points) || [];
+        this.pattern = params.pattern === undefined ? "loop" : params.pattern.toLowerCase() as MotionPattern;
+        this.startingPosition = Helpers.zeroVector;
+
     }
 
-    adjustOffsets() {
+    validateWaypoints() {
         for (let i = 0; i < this.points.length; i++) {
-            let offset = Helpers.NewVector3(this.points[i].offset.x, this.points[i].offset.y, this.points[i].offset.z);
-            offset.applyQuaternion(this.body.body.getRotation());
-            if (i == 0)
-                this.points[i].offset = this.body.body.getPosition().clone().add(offset);
-            else this.points[i].offset = this.points[i-1].offset.clone().add(offset);
+            let interpolate = this.points[i].interpolate;
+            if (interpolate) {
+                this.points[i].interpolate = interpolate.toLowerCase() as InterpolationType;
+                if (!Helpers.validateInterpolateType(interpolate)) {
+                    this.points[i].interpolate = "linear";
+                    console.log("Interpolate type " + interpolate + " not found, setting to linear");
+                }
+            }
+            else this.points[i].interpolate = "linear";
+
+            let duration = this.points[i].duration;
+            if (duration === undefined || duration <= 0)
+                this.points[i].duration = 0.1;
+
+            let delay = this.points[i].delay;
+            if (delay === undefined || delay < 0)
+                this.points[i].delay = 0;
+
+            let offset = this.points[i].offset;
+            if (offset === undefined)
+                this.points[i].offset = Helpers.forwardVector;
+
+            let interpolateType = this.points[i].interpolate;
+            if (interpolateType === undefined)
+                this.points[i].interpolate = "linear";
+
         }
     }
 
     validatePattern() {
-        if (this.pattern !== "loop" && this.pattern !== "pingpong" && this.pattern !== "once") {
+        if (!Helpers.validateMotionPattern(this.pattern)) {
             console.log("Pattern " + this.pattern + " is not found, resetting to loop");
             this.pattern = "loop";
         }
     }
 
-    onPhysicsSubstep(substepDt: number): void {
-        this.now = GameplayScene.instance.memory.timeSinceStart;
-        if (this.points[this.nextIndex] != undefined) {
-            if (this.now - this.delayPlusTime >= this.points[this.nextIndex].delay)
-                this.moveOneStep(this.points[this.nextIndex], substepDt);
+    adjustTargets() {
+        let firstItem = this.points[0];
+        firstItem.targetPos = this.body.body.getPosition().clone().add(Helpers.ParamToVec3(firstItem.offset).applyQuaternion(this.body.body.getRotation()));
+
+        for (let i = 1; i < this.points.length; i++) {
+            const myOffset = Helpers.ParamToVec3(this.points[i].offset).applyQuaternion(this.body.body.getRotation());
+            const prevTarget = this.points[i - 1].targetPos;
+            const myTarget = myOffset.clone().add(prevTarget);
+            this.points[i].targetPos = myTarget;
         }
     }
 
-    moveOneStep(target: waypoints, dt: number): void {
-        const position = this.body.body.getPosition();
-        const distanceToTarget = position.distanceTo(target.offset);
-        const normalizedDistance = distanceToTarget / this.totalDistanceToNextPoint;
-        const moveFactor = this.movementStepFactor(normalizedDistance, target.interpolationFunction);
+    onPhysicsSubstep(dt: number): void {
+        if (!this.enabled || this.points.length === 0)
+            return;
+        this.handleWaypointMovement(dt);
+    }
 
-        if (distanceToTarget < target.speed * dt * moveFactor) {
-            this.body.body.setPosition(target.offset);
-            this.updateNextIndex();
-        } else {
-            const direction = target.offset.clone().sub(position).normalize();
+    private handleWaypointMovement(dt: number): void {
 
-            const movement = direction.clone().multiplyScalar(target.speed * dt * moveFactor);
+        const currentWaypoint = this.points[this.currentWaypointIndex];
+        this.timeSinceLastWaypoint += dt;
 
-            position.add(movement);
-            this.body.body.setPosition(position);
+        if (this.timeSinceLastWaypoint >= currentWaypoint.duration) {
+            this.handleDelay(dt);
+            return;
+        }
+
+        const progress = Helpers.getInterpolatedProgress(this.timeSinceLastWaypoint / currentWaypoint.duration, currentWaypoint.interpolate);
+        const addedOffset = Helpers.ParamToVec3(currentWaypoint.targetPos).clone().sub(this.startingPosition);
+        const nextPosition = this.startingPosition.clone().add(addedOffset.multiplyScalar(progress));
+
+        this.body.body.setPosition(nextPosition);
+    }
+
+    private handleDelay(dt: number): void {
+        const currentWaypoint = this.points[this.currentWaypointIndex];
+        this.timeSinceLastWaypoint += dt;
+
+        if (this.timeSinceLastWaypoint - currentWaypoint.duration >= currentWaypoint.delay) {
+            this.moveToNextWaypoint();
+            this.timeSinceLastWaypoint = 0;
         }
     }
 
-    updateNextIndex() {
-        if (this.pattern === "pingpong" && (this.nextIndex === 0 || this.nextIndex === this.points.length - 1)) {
-            this.indexAddvalue *= -1;
+    private moveToNextWaypoint(): void {
+        if (this.currentWaypointIndex === this.points.length - 1 && this.pattern === "once") {
+            this.enabled = false;
+            return;
         }
-        this.nextIndex += this.indexAddvalue;
-
-        while (this.nextIndex < 0 || this.nextIndex >= this.points.length) {
-            if (this.pattern.toLowerCase() === "once") {
-                this.nextIndex = this.points.length - 1;
-            } else if (this.pattern.toLowerCase() === "pingpong") {
-                this.nextIndex = this.nextIndex < 0 ? 1 : this.points.length - 2;
-            } else {
-                this.nextIndex = 0; // Default is "loop"
-            }
-        }
-
-        this.totalDistanceToNextPoint = this.body.body.getPosition().distanceTo(this.points[this.nextIndex].offset);
-        this.delayPlusTime = this.now + this.points[this.nextIndex].delay;
+        this.startingPosition = this.body.body.getPosition().clone();
+        this.currentWaypointIndex = this.getNextWaypointIndex();
+        this.timeSinceLastWaypoint = 0;
     }
 
-    movementStepFactor(t: number, interpolation: string): number {
-        switch (interpolation) {
-            case "sine":
-                return 0.1 + Math.sin(Math.PI * t) * 0.9;
-            case "smooth":
-                return 0.1 + Helpers.NumLerp(Math.sqrt(t), Math.sqrt(1 - t), t);
-            case "elastic":
-                return 0.1 + this.elasticEase(t);
-            default:
-                return 1;
-        }
-    }
-
-    elasticEase(t: number): number {
-        const amplitude = 1.0;
-        const period = 0.3;
-        const overshoot = 1.70158; // Adjust for desired overshoot behavior
-
-        if (t === 0 || t === 1) {
-            return t;
-        } else {
-            const s = period / (2 * Math.PI) * Math.asin(1);
-            return (
-                amplitude *
-                Math.pow(2, -10 * t) *
-                Math.sin(((t - s) * (2 * Math.PI)) / period) *
-                overshoot
-            );
+    private getNextWaypointIndex(): number {
+        switch (this.pattern) {
+            case "loop":
+                return (this.currentWaypointIndex + 1) % this.points.length;
+            case "ping-pong":
+                if (this.currentWaypointIndex === 0) {
+                    this.forwardDirection = true;
+                } else if (this.currentWaypointIndex === this.points.length - 1) {
+                    this.forwardDirection = false;
+                }
+                return this.forwardDirection ? this.currentWaypointIndex + 1 : this.currentWaypointIndex - 1;
+            case "once":
+                return Math.min(this.currentWaypointIndex + 1, this.points.length - 1);
         }
     }
 }
