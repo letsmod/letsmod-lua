@@ -111,13 +111,13 @@ export class AvatarBase extends LMent implements UpdateHandler, HitPointChangeHa
           isSafe = true;
         }
       if (isSafe) {
-        this.respawnAt(step)
+        this.respawnAt(step,i)
         break;
       }
     }
 
     if (!isSafe)
-      this.respawnAt(AvatarBase.safeSteps[0]);
+      this.respawnAt(AvatarBase.safeSteps[0],0);
   }
 
   postReviveCallback() {
@@ -127,8 +127,8 @@ export class AvatarBase extends LMent implements UpdateHandler, HitPointChangeHa
       camTarget.enabled = true;
   }
 
-  respawnAt(pos: Vector3) {
-    AvatarBase.safeSteps = [AvatarBase.safeSteps[0]];
+  respawnAt(pos: Vector3, index:number) {
+    
     this.isReviving = true;
 
     let hp = this.body.getElement(HitPoints);
@@ -144,6 +144,10 @@ export class AvatarBase extends LMent implements UpdateHandler, HitPointChangeHa
     this.body.body.setVelocity(Helpers.zeroVector);
     this.body.body.setPosition(pos.clone().add(Helpers.NewVector3(0, 0.5, 0)));
     GameplayScene.instance.dispatcher.queueDelayedFunction(this, () => { this.postReviveCallback(); }, this.revivingCooldown)
+
+    for(let i=AvatarBase.safeSteps.length-1;i>index;i--)
+      AvatarBase.safeSteps.splice(i,1);
+
   }
 
   UnequipAvatar() {
