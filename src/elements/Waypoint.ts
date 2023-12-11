@@ -97,6 +97,12 @@ export class Waypoint extends LMent implements PhysicsSubstepHandler {
         this.handleWaypointMovement(dt);
     }
 
+    onEnable(): void {
+        this.startingPosition = this.body.body.getPosition().clone();
+        this.currentWaypointIndex = 0;
+        this.timeSinceLastWaypoint = 0;
+    }
+
     private handleWaypointMovement(dt: number): void {
 
         const currentWaypoint = this.points[this.currentWaypointIndex];

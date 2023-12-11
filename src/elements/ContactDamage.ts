@@ -43,7 +43,6 @@ export class ContactDamage extends LMent implements CollisionHandler {
             const collisionDirection = info.getDeltaVOther().normalize();
             const myDirection = this.contactDirection.clone().applyQuaternion(this.body.body.getRotation()).normalize();
             const dotProduct = collisionDirection.dot(myDirection);
-            console.log(dotProduct);
 
             if (this.dotMinimum === undefined || dotProduct >= this.dotMinimum) {
                 if (hpElement && (this.contactCooldowns[other.body.id] === undefined || now - this.contactCooldowns[other.body.id] >= this.cooldown)) {
