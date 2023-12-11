@@ -2,9 +2,10 @@ import { BodyHandle } from "engine/BodyHandle";
 import { StateMachineLMent, State } from "engine/StateMachineLMent";
 import { Helpers } from "engine/Helpers";
 import { LookAt } from "./LookAt";
-import { EnemyAlertState, EnemyChaseState, EnemyIdleState, EnemyPatrolState, EnemyStates } from "./EnemyStates";
+import { EnemyAlertState, EnemyChaseState } from "./CharacterStates";
+import { CharacterStates, characterIdleState, characterPatrolState } from "./CharacterStates";
 
-class BouncerPatrol extends EnemyPatrolState {
+class BouncerPatrol extends characterPatrolState {
 
     bounceTimer: number = 0;
     bounceAfter: number = 0.4;
@@ -63,13 +64,13 @@ export class BouncerEnemy extends StateMachineLMent {
         let point2 = point1.clone().add(Helpers.forwardVector.multiplyScalar(this.patrolDistance).applyQuaternion(this.body.body.getRotation()))
 
         this.states = {
-            [EnemyStates.patrol]: new BouncerPatrol(this, [point1, point2], this.patrolSpeed,this.alertZoneRadius,this.movementForce),
-            [EnemyStates.chase]: new BouncerChase(this, this.chaseSpeed, this.alertZoneRadius,this.movementForce),
-            [EnemyStates.alert]: new EnemyAlertState(this,this.alertZoneRadius,this.alertCooldown,this.alertWarmUp,EnemyStates.chase),
-            [EnemyStates.idle]: new EnemyIdleState(this,this.alertZoneRadius,this.idleDelay)
+            [CharacterStates.patrol]: new BouncerPatrol(this, [point1, point2], this.patrolSpeed,this.movementForce,this.alertZoneRadius),
+            [CharacterStates.chase]: new BouncerChase(this, this.chaseSpeed, this.alertZoneRadius,this.movementForce),
+            [CharacterStates.alert]: new EnemyAlertState(this,this.alertZoneRadius,this.alertCooldown,this.alertWarmUp,CharacterStates.chase),
+            [CharacterStates.idle]: new characterIdleState(this,this.alertZoneRadius,this.idleDelay)
         }
 
-        this.switchState(EnemyStates.patrol);
+        this.switchState(CharacterStates.patrol);
     }
 
     onStart() {
