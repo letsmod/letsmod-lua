@@ -20,10 +20,10 @@ export class RadialForce extends LMent implements CollisionHandler {
     }
 
     onCollision(info: CollisionInfo): void {
-        let other = GameplayScene.instance.getBodyById(info.getOtherObjectId());
-        if (other !== undefined) {
-            let directionFromCenter = Helpers.NewVector3(0, 0, 0).subVectors(other.body.getPosition(), this.body.body.getPosition()).normalize();
-            let distanceFromCenter = other.body.getPosition().distanceTo(this.body.body.getPosition());
+        const other = GameplayScene.instance.getBodyById(info.getOtherObjectId());
+        if (other) {
+            const directionFromCenter = Helpers.NewVector3(0, 0, 0).subVectors(other.body.getPosition(), this.body.body.getPosition()).normalize();
+            const distanceFromCenter = other.body.getPosition().distanceTo(this.body.body.getPosition());
             let forceMagnitude = this.forceValue / distanceFromCenter;
             if (forceMagnitude > this.forceValue) {
                 forceMagnitude = this.forceValue;

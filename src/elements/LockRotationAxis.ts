@@ -4,8 +4,8 @@ import { LMent } from "engine/LMent";
 export class LockRotationAxis extends LMent {
 
   xAxis: boolean;
-  yAxis: boolean
-  zAxis: boolean
+  yAxis: boolean;
+  zAxis: boolean;
 
   constructor(body: BodyHandle, id: number, params: Partial<LockRotationAxis> = {}) {
     super(body, id, params);

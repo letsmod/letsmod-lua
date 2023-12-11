@@ -4,6 +4,7 @@ import { ButtonHandler, CollisionInfo, DragGestureHandler } from "engine/Message
 import { AvatarBase } from "./AvatarBase";
 import { Helpers } from "engine/Helpers";
 import { DragTurner } from "./DragTurner";
+import { CameraTarget } from "./CameraTarget";
 
 export class BallControls extends AvatarBase {
     maxSpeed: number;
@@ -47,7 +48,8 @@ export class BallControls extends AvatarBase {
         }
         this.ballGuide.body.setPosition(this.body.body.getPosition());
         this.ballGuide.body.setRotation(this.body.body.getRotation());
-        
+        this.camTarget = this.ballGuide.getElement(CameraTarget);
+
         this.ballDragTurner =  this.ballGuide.getElement(DragTurner);
         if (this.ballDragTurner === undefined)
         {
@@ -113,9 +115,9 @@ export class BallControls extends AvatarBase {
         let torqueFwd = Helpers.rightVector.applyQuaternion(this.ballGuide.body.getRotation()).multiplyScalar(-Math.sign(this.dragDy)*dragDistance);
         //let dxModified = this.dragDy<0?this.dragDx:-this.dragDx;
         
-        if(this.dragDy>0)
-            this.ballDragTurner?.invert();
-        else this.ballDragTurner?.uninvert();
+        // if(this.dragDy>0)
+        //     this.ballDragTurner?.invert();
+        // else this.ballDragTurner?.uninvert();
 
         let torqueTurn = Helpers.forwardVector.applyQuaternion(this.ballGuide.body.getRotation()).multiplyScalar(this.dragDx*this.turningSpeed);
         

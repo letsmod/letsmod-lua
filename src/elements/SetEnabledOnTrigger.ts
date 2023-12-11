@@ -13,11 +13,11 @@ export class SetEnabledOnTrigger extends LMent implements TriggerHandler {
 
     constructor(body: BodyHandle, id: number, params: Partial<SetEnabledOnTrigger> = {}) {
         super(body, id, params);
-        this.triggerId = params.triggerId === undefined ? Helpers.NA : params.triggerId;
-        this.receivesTriggersWhenDisabled = params.receivesTriggersWhenDisabled === undefined ? false : params.receivesTriggersWhenDisabled;
-        this.elementName = params.elementName === undefined ? "" : params.elementName;
-        this.elementChipName = params.elementChipName === undefined ? "" : params.elementChipName;
-        this.setEnabled = params.setEnabled === undefined ? true : params.setEnabled;
+        this.triggerId = params.triggerId ?? Helpers.NA;
+        this.receivesTriggersWhenDisabled = params.receivesTriggersWhenDisabled ?? false;
+        this.elementName = params.elementName ?? "";
+        this.elementChipName = params.elementChipName ?? "";
+        this.setEnabled = params.setEnabled ?? true;
     }
 
     onInit(): void {
@@ -27,25 +27,27 @@ export class SetEnabledOnTrigger extends LMent implements TriggerHandler {
     onStart(): void {
     }
 
-    validateElement() {
+    validateElement(): boolean {
         return Helpers.ValidateParams(this.triggerId, this, "triggerId");
     }
 
     hasSubtype(trigger: string): boolean {
-        return trigger == this.triggerId;
+        return trigger === this.triggerId;
     }
 
     onTrigger(source: LMent, triggerId: string): void {
-        if (!this.validateElement())
+        if (!this.validateElement()) {
             return;
+        }
         this.doEnable();
     }
 
-    doEnable() {
-        let elements = this.body.getAllElementsByTypeName(this.elementName);
+    doEnable(): void {
+        const elements = this.body.getAllElementsByTypeName(this.elementName);
         for (let i = 0; i < elements.length; i++) {
-            if (elements[i].name === this.elementChipName || this.elementChipName === "")
+            if (elements[i].name === this.elementChipName || this.elementChipName === "") {
                 elements[i].enabled = this.setEnabled;
+            }
         }
     }
 }

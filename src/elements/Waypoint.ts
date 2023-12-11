@@ -1,114 +1,158 @@
+import { BodyHandle } from "engine/BodyHandle";
+import { GameplayScene } from "engine/GameplayScene";
+import { Helpers, InterpolationType, MotionPattern } from "engine/Helpers";
+import { LMent } from "engine/LMent";
+import { PhysicsSubstepHandler, UpdateHandler } from "engine/MessageHandlers";
 import { Vector3 } from "three";
-import { BodyHandle } from "../engine/BodyHandle";
-import { GameplayScene } from "../engine/GameplayScene";
-import { LMent } from "../engine/LMent";
-import { PhysicsSubstepHandler } from "../engine/MessageHandlers";
-import { Helpers } from "engine/Helpers";
 
-type waypoints = {
-    offset: Vector3,
-    speed: number,
-    delay: number,
-    interpolationFunction: string,
+type WaypointType = {
+    offset: Vector3;
+    duration: number;
+    delay: number;
+    interpolate: InterpolationType;
+    targetPos: Vector3;
 };
 
 export class Waypoint extends LMent implements PhysicsSubstepHandler {
-    points: waypoints[];
-    pattern: string;
-    private totalDistanceToNextPoint: number;
-    private index: number;
-    private delayPlusTime: number;
-    private now: number;
-    private timeFunctionStart: number;
-    private indexAddvalue: number;
-
-    constructor(body: BodyHandle, id: number, params: Partial<Waypoint> = {}) {
-        super(body, id, params);
-
-        this.points = this.convertArray(params.points) || [];
-        this.pattern = params.pattern === undefined ? "loop" : params.pattern;
-        this.totalDistanceToNextPoint = 0;
-        this.index = 0;
-        this.delayPlusTime = 0;
-        this.now = 0;
-        this.timeFunctionStart = 0;
-        this.indexAddvalue = 1;
-    }
 
     onInit(): void {
         GameplayScene.instance.dispatcher.addListener("physicsSubstep", this);
+        this.validatePattern();
+        this.validateWaypoints();
     }
 
     onStart(): void {
+        this.adjustTargets();
+        this.startingPosition = this.body.body.getPosition().clone();
+    }
+
+    points: WaypointType[];
+    pattern: MotionPattern
+
+    private currentWaypointIndex: number = 0;
+    private timeSinceLastWaypoint: number = 0;
+    private forwardDirection: boolean = true; //--> Used for Ping-Pong pattern
+    private startingPosition: Vector3;
+    constructor(body: BodyHandle, id: number, params: Partial<Waypoint> = {}) {
+        super(body, id, params);
+        this.points = this.convertArray(params.points) || [];
+        this.pattern = params.pattern === undefined ? "loop" : params.pattern.toLowerCase() as MotionPattern;
+        this.startingPosition = Helpers.zeroVector;
+
+    }
+
+    validateWaypoints() {
         for (let i = 0; i < this.points.length; i++) {
-            let offset = Helpers.NewVector3(this.points[i].offset.x, this.points[i].offset.y, this.points[i].offset.z);
-            offset.applyQuaternion(this.body.body.getRotation());
-            if (i == 0) {
-                this.points[i].offset = Helpers.NewVector3(
-                    this.body.body.getPosition().x + offset.x, this.body.body.getPosition().y + offset.y, this.body.body.getPosition().z + offset.z);
-            } else {
-                this.points[i].offset = Helpers.NewVector3(
-                    this.points[i - 1].offset.x + offset.x, this.points[i - 1].offset.y + offset.y, this.points[i - 1].offset.z + offset.z);
-            }
-        }
-        if (this.pattern !== "once") {
-            let InitWayPoint: waypoints = { offset: this.body.body.getPosition().clone(), speed: this.points[0].speed, delay: this.points[0].delay, interpolationFunction: this.points[0].interpolationFunction };
-            if (this.pattern === "pingpong") {
-                this.points.unshift(InitWayPoint);
-                this.indexAddvalue = -1;
-            }
-            else if (this.pattern === "loop")
-                this.points.push(InitWayPoint);
-        }
-        this.totalDistanceToNextPoint = this.body.body.getPosition().distanceTo(this.points[0].offset);
-    }
-
-    onPhysicsSubstep(substepDt: number): void {
-        this.now = GameplayScene.instance.memory.timeSinceStart;
-        if (this.points[this.index] != undefined) {
-            if (this.now - this.delayPlusTime >= this.points[this.index].delay) {
-                if (this.points[this.index].interpolationFunction === "linear") {
-                    this.linearMovement(this.points[this.index], substepDt);
-                } else if (this.points[this.index].interpolationFunction === "sine") {
-                    this.sineMovement(this.points[this.index], substepDt);
-                } else {
-                    console.log("Wrong interpolationFunction");
+            let interpolate = this.points[i].interpolate;
+            if (interpolate) {
+                this.points[i].interpolate = interpolate.toLowerCase() as InterpolationType;
+                if (!Helpers.validateInterpolateType(interpolate)) {
+                    this.points[i].interpolate = "linear";
+                    console.log("Interpolate type " + interpolate + " not found, setting to linear");
                 }
             }
+            else this.points[i].interpolate = "linear";
+
+            let duration = this.points[i].duration;
+            if (duration === undefined || duration <= 0)
+                this.points[i].duration = 0.1;
+
+            let delay = this.points[i].delay;
+            if (delay === undefined || delay < 0)
+                this.points[i].delay = 0;
+
+            let offset = this.points[i].offset;
+            if (offset === undefined)
+                this.points[i].offset = Helpers.forwardVector;
+
+            let interpolateType = this.points[i].interpolate;
+            if (interpolateType === undefined)
+                this.points[i].interpolate = "linear";
+
         }
     }
 
-    linearMovement(target: waypoints, dt: number): void {
-        let direction = Helpers.zeroVector.subVectors(target.offset, this.body.body.getPosition()).normalize();
-        let movement = direction.clone().multiplyScalar(target.speed * dt);
+    validatePattern() {
+        if (!Helpers.validateMotionPattern(this.pattern)) {
+            console.log("Pattern " + this.pattern + " is not found, resetting to loop");
+            this.pattern = "loop";
+        }
+    }
 
-        this.body.body.setPosition(this.body.body.getPosition().clone().add(movement));
+    adjustTargets() {
+        let firstItem = this.points[0];
+        firstItem.targetPos = this.body.body.getPosition().clone().add(Helpers.ParamToVec3(firstItem.offset).applyQuaternion(this.body.body.getRotation()));
+        this.timeSinceLastWaypoint = firstItem.duration+firstItem.delay;
+        for (let i = 1; i < this.points.length; i++) {
+            const myOffset = Helpers.ParamToVec3(this.points[i].offset).applyQuaternion(this.body.body.getRotation());
+            const prevTarget = this.points[i - 1].targetPos;
+            const myTarget = myOffset.clone().add(prevTarget);
+            this.points[i].targetPos = myTarget;
+        }
+    }
 
-        if (this.body.body.getPosition().clone().distanceTo(target.offset) < target.speed * dt) {
-            this.body.body.setPosition(target.offset);
-            if (this.pattern === "pingpong" && (this.index === 0 || this.index === this.points.length - 1))
-                this.indexAddvalue *= -1;
-            this.index += this.indexAddvalue;
+    onPhysicsSubstep(dt: number): void {
+        if (!this.enabled || this.points.length === 0)
+            return;
+        this.handleWaypointMovement(dt);
+    }
 
-            while (this.points[this.index] === undefined) {
-                this.index += 1;
-                if (this.index > this.points.length) {
-                    if (this.pattern === "once")
-                        this.index = this.points.length - 1;
-                    else if (this.pattern === "pingpong")
-                        this.index = this.points.length - 2;
-                    else if (this.pattern === "loop")
-                        this.index = 0;
-                    else console.log("Wrong pattern");
-                    break;
+    onEnable(): void {
+        this.startingPosition = this.body.body.getPosition().clone();
+        this.currentWaypointIndex = 0;
+        this.timeSinceLastWaypoint = 0;
+    }
+
+    private handleWaypointMovement(dt: number): void {
+
+        const currentWaypoint = this.points[this.currentWaypointIndex];
+        this.timeSinceLastWaypoint += dt;
+
+        if (this.timeSinceLastWaypoint >= currentWaypoint.duration) {
+            this.handleDelay(dt);
+            return;
+        }
+
+        const progress = Helpers.getInterpolatedProgress(this.timeSinceLastWaypoint / currentWaypoint.duration, currentWaypoint.interpolate);
+        const addedOffset = Helpers.ParamToVec3(currentWaypoint.targetPos).clone().sub(this.startingPosition);
+        const nextPosition = this.startingPosition.clone().add(addedOffset.multiplyScalar(progress));
+
+        this.body.body.setPosition(nextPosition);
+    }
+
+    private handleDelay(dt: number): void {
+        const currentWaypoint = this.points[this.currentWaypointIndex];
+        this.timeSinceLastWaypoint += dt;
+
+        if (this.timeSinceLastWaypoint - currentWaypoint.duration >= currentWaypoint.delay) {
+            this.moveToNextWaypoint();
+            this.timeSinceLastWaypoint = 0;
+        }
+    }
+
+    private moveToNextWaypoint(): void {
+        if (this.currentWaypointIndex === this.points.length - 1 && this.pattern === "once") {
+            this.enabled = false;
+            return;
+        }
+        this.startingPosition = this.body.body.getPosition().clone();
+        this.currentWaypointIndex = this.getNextWaypointIndex();
+        this.timeSinceLastWaypoint = 0;
+    }
+
+    private getNextWaypointIndex(): number {
+        switch (this.pattern) {
+            case "loop":
+                return (this.currentWaypointIndex + 1) % this.points.length;
+            case "ping-pong":
+                if (this.currentWaypointIndex === 0) {
+                    this.forwardDirection = true;
+                } else if (this.currentWaypointIndex === this.points.length - 1) {
+                    this.forwardDirection = false;
                 }
-            }
-
-            this.totalDistanceToNextPoint = this.body.body.getPosition().distanceTo(this.points[this.index].offset);
-            this.delayPlusTime = this.now + this.points[this.index].delay;
+                return this.forwardDirection ? this.currentWaypointIndex + 1 : this.currentWaypointIndex - 1;
+            case "once":
+                return Math.min(this.currentWaypointIndex + 1, this.points.length - 1);
         }
-    }
-
-    sineMovement(target: waypoints, dt: number): void {
     }
 }

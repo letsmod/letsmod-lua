@@ -11,24 +11,18 @@ export class ForceDamage extends ContactDamage {
         super(body, id, params);
         this.velocityMin = params.velocityMin === undefined ? 5 : params.velocityMin;
     }
-
-    override onInit() {
-        super.onInit();
-    }
-
-    //TODO:: Needs refactoring to correctly inherit the ContactDamage --> Anas.
+    
+    // TODO: Needs refactoring to correctly inherit the ContactDamage --> Anas.
     onCollision(info: CollisionInfo) {
-        let other = GameplayScene.instance.getBodyById(info.getOtherObjectId());
+        const other = GameplayScene.instance.getBodyById(info.getOtherObjectId());
         if (other !== undefined) {
             const now = GameplayScene.instance.memory.timeSinceStart;
             const hpElement = other.getElement(HitPoints);
-            let imactForce = info.getDeltaVRelative().length();
-            if (imactForce >= this.velocityMin) {
-                if (hpElement !== undefined) {
-                    if (this.contactCooldowns[other.body.id] === undefined || now - this.contactCooldowns[other.body.id] >= this.cooldown) {
-                        hpElement.damage(this.damageValue, this.damageType, this.teamFlags);
-                        this.contactCooldowns[other.body.id] = now;
-                    }
+            const impactForce = info.getDeltaVRelative().length();
+            if (impactForce >= this.velocityMin && hpElement !== undefined) {
+                if (this.contactCooldowns[other.body.id] === undefined || now - this.contactCooldowns[other.body.id] >= this.cooldown) {
+                    hpElement.damage(this.damageValue, this.damageType, this.teamFlags);
+                    this.contactCooldowns[other.body.id] = now;
                 }
             }
         }
