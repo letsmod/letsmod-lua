@@ -82,7 +82,7 @@ export class Waypoint extends LMent implements PhysicsSubstepHandler {
     adjustTargets() {
         let firstItem = this.points[0];
         firstItem.targetPos = this.body.body.getPosition().clone().add(Helpers.ParamToVec3(firstItem.offset).applyQuaternion(this.body.body.getRotation()));
-
+        this.timeSinceLastWaypoint = firstItem.duration+firstItem.delay;
         for (let i = 1; i < this.points.length; i++) {
             const myOffset = Helpers.ParamToVec3(this.points[i].offset).applyQuaternion(this.body.body.getRotation());
             const prevTarget = this.points[i - 1].targetPos;
