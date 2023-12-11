@@ -2,18 +2,18 @@ import { BodyHandle } from "engine/BodyHandle";
 import { StateMachineLMent, State } from "engine/StateMachineLMent";
 import { Helpers } from "engine/Helpers";
 import { LookAt } from "./LookAt";
-import { EnemyChaseState, EnemyPatrolState,EnemyAlertState, EnemyIdleState, EnemyStates, EnemyChargeState } from "./EnemyStates";
+import { EnemyChaseState,EnemyAlertState, characterIdleState, EnemyChargeState, characterPatrolState, CharacterStates } from "./CharacterStates";
 import { Vector3 } from "three";
 
-class FlyingPatrol extends EnemyPatrolState {
+class FlyingPatrol extends characterPatrolState {
 
     constructor(stateMachine: StateMachineLMent, points: Vector3[], patrolSpeed: number, alertZone: number)
     {
-        super(stateMachine,points,patrolSpeed,alertZone,0);
+        super(stateMachine,points,patrolSpeed,0,alertZone);
     }
 
     override onEnterState(previousState: State | undefined): void {
-        this.isFlyingEnemy = true;
+        this.isFlying = true;
         super.onEnterState(previousState);
     }
 
@@ -26,7 +26,7 @@ class FlyingPatrol extends EnemyPatrolState {
 class FlyingAlert extends EnemyAlertState{
 
     override onEnterState(previousState: State | undefined): void {
-        this.isFlyingEnemy = true;
+        this.isFlying = true;
         super.onEnterState(previousState);
     }
 
@@ -36,10 +36,10 @@ class FlyingAlert extends EnemyAlertState{
     }
 }
 
-class FlyingIdle extends EnemyIdleState{
+class FlyingIdle extends characterIdleState{
 
     override onEnterState(previousState: State | undefined): void {
-        this.isFlyingEnemy = true;
+        this.isFlying = true;
         super.onEnterState(previousState);
     }
 
@@ -56,7 +56,7 @@ class FlyingCharge extends EnemyChargeState{
     }
     
     override onEnterState(previousState: State | undefined): void {
-        this.isFlyingEnemy = true;
+        this.isFlying = true;
         super.onEnterState(previousState);
     }
 
@@ -100,13 +100,13 @@ export class FlyingChargingEnemy extends StateMachineLMent {
         let point2 = point1.clone().add(Helpers.forwardVector.multiplyScalar(this.patrolDistance).applyQuaternion(this.body.body.getRotation()))
 
         this.states = {
-            [EnemyStates.patrol]: new FlyingPatrol(this, [point1, point2], this.patrolSpeed,this.alertZoneRadius),
-            [EnemyStates.alert]: new FlyingAlert(this,this.alertZoneRadius,this.alertCooldown,this.alertWarmUp,EnemyStates.charge),
-            [EnemyStates.idle]: new FlyingIdle(this,this.alertZoneRadius,this.idleCooldown),
-            [EnemyStates.charge]: new FlyingCharge(this,this.chargeSpeed,this.idleCooldown)
+            [CharacterStates.patrol]: new FlyingPatrol(this, [point1, point2], this.patrolSpeed,this.alertZoneRadius),
+            [CharacterStates.alert]: new FlyingAlert(this,this.alertZoneRadius,this.alertCooldown,this.alertWarmUp,CharacterStates.charge),
+            [CharacterStates.idle]: new FlyingIdle(this,this.alertZoneRadius,this.idleCooldown),
+            [CharacterStates.charge]: new FlyingCharge(this,this.chargeSpeed,this.alertZoneRadius)
         }
 
-        this.switchState(EnemyStates.patrol);
+        this.switchState(CharacterStates.patrol);
     }
 
     onStart() {
