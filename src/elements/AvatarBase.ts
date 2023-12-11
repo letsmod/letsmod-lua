@@ -7,6 +7,7 @@ import { Vector3 } from "three";
 import { HazardZone } from "./HazardZone";
 import { HitPoints } from "./HitPoints";
 import { CameraTarget } from "./CameraTarget";
+import { VisibilityFlicker } from "./VisibilityFlicker";
 
 export class AvatarBase extends LMent implements UpdateHandler, HitPointChangeHandler, CollisionHandler, ActorDestructionHandler {
 
@@ -19,7 +20,9 @@ export class AvatarBase extends LMent implements UpdateHandler, HitPointChangeHa
   protected dragDx = 0;
   protected dragDy = 0;
   dragDelayFunc: any | undefined;
-
+  protected camTarget: CameraTarget | undefined;
+  private enableDelayedFunc: any | undefined
+  public respawnDelay: number = 1;
   constructor(body: BodyHandle, id: number, params: Partial<AvatarBase> = {}) {
     super(body, id, params);
   }
@@ -45,6 +48,7 @@ export class AvatarBase extends LMent implements UpdateHandler, HitPointChangeHa
     this.body.body.setAngularVelocity(Helpers.zeroVector);
     AvatarBase.safeSteps.push(this.body.body.getPosition().clone());
     this.addSafeStep();
+    this.camTarget = this.body.getElement(CameraTarget);
   }
 
   onUpdate(dt?: number): void {
@@ -81,7 +85,11 @@ export class AvatarBase extends LMent implements UpdateHandler, HitPointChangeHa
 
   lose() {
     // death effect goes here
+    this.body.body.setVisible(false);
+    this.body.body.setAngularVelocity(Helpers.zeroVector);
+    this.body.body.setVelocity(Helpers.zeroVector);
     this.revive();
+    this.enabled = false;
   }
 
   addSafeStep() {
@@ -111,23 +119,38 @@ export class AvatarBase extends LMent implements UpdateHandler, HitPointChangeHa
           isSafe = true;
         }
       if (isSafe) {
-        this.respawnAt(step)
+        GameplayScene.instance.dispatcher.queueDelayedFunction(this, () => {
+          this.respawnAt(step);
+        }, this.respawnDelay);
         break;
       }
     }
 
     if (!isSafe)
-      this.respawnAt(AvatarBase.safeSteps[0]);
+      GameplayScene.instance.dispatcher.queueDelayedFunction(this, () => {
+        this.respawnAt(AvatarBase.safeSteps[0]);
+      }, this.respawnDelay);
   }
 
   postReviveCallback() {
     this.isReviving = false;
-    let camTarget = this.body.getElement(CameraTarget);
-    if (camTarget)
-      camTarget.enabled = true;
+    if (this.camTarget) {
+      this.camTarget.enabled = true;
+      console.log("Camera Target re-enabled.");
+    }
   }
 
   respawnAt(pos: Vector3) {
+    this.body.body.setVisible(true);
+
+    let visibilityFlicker = this.body.getElement(VisibilityFlicker);
+    if (visibilityFlicker) {
+      visibilityFlicker.enabled = true;
+      if (this.enableDelayedFunc)
+        GameplayScene.instance.dispatcher.removeQueuedFunction(this.enableDelayedFunc);
+      this.enableDelayedFunc = GameplayScene.instance.dispatcher.queueDelayedFunction(this, () => { this.enabled  = true; }, visibilityFlicker.duration);
+    }
+
     AvatarBase.safeSteps = [AvatarBase.safeSteps[0]];
     this.isReviving = true;
 
@@ -135,15 +158,15 @@ export class AvatarBase extends LMent implements UpdateHandler, HitPointChangeHa
     if (hp !== undefined)
       hp.reset();
 
-    let camTarget = this.body.getElement(CameraTarget);
-    if (camTarget !== undefined) {
-      camTarget.reset();
-      camTarget.enabled = false;
+
+    if (this.camTarget !== undefined) {
+      this.camTarget.reset();
+      this.camTarget.enabled = false;
     }
     this.body.body.setAngularVelocity(Helpers.zeroVector);
     this.body.body.setVelocity(Helpers.zeroVector);
     this.body.body.setPosition(pos.clone().add(Helpers.NewVector3(0, 0.5, 0)));
-    GameplayScene.instance.dispatcher.queueDelayedFunction(this, () => { this.postReviveCallback(); }, this.revivingCooldown)
+    GameplayScene.instance.dispatcher.queueDelayedFunction(this, () => { this.postReviveCallback(); }, this.revivingCooldown);
   }
 
   UnequipAvatar() {
