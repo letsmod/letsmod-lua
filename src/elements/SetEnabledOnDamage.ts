@@ -8,10 +8,11 @@ export class SetEnabledOnDamage extends LMent implements CollisionHandler {
     elementNames: string[] | undefined;
     minDamage: number;
     maxDamage: number;
-    elementToEnable: any[];
+    elementToEnable: LMent[];
     currentHP: number;
     hpElement: HitPoints | undefined;
     setEnabled: boolean;
+
     constructor(body: BodyHandle, id: number, params: Partial<SetEnabledOnDamage> = {}) {
         super(body, id, params);
         this.elementNames = this.convertArray(params.elementNames) || [];
@@ -25,18 +26,18 @@ export class SetEnabledOnDamage extends LMent implements CollisionHandler {
     onInit(): void {
         GameplayScene._instance.dispatcher.addListener("collision", this);
         if (this.elementNames !== undefined) {
-            for (let i = 0; i < this.elementNames.length; i++) {
-                let element = this.body.getElementByTypeName(this.elementNames[i]);
+            for (const elementName of this.elementNames) {
+                const element = this.body.getElementByTypeName(elementName);
                 if (element !== undefined) {
                     this.elementToEnable.push(element as LMent);
                     element.enabled = false;
                 }
             }
-        }
-        else {
+        } else {
             console.log("Element not found");
         }
     }
+
     onStart(): void {
         this.hpElement = this.body.getElement(HitPoints);
         if (this.hpElement !== undefined) {
@@ -47,9 +48,9 @@ export class SetEnabledOnDamage extends LMent implements CollisionHandler {
     onCollision(info: CollisionInfo): void {
         if (this.hpElement !== undefined) {
             if (this.hpElement.hitpoints < this.currentHP) {
-                for (let i = 0; this.elementToEnable !== undefined && i < this.elementToEnable.length; i++) {
-                    if (this.elementToEnable[i] !== undefined) {
-                        this.elementToEnable[i].enabled = this.setEnabled;
+                for (const element of this.elementToEnable) {
+                    if (element !== undefined) {
+                        element.enabled = this.setEnabled;
                     }
                 }
             }

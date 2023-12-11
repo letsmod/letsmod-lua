@@ -168,9 +168,7 @@ export class AvatarBase extends LMent implements UpdateHandler, HitPointChangeHa
     this.body.body.setVelocity(Helpers.zeroVector);
     this.body.body.setPosition(pos.clone().add(Helpers.NewVector3(0, 0.5, 0)));
     GameplayScene.instance.dispatcher.queueDelayedFunction(this, () => { this.postReviveCallback(); }, this.revivingCooldown)
-
-    for(let i=AvatarBase.safeSteps.length-1;i>index;i--)
-      AvatarBase.safeSteps.splice(i,1);
+    AvatarBase.safeSteps.splice(index,AvatarBase.safeSteps.length-index);
 
   }
 

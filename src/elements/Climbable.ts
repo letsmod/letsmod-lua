@@ -1,7 +1,7 @@
 import { BodyHandle } from "engine/BodyHandle";
 import { GameplayScene } from "engine/GameplayScene";
-import { LMent } from "engine/LMent"
-import { CollisionHandler, CollisionInfo } from "engine/MessageHandlers";
+import { LMent } from "engine/LMent";
+import { CollisionHandler, CollisionInfo, UpdateHandler } from "engine/MessageHandlers";
 import { PlatformerControls } from "./PlatformerControls";
 import { Helpers } from "engine/Helpers";
 
@@ -20,7 +20,6 @@ export class Climbable extends LMent implements CollisionHandler {
     onInit(): void {
         GameplayScene.instance.dispatcher.addListener("collision", this);
         GameplayScene.instance.dispatcher.addListener("drag", this);
-        
     }
 
     onStart(): void {
@@ -34,35 +33,39 @@ export class Climbable extends LMent implements CollisionHandler {
         let other = GameplayScene.instance.getBodyById(info.getOtherObjectId());
         if (other === this.player && this.player !== undefined) {
             if (this.controls !== undefined) {
+                if (this.controls.enabled === true)
+                    this.player.body.setVelocity(Helpers.zeroVector);
                 this.controls.enabled = false;
                 this.isColliding = true;
                 if (this.delayedFunc !== undefined) {
                     GameplayScene.instance.dispatcher.removeQueuedFunction(this.delayedFunc);
                 }
-                this.delayedFunc = GameplayScene.instance.dispatcher.queueDelayedFunction(undefined, this.noCollision.bind(this), 0.03);
+                this.delayedFunc = GameplayScene.instance.dispatcher.queueDelayedFunction(undefined, this.noCollision.bind(this), 0.1);
             }
         }
     }
 
     noCollision() {
-        this.controls.enabled = true;
-        this.isColliding = false;
-
+        if (this.isColliding) {
+            this.controls.enabled = true;
+            this.isColliding = false;
+            this.player.body.setCustomGravity(Helpers.NewVector3(0, -24.525, 0));
+        }
     }
 
     onDrag(dx: number, dy: number): void {
         if (!this.isColliding) return;
-        let playerForward = Helpers.NewVector3(dx, 0, dy).normalize();
+        let forceForward = Helpers.NewVector3(dx, 0, dy).normalize();
         let forward = Helpers.forwardVector.applyQuaternion(this.body.body.getRotation());
-        let dot = forward.dot(playerForward);
+        let dot = forward.dot(forceForward);
+        this.player.body.setCustomGravity(Helpers.NewVector3(0, 0, 0));
         let accel;
-        if (dot < 0 || dot > 0.9)
+        if (dot < 0 || dot > 0)
             accel = this.climbSpeed;
-        else if (dot == 0) {
+        else {
             this.noCollision();
             return;
-        } else
-            accel = -this.climbSpeed;
+        }
         console.log(accel, dot);
         let newVelocity = Helpers.NewVector3(0, accel, 0);
         this.player.body.setVelocity(newVelocity);

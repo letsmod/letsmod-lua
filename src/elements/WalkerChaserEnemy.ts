@@ -2,9 +2,9 @@ import { BodyHandle } from "engine/BodyHandle";
 import { StateMachineLMent, State } from "engine/StateMachineLMent";
 import { Helpers } from "engine/Helpers";
 import { LookAt } from "./LookAt";
-import { EnemyChaseState, EnemyPatrolState,EnemyAlertState, EnemyIdleState, EnemyStates } from "./EnemyStates";
+import {EnemyChaseState, EnemyAlertState, CharacterStates, characterIdleState, characterPatrolState } from "./CharacterStates";
 
-class WalkerPatrol extends EnemyPatrolState {
+class WalkerPatrol extends characterPatrolState {
 
     override playStateAnimation(dt: number): void {
         if (this.anim)
@@ -12,7 +12,7 @@ class WalkerPatrol extends EnemyPatrolState {
     }
 
     override alertCondition(): boolean {
-        return this.playerInRange() && this.playerInSight();
+        return super.alertCondition() && this.playerInSight();
     }
 }
 
@@ -33,18 +33,18 @@ class WalkerAlert extends EnemyAlertState{
     }
 
     override alertCondition(): boolean {
-        return this.playerInRange() && this.playerInSight();
+        return super.alertCondition() && this.playerInSight();
     }
 }
 
-class WalkerIdle extends EnemyIdleState{
+class WalkerIdle extends characterIdleState{
     override playStateAnimation(dt: number): void {
         if (this.anim)
             this.anim.playState("idle");
     }
 
     override alertCondition(): boolean {
-        return this.playerInRange() && this.playerInSight();
+        return super.alertCondition() && this.playerInSight();
     }
 }
 
@@ -84,13 +84,13 @@ export class WalkerChaserEnemy extends StateMachineLMent {
         let point2 = point1.clone().add(Helpers.forwardVector.multiplyScalar(this.patrolDistance).applyQuaternion(this.body.body.getRotation()))
 
         this.states = {
-            [EnemyStates.patrol]: new WalkerPatrol(this, [point1, point2], this.patrolSpeed,this.alertZoneRadius,this.movementForce),
-            [EnemyStates.chase]: new WalkerChase(this, this.chaseSpeed, this.alertZoneRadius,this.movementForce),
-            [EnemyStates.alert]: new WalkerAlert(this,this.alertZoneRadius,this.alertCooldown,this.alertWarmUp,EnemyStates.chase),
-            [EnemyStates.idle]: new WalkerIdle(this,this.alertZoneRadius,this.idleCooldown)
+            [CharacterStates.patrol]: new WalkerPatrol(this, [point1, point2], this.patrolSpeed,this.movementForce,this.alertZoneRadius),
+            [CharacterStates.chase]: new WalkerChase(this, this.chaseSpeed, this.alertZoneRadius,this.movementForce),
+            [CharacterStates.alert]: new WalkerAlert(this,this.alertZoneRadius,this.alertCooldown,this.alertWarmUp,CharacterStates.chase),
+            [CharacterStates.idle]: new WalkerIdle(this,this.alertZoneRadius,this.idleCooldown)
         }
 
-        this.switchState(EnemyStates.patrol);
+        this.switchState(CharacterStates.patrol);
     }
 
     onStart() {

@@ -174,6 +174,7 @@ export class AutomaticSlidingDoor extends StateMachineLMent {
   }
 
   onInit() {
+    this.openOffset = this.openOffset.applyQuaternion(this.body.body.getRotation());
     this.states = {
       "closed": new ClosedState(this, this.openOnTrigger),
       "opening": new OpeningState(this, this.body.body.getPosition(), this.openOffset, this.openSpeed),
