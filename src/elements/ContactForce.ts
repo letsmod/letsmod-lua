@@ -36,7 +36,7 @@ export class ContactForce extends LMent implements CollisionHandler {
     onCollision(info: CollisionInfo): void {
         let other = GameplayScene.instance.getBodyById(info.getOtherObjectId());
         if (other !== undefined) {
-            if (other.body.getPhysicsBodyType() !== 0) {
+            if (other.body.getPhysicsBodyType() !== 0 && other.body.getPhysicsBodyType() !== undefined) {
                 return;
             }
             const now = GameplayScene.instance.memory.timeSinceStart;
