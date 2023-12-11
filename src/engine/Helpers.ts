@@ -4,6 +4,9 @@ import { GameplayScene } from "./GameplayScene";
 import { LMent } from "./LMent";
 import { BodyHandle } from "./BodyHandle";
 
+export type InterpolationType = "easein" | "easeout" | "ease" | "linear" | "elastic" | "overshoot" | "bounce" | "easesqrt" | "easeinsqrt" | "easeoutsqrt";
+export type MotionPattern = "loop" | "ping-pong" | "once";
+
 export class Helpers{
 
     static get zeroVector() {return js_new(global.THREE.Vector3,0,0,0);}
@@ -67,7 +70,6 @@ export class Helpers{
         let cosy_cosp = 1 - 2 * (q.x * q.x + q.y * q.y)
         return Math.atan2(siny_cosp, cosy_cosp);
 
-        //return Math.atan2(2 * (q.w * q.y + q.x * q.z), q.x * q.x + q.w * q.w - q.y * q.y - q.z * q.z);
     }
 
     static GetRoll(q:Quaternion)
@@ -112,6 +114,74 @@ export class Helpers{
             return undefined;
         }
         return body;
+    }
+
+    static validateInterpolateType(fx: InterpolationType): boolean {
+        const typesArray = ["easein", "easeout", "ease", "linear", "elastic", "overshoot", "bounce", "easesqrt", "easeinsqrt", "easeoutsqrt"];
+        return typesArray.includes(fx);
+    }
+
+    static validateMotionPattern(pattern: MotionPattern): boolean {
+        const typesArray = ["loop", "ping-pong", "once"];
+        return typesArray.includes(pattern);
+    }
+
+    public static getInterpolatedProgress(progress: number, fx: InterpolationType): number {
+
+        switch (fx) {
+            case "easein":
+                return 1 - Math.cos((progress * Math.PI) / 2);
+            case "easeout":
+                return Math.sin((progress * Math.PI) / 2);
+            case "ease":
+                return -(Math.cos(Math.PI * progress) - 1) / 2;
+            case "easeinsqrt":
+                return 1 - Math.sqrt(1 - Math.pow(progress, 2));
+            case "easeoutsqrt":
+                return Math.sqrt(1 - Math.pow(progress, 2));
+            case "easesqrt":
+                if (progress < 0.5)
+                    return (1 - Math.sqrt(1 - Math.pow(2 * progress, 2))) / 2;
+                return (Math.sqrt(1 - Math.pow(-2 * progress + 2, 2)) + 1) / 2;
+            case "linear":
+                return progress;
+            case "bounce":
+                return this.bounceInterpolate(progress);
+            case "elastic":
+                return this.elasticInterpolate(progress);
+            case "overshoot":
+                return this.overshootInterpolate(progress);
+        }
+    }
+
+    private static elasticInterpolate(t: number): number {
+        const sinePeriod = (2 * Math.PI) / 3;
+
+        if (t === 0 || t === 1) return t;
+
+        return Math.pow(2, -10 * t) * Math.sin((t * 10 - 0.75) * sinePeriod) + 1;
+    }
+
+    private static bounceInterpolate(t: number): number {
+        const strength = 7.5625;
+        const phase = 2.75;
+
+        if (t < 1 / phase)
+            return strength * t * t;
+        else if (t < 2 / phase)
+            return strength * (t -= 1.5 / phase) * t + 0.75;
+        else if (t < 2.5 / phase)
+            return strength * (t -= 2.25 / phase) * t + 0.9375;
+        else return strength * (t -= 2.625 / phase) * t + 0.984375;
+    }
+
+    private static overshootInterpolate(t: number): number {
+        const intensity = 1.70158;
+        const overshootfactor = intensity * 1.525;
+
+        if (t < 0.5)
+            return (Math.pow(2 * t, 2) * ((overshootfactor + 1) * 2 * t - overshootfactor)) / 2;
+        return (Math.pow(2 * t - 2, 2) * ((overshootfactor + 1) * (t * 2 - 2) + overshootfactor) + 2) / 2;
     }
     
 }

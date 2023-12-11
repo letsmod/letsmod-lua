@@ -120,7 +120,7 @@ export class AvatarBase extends LMent implements UpdateHandler, HitPointChangeHa
         }
       if (isSafe) {
         GameplayScene.instance.dispatcher.queueDelayedFunction(this, () => {
-          this.respawnAt(step);
+          this.respawnAt(step,i);
         }, this.respawnDelay);
         break;
       }
@@ -128,7 +128,7 @@ export class AvatarBase extends LMent implements UpdateHandler, HitPointChangeHa
 
     if (!isSafe)
       GameplayScene.instance.dispatcher.queueDelayedFunction(this, () => {
-        this.respawnAt(AvatarBase.safeSteps[0]);
+        this.respawnAt(AvatarBase.safeSteps[0],0);
       }, this.respawnDelay);
   }
 
@@ -140,7 +140,7 @@ export class AvatarBase extends LMent implements UpdateHandler, HitPointChangeHa
     }
   }
 
-  respawnAt(pos: Vector3) {
+  respawnAt(pos: Vector3, index:number) {
     this.body.body.setVisible(true);
 
     let visibilityFlicker = this.body.getElement(VisibilityFlicker);
@@ -151,7 +151,7 @@ export class AvatarBase extends LMent implements UpdateHandler, HitPointChangeHa
       this.enableDelayedFunc = GameplayScene.instance.dispatcher.queueDelayedFunction(this, () => { this.enabled  = true; }, visibilityFlicker.duration);
     }
 
-    AvatarBase.safeSteps = [AvatarBase.safeSteps[0]];
+    
     this.isReviving = true;
 
     let hp = this.body.getElement(HitPoints);
@@ -166,7 +166,11 @@ export class AvatarBase extends LMent implements UpdateHandler, HitPointChangeHa
     this.body.body.setAngularVelocity(Helpers.zeroVector);
     this.body.body.setVelocity(Helpers.zeroVector);
     this.body.body.setPosition(pos.clone().add(Helpers.NewVector3(0, 0.5, 0)));
-    GameplayScene.instance.dispatcher.queueDelayedFunction(this, () => { this.postReviveCallback(); }, this.revivingCooldown);
+    GameplayScene.instance.dispatcher.queueDelayedFunction(this, () => { this.postReviveCallback(); }, this.revivingCooldown)
+
+    for(let i=AvatarBase.safeSteps.length-1;i>index;i--)
+      AvatarBase.safeSteps.splice(i,1);
+
   }
 
   UnequipAvatar() {
