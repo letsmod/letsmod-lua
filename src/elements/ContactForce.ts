@@ -45,7 +45,7 @@ export class ContactForce extends LMent implements CollisionHandler {
             if (this.forceCooldowns[other.body.id] === undefined || now - this.forceCooldowns[other.body.id] >= this.cooldown) {
                 let currentSpeed = other.body.getVelocity().length();
                 let speedFactor = 1 - Math.min(currentSpeed / this.maxSpeed, 1);
-                console.log(speedFactor);
+                //console.log(speedFactor);
                 let collisionDirection = info.getDeltaVOther().normalize();
                 let objectRotation = this.body.body.getRotation();
 
