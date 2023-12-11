@@ -141,6 +141,7 @@ export class AvatarBase extends LMent implements UpdateHandler, HitPointChangeHa
   }
 
   respawnAt(pos: Vector3, index:number) {
+    this.body.body.setRotation(Helpers.NewQuatFromEuler(0, 0, 0));
     this.body.body.setVisible(true);
 
     let visibilityFlicker = this.body.getElement(VisibilityFlicker);
