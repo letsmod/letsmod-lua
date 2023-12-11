@@ -12,6 +12,7 @@ export class ContactForce extends LMent implements CollisionHandler {
     dotMinimum: number | undefined;
     cooldown: number; // Cooldown duration
     forceCooldowns: { [key: number]: number }; // Map for cooldowns
+    maxSpeed: number;
 
     constructor(body: BodyHandle, id: number, params: Partial<ContactForce> = {}) {
         super(body, id, params);
@@ -21,6 +22,7 @@ export class ContactForce extends LMent implements CollisionHandler {
         this.dotMinimum = params.dotMinimum;
         this.cooldown = params.cooldown === undefined ? 0 : params.cooldown; // Default cooldown duration
         this.forceCooldowns = {}; // Initialize the cooldown map
+        this.maxSpeed = params.maxSpeed === undefined ? 40 : params.maxSpeed;
     }
 
     onInit(): void {
@@ -34,11 +36,16 @@ export class ContactForce extends LMent implements CollisionHandler {
     onCollision(info: CollisionInfo): void {
         let other = GameplayScene.instance.getBodyById(info.getOtherObjectId());
         if (other !== undefined) {
+            if (other.body.getPhysicsBodyType() !== 0 && other.body.getPhysicsBodyType() !== undefined) {
+                return;
+            }
             const now = GameplayScene.instance.memory.timeSinceStart;
 
             // Check if cooldown has passed for this object
             if (this.forceCooldowns[other.body.id] === undefined || now - this.forceCooldowns[other.body.id] >= this.cooldown) {
-                
+                let currentSpeed = other.body.getVelocity().length();
+                let speedFactor = 1 - Math.min(currentSpeed / this.maxSpeed, 1);
+                //console.log(speedFactor);
                 let collisionDirection = info.getDeltaVOther().normalize();
                 let objectRotation = this.body.body.getRotation();
 
@@ -47,7 +54,7 @@ export class ContactForce extends LMent implements CollisionHandler {
                 let dotProduct = collisionDirection.dot(adjustedForceDirection);
 
                 if (this.dotMinimum === undefined || dotProduct >= this.dotMinimum) {
-                    let forceMagnitude = this.forceValue;
+                    let forceMagnitude = this.forceValue * speedFactor;
                     let forceToApply = adjustedForceDirection.multiplyScalar(forceMagnitude);
 
                     if (this.scaleWithMass) {
