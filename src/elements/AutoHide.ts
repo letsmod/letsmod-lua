@@ -23,25 +23,27 @@ export class AutoHide extends LMent implements UpdateHandler, TriggerHandler {
     onInit(): void {
         GameplayScene.instance.dispatcher.addListener("update", this);
         GameplayScene.instance.dispatcher.addListener("trigger", this);
-        if (this.triggerId !== Helpers.NA)
+        if (this.triggerId !== Helpers.NA) {
             this.enabled = false;
+        }
     }
 
     onStart(): void {
     }
 
-    validateElement() {
+    validateElement(): boolean {
         return Helpers.ValidateParams(this.triggerId, this, "triggerId");
     }
 
     hasSubtype(trigger: string): boolean {
-        return trigger == this.triggerId;
+        return trigger === this.triggerId;
     }
 
     onTrigger(source: LMent, triggerId: string): void {
-        if (!this.validateElement())
+        if (!this.validateElement()) {
             return;
-            GameplayScene.instance.dispatcher.queueDelayedFunction(this, () => { this.doHide() }, this.hideDelay);
+        }
+        GameplayScene.instance.dispatcher.queueDelayedFunction(this, () => { this.doHide() }, this.hideDelay);
     }
 
     onUpdate(dt: number): void {
@@ -51,12 +53,15 @@ export class AutoHide extends LMent implements UpdateHandler, TriggerHandler {
         }
     }
 
-    doHide() {
+    doHide(): void {
         if (this.targets !== undefined) {
-            for (let i = this.body.bodyGroup.length; i > 0; i--)
-                if (this.targets.includes(this.body.bodyGroup[i - 1].body.name))
+            for (let i = this.body.bodyGroup.length; i > 0; i--) {
+                if (this.targets.includes(this.body.bodyGroup[i - 1].body.name)) {
                     this.body.bodyGroup[i - 1].body.setVisible(false);
-        } else
+                }
+            }
+        } else {
             this.body.body.setVisible(false);
+        }
     }
 }
