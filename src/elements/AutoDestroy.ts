@@ -7,31 +7,31 @@ import { Helpers } from "engine/Helpers";
 export class AutoDestroy extends LMent implements UpdateHandler, TriggerHandler {
     triggerId: string;
     destructionDelay: number;
-    targets: string[] | undefined;
-    receivesTriggersWhenDisabled: boolean | undefined;
-    delayedFunc: any | undefined;
+    targets?: string[];
+    receivesTriggersWhenDisabled?: boolean;
     private isDestroyed: boolean;
 
     constructor(body: BodyHandle, id: number, params: Partial<AutoDestroy> = {}) {
         super(body, id, params);
-        this.destructionDelay = params.destructionDelay === undefined ? 0 : params.destructionDelay;
-        this.triggerId = params.triggerId === undefined ? Helpers.NA : params.triggerId;
-        this.targets = this.convertArray(params.targets) || undefined;
-        this.receivesTriggersWhenDisabled = params.receivesTriggersWhenDisabled === undefined ? true : params.receivesTriggersWhenDisabled;
+        this.destructionDelay = params.destructionDelay ?? 0;
+        this.triggerId = params.triggerId ?? Helpers.NA;
+        this.targets = this.convertArray(params.targets);
+        this.receivesTriggersWhenDisabled = params.receivesTriggersWhenDisabled ?? true;
         this.isDestroyed = false;
     }
 
     onInit(): void {
         GameplayScene.instance.dispatcher.addListener("update", this);
         GameplayScene.instance.dispatcher.addListener("trigger", this);
-        if (this.triggerId !== Helpers.NA)
+        if (this.triggerId !== Helpers.NA) {
             this.enabled = false;
+        }
     }
 
     onStart(): void {
     }
 
-    validateElement() {
+    validateElement(): boolean {
         return Helpers.ValidateParams(this.triggerId, this, "triggerId");
     }
 
@@ -43,21 +43,25 @@ export class AutoDestroy extends LMent implements UpdateHandler, TriggerHandler 
     }
 
     hasSubtype(trigger: string): boolean {
-        return trigger == this.triggerId;
+        return trigger === this.triggerId;
     }
 
     onTrigger(source: LMent, triggerId: string): void {
-        if (!this.validateElement())
+        if (!this.validateElement()) {
             return;
-            GameplayScene.instance.dispatcher.queueDelayedFunction(this, () => { this.doDestroy() }, this.destructionDelay);
+        }
+        GameplayScene.instance.dispatcher.queueDelayedFunction(this, () => { this.doDestroy() }, this.destructionDelay);
     }
 
-    doDestroy() {
+    doDestroy(): void {
         if (this.targets !== undefined) {
-            for (let i = this.body.bodyGroup.length; i > 0; i--)
-                if (this.targets.includes(this.body.bodyGroup[i - 1].body.name))
+            for (let i = this.body.bodyGroup.length; i > 0; i--) {
+                if (this.targets.includes(this.body.bodyGroup[i - 1].body.name)) {
                     GameplayScene.instance.destroyBody(this.body.bodyGroup[i - 1]);
-        } else
+                }
+            }
+        } else {
             GameplayScene.instance.destroyBody(this.body);
+        }
     }
 }
