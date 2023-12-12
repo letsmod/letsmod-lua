@@ -32,23 +32,34 @@ export class RadialDamage extends LMent implements CollisionHandler {
         if (other) {
             const now = GameplayScene.instance.memory.timeSinceStart;
             const hpElement = other.getElement(HitPoints);
-            if (hpElement) {
-                if (
-                    this.contactCooldowns[other.body.id] === undefined ||
-                    now - this.contactCooldowns[other.body.id] >= this.cooldown
-                ) {
-                    const distanceFromCenter = other.body.getPosition().distanceTo(this.body.body.getPosition());
-                    let damage = this.damageValue / distanceFromCenter;
-                    damage = Math.round(damage);
-                    if (this.distance === 999999 || damage > this.damageValue) {
-                        damage = this.damageValue;
-                    }
-                    if (distanceFromCenter <= this.distance) {
-                        hpElement.damage(damage, this.damageType, this.teamFlags);
-                        this.contactCooldowns[other.body.id] = now;
-                    }
+            if (hpElement && this.isContactCooldownExpired(other.body.id, now)) {
+                const distanceFromCenter = other.body.getPosition().distanceTo(this.body.body.getPosition());
+                let damage = this.calculateDamage(distanceFromCenter);
+                if (this.isWithinDistance(distanceFromCenter)) {
+                    hpElement.damage(damage, this.damageType, this.teamFlags);
+                    this.contactCooldowns[other.body.id] = now;
                 }
             }
         }
+    }
+
+    private isContactCooldownExpired(bodyId: number, now: number): boolean {
+        return (
+            this.contactCooldowns[bodyId] === undefined ||
+            now - this.contactCooldowns[bodyId] >= this.cooldown
+        );
+    }
+
+    private calculateDamage(distanceFromCenter: number): number {
+        let damage = this.damageValue / distanceFromCenter;
+        damage = Math.round(damage);
+        if (this.distance === 999999 || damage > this.damageValue) {
+            damage = this.damageValue;
+        }
+        return damage;
+    }
+
+    private isWithinDistance(distanceFromCenter: number): boolean {
+        return distanceFromCenter <= this.distance;
     }
 }
