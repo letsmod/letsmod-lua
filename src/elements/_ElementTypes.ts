@@ -57,3 +57,4 @@ export {GoalItem} from "./GoalItem";
 export {HideShadow} from "./HideShadow";
 export {Climbable} from "./Climbable";
 export {RotationalWaypoint} from "./RotationalWaypoint";
+export {ScaleLoop} from "./ScaleLoop";
