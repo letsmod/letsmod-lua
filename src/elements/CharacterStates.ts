@@ -193,7 +193,7 @@ export class characterAlertState extends CharacterStateBase {
     onUpdate(dt: number): void {
         super.onUpdate(dt);
         this.playStateAnimation(dt);
-        this.alertMovement();
+        this.alertAction();
         this.handleSwitchingToNextState(dt);
     }
 
@@ -205,7 +205,7 @@ export class characterAlertState extends CharacterStateBase {
             this.stateMachine.switchState(CharacterStates.interactWithPlayer);
     }
 
-    protected alertMovement() {
+    protected alertAction() {
         /* Override by children if needed */
         this.stopMoving();
     }
@@ -231,7 +231,7 @@ export class characterInteractState extends CharacterStateBase {
         super.onUpdate(dt);
         this.playStateAnimation(dt);
         this.handleSwitchingToNextState();
-        this.interactMovement();
+        this.interactAction();
     }
 
     protected handleSwitchingToNextState() {
@@ -242,7 +242,7 @@ export class characterInteractState extends CharacterStateBase {
             else this.stateMachine.switchState(CharacterStates.idle);
     }
 
-    protected interactMovement() {
+    protected interactAction() {
         /* Override by children if needed */
         this.stopMoving();
     }
