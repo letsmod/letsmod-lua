@@ -46,6 +46,7 @@ export class LookAt extends LMent implements UpdateHandler {
     }
 
     doLookAt() {
+        
         if (this.targetVector === undefined) return;
 
         let myPos = this.body.body.getPosition();
@@ -82,7 +83,7 @@ export class LookAt extends LMent implements UpdateHandler {
         if (newTarget.toLowerCase() === "player")
             this.targetBody = GameplayScene.instance.memory.player;
         else
-            this.targetBody = Helpers.findBodyByName(newTarget);
+            this.targetBody = Helpers.findBodyInScene(newTarget);
 
         if (this.targetBody !== undefined)
             this.targetVector = this.targetBody.body.getPosition();

@@ -107,10 +107,19 @@ export class Helpers{
     }
 
     //This is not recommended to be used continuously ...
-    static findBodyByName(name: string): BodyHandle | undefined {
+    static findBodyInScene(name: string): BodyHandle | undefined {
         let body = GameplayScene.instance.bodies.find(b => b.body.name == name);
         if (body === undefined) {
-            console.log("No body named: " + name + "was found.")
+            console.log("No body named: " + name + " was found.")
+            return undefined;
+        }
+        return body;
+    }
+
+    static findBodyWithinGroup(sibling: BodyHandle,name: string): BodyHandle | undefined {
+        let body = sibling.bodyGroup.find(b => b.body.name == name);
+        if (body === undefined) {
+            console.log("No body named: " + name + " was found in the body group of "+sibling.body.name+".")
             return undefined;
         }
         return body;
