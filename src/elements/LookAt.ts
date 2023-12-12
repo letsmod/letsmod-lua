@@ -11,6 +11,7 @@ export class LookAt extends LMent implements UpdateHandler {
     targetVector: Vector3 | undefined
     speed: number;
     allowVerticalLook: boolean;
+    lookAway: boolean;
 
     onInit(): void {
         GameplayScene.instance.dispatcher.addListener("update", this);
@@ -35,6 +36,7 @@ export class LookAt extends LMent implements UpdateHandler {
         else if (this.speed < 0)
             this.speed = 0;
 
+        this.lookAway = params.lookAway === undefined ? false : params.lookAway;
         this.allowVerticalLook = params.allowVerticalLook === undefined ? false : params.allowVerticalLook;
     }
 
@@ -65,6 +67,8 @@ export class LookAt extends LMent implements UpdateHandler {
 
             finalQuat = verticalQuat.multiply(planeQuat);
         }
+        if(this.lookAway)
+            finalQuat = finalQuat.multiply(Helpers.NewQuaternion().setFromAxisAngle(Helpers.upVector, Math.PI)); // Flip the final quaternion
 
         this.body.body.setRotation(myQuat.slerp(finalQuat, this.speed));
     }
