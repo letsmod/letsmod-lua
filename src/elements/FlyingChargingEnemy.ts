@@ -2,14 +2,14 @@ import { BodyHandle } from "engine/BodyHandle";
 import { StateMachineLMent, State } from "engine/StateMachineLMent";
 import { Helpers } from "engine/Helpers";
 import { LookAt } from "./LookAt";
-import { EnemyChaseState,EnemyAlertState, characterIdleState, EnemyChargeState, characterPatrolState, CharacterStates } from "./CharacterStates";
+import { EnemyChaseState,EnemyAlertState, characterIdleState, EnemyChargeState, characterPatrolState, CharacterStates, CharacterStateMachineLMent } from "./CharacterStates";
 import { Vector3 } from "three";
 
 class FlyingPatrol extends characterPatrolState {
 
-    constructor(stateMachine: StateMachineLMent, points: Vector3[], patrolSpeed: number, alertZone: number)
+    constructor(stateMachine: CharacterStateMachineLMent, points: Vector3[], patrolSpeed: number)
     {
-        super(stateMachine,points,patrolSpeed,0,alertZone);
+        super(stateMachine,points,patrolSpeed,0);
     }
 
     override onEnterState(previousState: State | undefined): void {
@@ -51,8 +51,8 @@ class FlyingIdle extends characterIdleState{
 
 class FlyingCharge extends EnemyChargeState{
 
-    constructor(stateMachine: StateMachineLMent, chargeSpeed: number, alertZoneRadius: number) {
-        super(stateMachine,chargeSpeed,alertZoneRadius,0);
+    constructor(stateMachine: CharacterStateMachineLMent, chargeSpeed: number) {
+        super(stateMachine,chargeSpeed,0);
     }
     
     override onEnterState(previousState: State | undefined): void {
@@ -66,12 +66,11 @@ class FlyingCharge extends EnemyChargeState{
     }
 }
 
-export class FlyingChargingEnemy extends StateMachineLMent {
+export class FlyingChargingEnemy extends CharacterStateMachineLMent {
     idleCooldown: number;
     patrolDistance: number;
     patrolSpeed: number;
     chargeSpeed: number;
-    alertZoneRadius: number;
     alertCooldown: number;
     alertWarmUp:number;
 
@@ -82,28 +81,20 @@ export class FlyingChargingEnemy extends StateMachineLMent {
         this.patrolSpeed = params.patrolSpeed === undefined ? 1 : params.patrolSpeed;
         this.chargeSpeed = params.chargeSpeed === undefined ? 1.2 : params.chargeSpeed;
         this.idleCooldown = params.idleCooldown === undefined ? 1 : params.idleCooldown;
-        this.alertZoneRadius = params.alertZoneRadius === undefined ? 5 : params.alertZoneRadius;
         this.alertCooldown = params.alertCooldown === undefined ? 3 : params.alertCooldown;
         this.alertWarmUp = params.alertWarmUp === undefined ? 3 : params.alertWarmUp;
     }
 
     onInit() {
-
-        this.lookAtElement = this.body.getElement(LookAt);
-        if (this.lookAtElement === undefined)
-        {
-            console.log("No LookAt Element is found, it's needed for a walker enemy to work.");
-            return;
-        }
-
+        super.onInit();
         let point1 = this.body.body.getPosition().clone();
         let point2 = point1.clone().add(Helpers.forwardVector.multiplyScalar(this.patrolDistance).applyQuaternion(this.body.body.getRotation()))
 
         this.states = {
-            [CharacterStates.patrol]: new FlyingPatrol(this, [point1, point2], this.patrolSpeed,this.alertZoneRadius),
-            [CharacterStates.alert]: new FlyingAlert(this,this.alertZoneRadius,this.alertCooldown,this.alertWarmUp,CharacterStates.charge),
-            [CharacterStates.idle]: new FlyingIdle(this,this.alertZoneRadius,this.idleCooldown),
-            [CharacterStates.charge]: new FlyingCharge(this,this.chargeSpeed,this.alertZoneRadius)
+            [CharacterStates.patrol]: new FlyingPatrol(this, [point1, point2], this.patrolSpeed),
+            [CharacterStates.alert]: new FlyingAlert(this,this.alertCooldown,this.alertWarmUp,CharacterStates.charge),
+            [CharacterStates.idle]: new FlyingIdle(this,this.idleCooldown),
+            [CharacterStates.charge]: new FlyingCharge(this,this.chargeSpeed)
         }
 
         this.switchState(CharacterStates.patrol);
@@ -111,7 +102,10 @@ export class FlyingChargingEnemy extends StateMachineLMent {
 
     onStart() {
         this.body.body.setCustomGravity(Helpers.zeroVector);
+        
+        //TODO: Replace with an Element on the body.
         this.body.body.lockRotation(true,false,true);
+        
         this.body.body.setAngularVelocity(Helpers.zeroVector);
         this.body.body.setVelocity(Helpers.zeroVector);
     }

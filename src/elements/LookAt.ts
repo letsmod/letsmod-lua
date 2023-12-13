@@ -46,11 +46,18 @@ export class LookAt extends LMent implements UpdateHandler {
     }
 
     doLookAt() {
-        
-        if (this.targetVector === undefined) return;
+        let myQuat = this.body.body.getRotation().clone();
+        let finalQuat = this.calculateFinalQuat();
+        if(finalQuat == undefined) return;
+        this.body.body.setRotation(myQuat.slerp(finalQuat, this.speed));
+    }
+
+    calculateFinalQuat() : THREE.Quaternion | undefined {
 
         let myPos = this.body.body.getPosition();
         let myQuat = this.body.body.getRotation().clone();
+        
+        if (this.targetVector === undefined) return ;
 
         let planeOpposite = this.targetVector.z - myPos.z;
         let planeAdjacent = this.targetVector.x - myPos.x;
@@ -68,10 +75,11 @@ export class LookAt extends LMent implements UpdateHandler {
 
             finalQuat = verticalQuat.multiply(planeQuat);
         }
-        if(this.lookAway)
+        /*** Anas, please move this line to a new element that extends this one, named 'LookAway' ****/
+        if (this.lookAway)
             finalQuat = finalQuat.multiply(Helpers.NewQuaternion().setFromAxisAngle(Helpers.upVector, Math.PI)); // Flip the final quaternion
 
-        this.body.body.setRotation(myQuat.slerp(finalQuat, this.speed));
+        return finalQuat;
     }
 
     changeTargetByVector(newTarget: Vector3) {
