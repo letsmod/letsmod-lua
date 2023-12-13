@@ -17,7 +17,7 @@ class NPCInteract extends characterInteractState {
     }
 
     override interactAction(): void {
-        console.log("Interacting with Player");
+        
     }
 }
 
