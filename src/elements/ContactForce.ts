@@ -56,7 +56,6 @@ export class ContactForce extends LMent implements CollisionHandler {
                 // Adjust force direction based on object's rotation
                 let adjustedForceDirection = this.forceDirection.clone().applyQuaternion(objectRotation).normalize();
                 let dotProduct = collisionDirection.dot(this.contactDirection);
-                console.log(dotProduct);
                 if (this.dotMinimum === undefined || dotProduct >= this.dotMinimum) {
                     let forceMagnitude = this.forceValue * speedFactor;
                     let forceToApply = adjustedForceDirection.multiplyScalar(forceMagnitude);
