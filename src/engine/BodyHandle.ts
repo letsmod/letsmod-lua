@@ -33,6 +33,8 @@ export interface ShapePointer
 
   getScale() : THREE.Vector3;
   setScale(scale: THREE.Vector3) : void;
+  
+  playAnimation(animKey : string, blendTime: number, forceRestart?: boolean) : void;
 }
 
 // interface to a javascript object which provides a lua-compatible interface for the js BodyView scene node

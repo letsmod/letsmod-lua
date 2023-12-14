@@ -12,13 +12,15 @@ export class GuideBody extends LMent implements UpdateHandler {
     target: string; /* The target body _this_ needs to follow */
     private targetBody: BodyHandle | undefined = undefined;
 
+    targetContext: "group" | "global"; /* To tell whether to look for the target in the entire scene or just the body group */
+
     offset: { x: number, y: number, z: number }; /* The position offset from target */
     private offsetVector; /* To generate a Vector3 from the previous param*/
 
     rotationOffset: { x: number, y: number, z: number };
     private rotationOffsetQuaternion; /* To contain the quaternion value of the given axis angle */
 
-    offsetSpace: string; /*To set whether offset is in local or global space*/
+    offsetSpace: "local" | "world"; /*To set whether offset is in local or global space*/
 
     followSpeed: number; /* The maximum follow speed */
     rotationSpeed: number; /*The maximum follow-orientation speed */
@@ -46,10 +48,12 @@ export class GuideBody extends LMent implements UpdateHandler {
 
         this.offsetSpace = params.offsetSpace === undefined ? "local" : params.offsetSpace;
 
-        this.followSpeed = params.followSpeed === undefined ? 1 : params.followSpeed;
+        this.followSpeed = params.followSpeed === undefined ? GameplayScene.instance.memory.frameRate : params.followSpeed;
         this.rotationSpeed = params.rotationSpeed === undefined ? 1 : params.rotationSpeed;
 
         this.makeInvisible = params.makeInvisible === undefined ? false : params.makeInvisible;
+
+        this.targetContext = params.targetContext === undefined ? "group" : params.targetContext;
     }
 
     onInit(): void {
@@ -68,9 +72,11 @@ export class GuideBody extends LMent implements UpdateHandler {
         else if(this.target.toLowerCase() === "maincamera_lua")
             this.targetBody = GameplayScene.instance.memory.mainCamera;
         else {
-            for(let i of this.body.bodyGroup)
-            if(i.body.name === this.target)
-                this.targetBody = i;
+            if(this.targetContext.toLowerCase() === "global")
+                this.targetBody = Helpers.findBodyInScene(this.target);
+            else if(this.targetContext.toLowerCase() === "group")
+                this.targetBody = Helpers.findBodyWithinGroup(this.body,this.target);
+            else console.log("Invalid target context: "+this.targetContext);
         }},Helpers.deltaTime);
     }
 
