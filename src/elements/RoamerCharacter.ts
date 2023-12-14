@@ -1,5 +1,5 @@
 import { BodyHandle } from "engine/BodyHandle";
-import { CharacterStates, characterAlertState, characterIdleState, characterInteractState, characterPatrolState } from "./CharacterStates";
+import { CharacterStateMachineLMent, CharacterStates, characterAlertState, characterIdleState, characterInteractState, characterPatrolState } from "./CharacterStates";
 import { State, StateMachineLMent } from "engine/StateMachineLMent";
 import { LookAt } from "./LookAt";
 import { Helpers } from "engine/Helpers";
@@ -30,8 +30,8 @@ class RoamerAlert extends characterAlertState {
 }
 
 class RoamerInteract extends characterInteractState {
-    constructor(character: StateMachineLMent, patrolspeed: number, roamForce: number, interactRadius: number, alertZoneRadius: number) {
-        super(character, interactRadius, alertZoneRadius);
+    constructor(character: CharacterStateMachineLMent, patrolspeed: number, roamForce: number) {
+        super(character);
 
         this.movementSpeed = patrolspeed;
         this.moveForce = roamForce;
@@ -64,12 +64,10 @@ class RoamerInteract extends characterInteractState {
     }
 }
 
-export class RoamerCharacter extends StateMachineLMent {
+export class RoamerCharacter extends CharacterStateMachineLMent {
     idleCooldown: number;
     patrolDistance: number;
     patrolSpeed: number;
-    alertZoneRadius: number;
-    interactRadius: number;
     roamForce: number;
     movementForce: number;
 
@@ -82,28 +80,21 @@ export class RoamerCharacter extends StateMachineLMent {
         this.patrolSpeed = params.patrolSpeed === undefined ? 1 : params.patrolSpeed;
         this.roamForce = params.roamForce === undefined ? 1.2 : params.roamForce;
         this.idleCooldown = params.idleCooldown === undefined ? 1 : params.idleCooldown;
-        this.alertZoneRadius = params.alertZoneRadius === undefined ? 5 : params.alertZoneRadius;
-        this.interactRadius = params.interactRadius === undefined ? 3 : params.interactRadius;
         this.movementForce = params.movementForce === undefined ? 100 : params.movementForce;
     }
 
 
 
     onInit(): void {
-        this.lookAtElement = this.body.getElement(LookAt);
-        if (this.lookAtElement === undefined) {
-            console.log("No LookAt Element is found, it's needed for a roamer character to work.");
-            return;
-        }
-
+        super.onInit();
         let point1 = this.body.body.getPosition().clone();
         let point2 = point1.clone().add(Helpers.forwardVector.multiplyScalar(this.patrolDistance).applyQuaternion(this.body.body.getRotation()))
 
         this.states = {
-            [CharacterStates.patrol]: new RoamerPatrol(this, [point1, point2], this.patrolSpeed, this.movementForce, this.alertZoneRadius),
-            [CharacterStates.alert]: new RoamerAlert(this, this.alertZoneRadius, this.interactRadius),
-            [CharacterStates.idle]: new RoamerIdle(this, this.alertZoneRadius, this.idleCooldown),
-            [CharacterStates.interactWithPlayer]: new RoamerInteract(this, this.patrolSpeed, this.roamForce, this.interactRadius, this.alertZoneRadius)
+            [CharacterStates.patrol]: new RoamerPatrol(this, [point1, point2], this.patrolSpeed, this.movementForce),
+            [CharacterStates.alert]: new RoamerAlert(this),
+            [CharacterStates.idle]: new RoamerIdle(this, this.idleCooldown),
+            [CharacterStates.interactWithPlayer]: new RoamerInteract(this, this.patrolSpeed, this.roamForce)
         }
 
         this.switchState(CharacterStates.patrol);
