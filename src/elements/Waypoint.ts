@@ -44,7 +44,7 @@ export class Waypoint extends LMent implements PhysicsSubstepHandler {
     validateWaypoints() {
         for (let i = 0; i < this.points.length; i++) {
             let interpolate = this.points[i].interpolate;
-            if (interpolate) {
+            if (interpolate !== undefined) {
                 this.points[i].interpolate = interpolate.toLowerCase() as InterpolationType;
                 if (!Helpers.validateInterpolateType(interpolate)) {
                     this.points[i].interpolate = "linear";
