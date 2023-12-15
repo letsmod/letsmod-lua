@@ -4,16 +4,18 @@ import { Helpers } from "engine/Helpers";
 import { LookAt } from "./LookAt";
 import { EnemyChaseState,EnemyAlertState, characterIdleState, EnemyChargeState, characterPatrolState, CharacterStates, CharacterStateMachineLMent } from "./CharacterStates";
 import { Vector3 } from "three";
+import { CollisionInfo } from "engine/MessageHandlers";
 
 class FlyingPatrol extends characterPatrolState {
 
     constructor(stateMachine: CharacterStateMachineLMent, points: Vector3[], patrolSpeed: number)
     {
-        super(stateMachine,points,patrolSpeed,0);
+        super(stateMachine,points,patrolSpeed,5);
+        this.reachDestinationThreshold = .8;
     }
 
     override onEnterState(previousState: State | undefined): void {
-        this.isFlying = true;
+        this.has3DMovement = true;
         super.onEnterState(previousState);
     }
 
@@ -26,7 +28,7 @@ class FlyingPatrol extends characterPatrolState {
 class FlyingAlert extends EnemyAlertState{
 
     override onEnterState(previousState: State | undefined): void {
-        this.isFlying = true;
+        this.has3DMovement = true;
         super.onEnterState(previousState);
     }
 
@@ -39,7 +41,7 @@ class FlyingAlert extends EnemyAlertState{
 class FlyingIdle extends characterIdleState{
 
     override onEnterState(previousState: State | undefined): void {
-        this.isFlying = true;
+        this.has3DMovement = true;
         super.onEnterState(previousState);
     }
 
@@ -52,17 +54,21 @@ class FlyingIdle extends characterIdleState{
 class FlyingCharge extends EnemyChargeState{
 
     constructor(stateMachine: CharacterStateMachineLMent, chargeSpeed: number) {
-        super(stateMachine,chargeSpeed,0);
+        super(stateMachine,chargeSpeed,100);
     }
     
     override onEnterState(previousState: State | undefined): void {
-        this.isFlying = true;
+        this.has3DMovement = true;
         super.onEnterState(previousState);
     }
 
     override playStateAnimation(dt: number): void {
         if (this.anim)
             this.anim.playState("charge");
+    }
+
+    onCollision(info: CollisionInfo): void {
+        this.stateMachine.switchState(CharacterStates.alert);
     }
 }
 
@@ -97,7 +103,7 @@ export class FlyingChargingEnemy extends CharacterStateMachineLMent {
             [CharacterStates.charge]: new FlyingCharge(this,this.chargeSpeed)
         }
 
-        this.switchState(CharacterStates.patrol);
+        this.switchState(CharacterStates.idle);
     }
 
     onStart() {

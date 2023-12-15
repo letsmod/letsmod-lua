@@ -103,4 +103,14 @@ export class LookAt extends LMent implements UpdateHandler {
             this.targetVector = this.targetBody.body.getPosition();
     }
 
+    lookAtComplete(tolerance: number = 0.01): boolean {
+        let currentQuat = this.body.body.getRotation();
+        let targetQuat = this.calculateFinalQuat();
+
+        if (!targetQuat) {
+            return false;
+        }
+        return currentQuat.angleTo(targetQuat) < tolerance;
+    }
+
 }
