@@ -93,14 +93,23 @@ export class AvatarBase extends LMent implements UpdateHandler, HitPointChangeHa
   }
 
   addSafeStep() {
+
     GameplayScene.instance.dispatcher.queueDelayedFunction(this, () => {
-      if (this.isOnGround) {
-        if (AvatarBase.safeSteps.length > this.maxSafeSteps)
-          AvatarBase.safeSteps.splice(1, 1);
-        AvatarBase.safeSteps.push(this.body.body.getPosition().clone());
-      }
+      this.checkSafeStep();
       this.addSafeStep();
     }, this.safeStepDelay)
+  }
+
+  checkSafeStep() {
+    if (!this.isOnGround) return;
+
+    for (let h of HazardZone.AllZones)
+      if (this.body.body.getPosition().distanceTo(h.body.body.getPosition()) < h.radius)
+        return;
+
+    if (AvatarBase.safeSteps.length > this.maxSafeSteps)
+      AvatarBase.safeSteps.splice(1, 1);
+    AvatarBase.safeSteps.push(this.body.body.getPosition().clone());
   }
 
   revive() {
@@ -109,7 +118,7 @@ export class AvatarBase extends LMent implements UpdateHandler, HitPointChangeHa
 
       let step = AvatarBase.safeSteps[i];
 
-      for (let h of HazardZone.AllZones)
+      for (let h of HazardZone.AllZones){
         if (step.distanceTo(h.body.body.getPosition()) < h.radius) {
           console.log("not safe .. ");
           break;
@@ -117,7 +126,8 @@ export class AvatarBase extends LMent implements UpdateHandler, HitPointChangeHa
 
         else {
           isSafe = true;
-        }
+          console.log("safe .. ");
+        }}
       if (isSafe) {
         GameplayScene.instance.dispatcher.queueDelayedFunction(this, () => {
           this.respawnAt(step,i);

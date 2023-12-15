@@ -66,7 +66,6 @@ export class WalkerChaserEnemy extends CharacterStateMachineLMent {
         this.alertCooldown = params.alertCooldown === undefined ? 3 : params.alertCooldown;
         this.alertWarmUp = params.alertWarmUp === undefined ? 0 : params.alertWarmUp;
         this.movementForce = params.movementForce === undefined ? 100 : params.movementForce;
-
         //zombie zone radius = 5
     }
 
@@ -83,7 +82,7 @@ export class WalkerChaserEnemy extends CharacterStateMachineLMent {
             [CharacterStates.idle]: new WalkerIdle(this,this.idleCooldown)
         }
 
-        this.switchState(CharacterStates.patrol);
+        this.switchState(CharacterStates.idle);
     }
 
     onStart() {

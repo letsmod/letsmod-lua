@@ -58,7 +58,7 @@ export abstract class CharacterStateBase extends State implements UpdateHandler 
     protected sightDotValue: number = 0;
     protected anim: ShapeStateController | undefined;
     protected lookAt: LookAt | undefined;
-    protected isFlying: boolean = false;
+    protected has3DMovement: boolean = false;
     protected moveForce: number = 0;
     protected get myPosition() { return this.stateMachine.body.body.getPosition(); }
     override stateMachine: CharacterStateMachineLMent;
@@ -84,32 +84,23 @@ export abstract class CharacterStateBase extends State implements UpdateHandler 
     stopMoving() {
         let newVelo = Helpers.zeroVector;
 
-        if (!this.isFlying)
+        if (!this.has3DMovement)
             newVelo = this.stateMachine.body.body.getVelocity().clone().multiply(Helpers.upVector);
 
         this.stateMachine.body.body.setVelocity(newVelo);
         this.stateMachine.body.body.setAngularVelocity(Helpers.zeroVector);
     }
 
-    flyForward() {
-        // TODO [Ahmad]: This has to use applyCentralForce instead of setVelocity
-        let fwdVelo = Helpers.forwardVector.multiplyScalar(this.movementSpeed).applyQuaternion(this.stateMachine.body.body.getRotation());
-        this.stateMachine.body.body.setVelocity(fwdVelo);
-    }
-
-    walkForward() {
-        let currentVelo = this.stateMachine.body.body.getVelocity().clone().multiply(Helpers.xzVector).length();
-        if (currentVelo < this.movementSpeed) {
-            let force = Helpers.forwardVector.multiplyScalar(this.moveForce).applyQuaternion(this.stateMachine.body.body.getRotation());
-            this.stateMachine.body.body.applyCentralForce(force)
-        }
-        this.stateMachine.body.body.setAngularVelocity(Helpers.zeroVector);
-    }
-
     moveForward() {
-        if (this.isFlying)
-            this.flyForward();
-        else this.walkForward();
+        let thisBody = this.stateMachine.body.body;
+        let forwardDirection = Helpers.forwardVector.applyQuaternion(thisBody.getRotation());
+        let currentVelo = thisBody.getVelocity().clone().projectOnVector(forwardDirection);
+
+        if (currentVelo.length() < this.movementSpeed) {
+            let force = forwardDirection.multiplyScalar(this.moveForce);
+            thisBody.applyCentralForce(force)
+        }
+        thisBody.setAngularVelocity(Helpers.zeroVector);
     }
 
     protected playerInSight(): boolean {
@@ -158,11 +149,10 @@ export abstract class CharacterStateBase extends State implements UpdateHandler 
     }
 
     onUpdate(dt: number): void {
-        if (this.stateMachine.characterBody.getPosition().y < -1)
-            {
-                for(let body of this.stateMachine.body.bodyGroup)
-                    GameplayScene.instance.destroyBody(body);
-            }
+        if (this.stateMachine.characterBody.getPosition().y < -1) {
+            for (let body of this.stateMachine.body.bodyGroup)
+                GameplayScene.instance.destroyBody(body);
+        }
 
         /* Override by children if needed */
     }
@@ -321,15 +311,17 @@ export class characterPatrolState extends CharacterStateBase {
     onUpdate(dt: number): void {
         super.onUpdate(dt);
         let distance = this.stateMachine.body.body.getPosition().clone().multiply(Helpers.xzVector).distanceTo(this.activePoint.clone().multiply(Helpers.xzVector));
-        if (this.isFlying)
+        if (this.has3DMovement)
             distance = this.stateMachine.body.body.getPosition().distanceTo(this.activePoint);
 
         if (distance <= this.reachDestinationThreshold) {
             this.stateMachine.switchState(CharacterStates.idle);
         }
         else {
-            this.moveForward();
-            this.playStateAnimation(dt);
+            if (this.lookAt && this.lookAt.lookAtComplete(0.1)) {
+                this.moveForward();
+                this.playStateAnimation(dt);
+            }
         }
 
         if (this.alertCondition())

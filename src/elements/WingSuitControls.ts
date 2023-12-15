@@ -20,7 +20,7 @@ export class WingSuitControls extends AvatarBase implements ButtonHandler, DragG
   glideGravity: number;
   flapFwdForceRaio: number;
 
-  
+
   public isOnGround = false;
   private freeFall = false;
   private isAscending: boolean = false;
@@ -248,7 +248,7 @@ export class WingSuitControls extends AvatarBase implements ButtonHandler, DragG
   }
 
   override onDrag(dx: number, dy: number): void {
-    super.onDrag(dx,dy);
+    super.onDrag(dx, dy);
     this.walkAccelerate()
   }
 
@@ -271,8 +271,23 @@ export class WingSuitControls extends AvatarBase implements ButtonHandler, DragG
   }
 
   override UnequipAvatar(): void {
-    if(this.staminaBarControl)
-        GameplayScene.instance.destroyBody(this.staminaBarControl.body);
+    if (this.staminaBarControl)
+      GameplayScene.instance.destroyBody(this.staminaBarControl.body);
     super.UnequipAvatar();
-}
+  }
+
+  override lose(): void {
+    super.lose();
+    this.resetLean();
+    this.resetStamina();
+    this.disableGlide();
+    if(this.staminaBarControl)
+      this.staminaBarControl.body.body.setVisible(false);
+  }
+  
+  override respawnAt(pos: Vector3, index:number): void {
+    super.respawnAt(pos, index);
+    if(this.staminaBarControl)
+        this.staminaBarControl.body.body.setVisible(true);
+  }
 }
