@@ -82,6 +82,15 @@ export abstract class CharacterStateBase extends State implements UpdateHandler 
     }
 
     stopMoving() {
+
+        const thisBody = this.stateMachine.body.body;
+        const forwardDirection = Helpers.forwardVector.applyQuaternion(thisBody.getRotation());
+        let currentVelo = thisBody.getVelocity().clone().projectOnVector(forwardDirection).length();
+        const threshold = 0.5;
+
+        if (currentVelo > this.movementSpeed+threshold)
+            return;
+
         let newVelo = Helpers.zeroVector;
 
         if (!this.has3DMovement)
