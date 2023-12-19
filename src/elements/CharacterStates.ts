@@ -445,7 +445,8 @@ export class EnemyChargeState extends CharacterStateBase {
     onUpdate(dt: number): void {
         super.onUpdate(dt);
         let distance = this.myPosition.distanceTo(this.targetPosition);
-        if (distance > this.reachDestinationThreshold) {
+        let dotCheck = Helpers.forwardVector.applyQuaternion(this.stateMachine.characterBody.getRotation()).dot(this.targetPosition.clone().sub(this.myPosition).normalize());
+        if (distance > this.reachDestinationThreshold && dotCheck >0) {
             this.moveForward();
             this.playStateAnimation(dt);
         }
