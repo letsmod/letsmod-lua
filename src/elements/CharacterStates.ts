@@ -84,10 +84,10 @@ export abstract class CharacterStateBase extends State implements UpdateHandler 
     stopMoving() {
 
         const thisBody = this.stateMachine.body.body;
-        const forwardDirection = Helpers.forwardVector.applyQuaternion(thisBody.getRotation());
-        let currentVelo = thisBody.getVelocity().clone().projectOnVector(forwardDirection).length();
-        const threshold = 0.5;
-
+        const planeVector = Helpers.xzVector.applyQuaternion(thisBody.getRotation());
+        let currentVelo = thisBody.getVelocity().clone().projectOnVector(planeVector).length();
+        const threshold = 1;
+        
         if (currentVelo > this.movementSpeed+threshold)
             return;
 
@@ -445,7 +445,8 @@ export class EnemyChargeState extends CharacterStateBase {
     onUpdate(dt: number): void {
         super.onUpdate(dt);
         let distance = this.myPosition.distanceTo(this.targetPosition);
-        if (distance > this.reachDestinationThreshold) {
+        let dotCheck = Helpers.forwardVector.applyQuaternion(this.stateMachine.characterBody.getRotation()).dot(this.targetPosition.clone().sub(this.myPosition).normalize());
+        if (distance > this.reachDestinationThreshold && dotCheck >0) {
             this.moveForward();
             this.playStateAnimation(dt);
         }
