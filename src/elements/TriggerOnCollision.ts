@@ -30,7 +30,7 @@ export class TriggerOnCollision extends LMent implements CollisionHandler {
 
   onCollision(info: CollisionInfo) {
     let other = GameplayScene.instance.getBodyById(info.getOtherObjectId());
-    if (other) {
+    if (other && other.body.getPhysicsBodyType() !== 2) {
       let collisionDirection = info.getDeltaVOther().normalize();
       let adjustedContactDirection = this.contactDirection.clone().applyQuaternion(this.body.body.getRotation());
 
