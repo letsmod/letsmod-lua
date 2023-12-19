@@ -135,6 +135,7 @@ export class WingSuitControls extends AvatarBase implements ButtonHandler, DragG
     let leanRatio = Helpers.Deg(Helpers.GetPitch(this.body.body.getRotation())) / this.maxLean;
     let fallVelo = Helpers.upVector.multiplyScalar(this.glideGravity);
     let newVelo = Helpers.forwardVector.applyQuaternion(this.body.body.getRotation()).multiplyScalar(this.glideSpeed + this.glideSpeed * leanRatio).add(fallVelo);
+    if(this.body.body.getVelocity().length() > this.glideSpeed) return;
     this.body.body.setVelocity(newVelo);
     this.playAnimation("Fly");
   }
