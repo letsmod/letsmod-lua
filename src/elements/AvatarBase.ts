@@ -8,6 +8,7 @@ import { HazardZone } from "./HazardZone";
 import { HitPoints } from "./HitPoints";
 import { CameraTarget } from "./CameraTarget";
 import { VisibilityFlicker } from "./VisibilityFlicker";
+import { SfxPlayer } from "./SfxPlayer";
 
 export class AvatarBase extends LMent implements UpdateHandler, HitPointChangeHandler, CollisionHandler, ActorDestructionHandler {
 
@@ -89,6 +90,9 @@ export class AvatarBase extends LMent implements UpdateHandler, HitPointChangeHa
     this.body.body.setAngularVelocity(Helpers.zeroVector);
     this.body.body.setVelocity(Helpers.zeroVector);
     this.revive();
+    const sound = this.body.getElementByName("DeathAudio") as SfxPlayer;
+    if (sound) 
+      sound.playAudio();
     this.enabled = false;
   }
 
@@ -118,7 +122,7 @@ export class AvatarBase extends LMent implements UpdateHandler, HitPointChangeHa
 
       let step = AvatarBase.safeSteps[i];
 
-      for (let h of HazardZone.AllZones){
+      for (let h of HazardZone.AllZones) {
         if (step.distanceTo(h.body.body.getPosition()) < h.radius) {
           console.log("not safe .. ");
           break;
@@ -127,10 +131,11 @@ export class AvatarBase extends LMent implements UpdateHandler, HitPointChangeHa
         else {
           isSafe = true;
           console.log("safe .. ");
-        }}
+        }
+      }
       if (isSafe) {
         GameplayScene.instance.dispatcher.queueDelayedFunction(this, () => {
-          this.respawnAt(step,i);
+          this.respawnAt(step, i);
         }, this.respawnDelay);
         break;
       }
@@ -138,7 +143,7 @@ export class AvatarBase extends LMent implements UpdateHandler, HitPointChangeHa
 
     if (!isSafe)
       GameplayScene.instance.dispatcher.queueDelayedFunction(this, () => {
-        this.respawnAt(AvatarBase.safeSteps[0],0);
+        this.respawnAt(AvatarBase.safeSteps[0], 0);
       }, this.respawnDelay);
   }
 
@@ -150,7 +155,7 @@ export class AvatarBase extends LMent implements UpdateHandler, HitPointChangeHa
     }
   }
 
-  respawnAt(pos: Vector3, index:number) {
+  respawnAt(pos: Vector3, index: number) {
     this.body.body.setRotation(Helpers.NewQuatFromEuler(0, 0, 0));
     this.body.body.setVisible(true);
 
@@ -159,10 +164,10 @@ export class AvatarBase extends LMent implements UpdateHandler, HitPointChangeHa
       visibilityFlicker.enabled = true;
       if (this.enableDelayedFunc)
         GameplayScene.instance.dispatcher.removeQueuedFunction(this.enableDelayedFunc);
-      this.enableDelayedFunc = GameplayScene.instance.dispatcher.queueDelayedFunction(this, () => { this.enabled  = true; }, visibilityFlicker.duration);
+      this.enableDelayedFunc = GameplayScene.instance.dispatcher.queueDelayedFunction(this, () => { this.enabled = true; }, visibilityFlicker.duration);
     }
 
-    
+
     this.isReviving = true;
 
     let hp = this.body.getElement(HitPoints);
@@ -178,7 +183,7 @@ export class AvatarBase extends LMent implements UpdateHandler, HitPointChangeHa
     this.body.body.setVelocity(Helpers.zeroVector);
     this.body.body.setPosition(pos.clone().add(Helpers.NewVector3(0, 0.5, 0)));
     GameplayScene.instance.dispatcher.queueDelayedFunction(this, () => { this.postReviveCallback(); }, this.revivingCooldown)
-    AvatarBase.safeSteps.splice(index,AvatarBase.safeSteps.length-index);
+    AvatarBase.safeSteps.splice(index, AvatarBase.safeSteps.length - index);
 
   }
 
