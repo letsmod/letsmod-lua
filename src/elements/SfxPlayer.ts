@@ -62,8 +62,7 @@ export class SfxPlayer extends LMent implements UpdateHandler, TriggerHandler {
     playAudio() {
         const clientInterface = GameplayScene.instance.clientInterface;
         if (!clientInterface || this.loopTimer > 0) return;
-        console.log(this.audio);
-        clientInterface.playAudio(this.audio, this.body.body.id.toString());
+        clientInterface.playAudio(this.audio, this.id.toString());
         this.loopTimer = this.delay;
     }
 }
