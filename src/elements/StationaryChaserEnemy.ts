@@ -1,13 +1,11 @@
 import { BodyHandle } from "engine/BodyHandle";
-import { StateMachineLMent, State } from "engine/StateMachineLMent";
 import { LookAt } from "./LookAt";
-import { EnemyAlertState, EnemyChaseState, EnemyIdleState, EnemyPatrolState, EnemyStates } from "./EnemyStates";
+import { CharacterStateMachineLMent, CharacterStates, EnemyAlertState, EnemyChaseState, characterIdleState, characterPatrolState } from "./CharacterStates";
 
 
-export class StationaryChaserEnemy extends StateMachineLMent {
+export class StationaryChaserEnemy extends CharacterStateMachineLMent {
     backSpeed: number;
     chaseSpeed: number;
-    alertZoneRadius: number;
     alertCooldown: number;
     alertWarmUp:number;
     movementForce:number;
@@ -18,7 +16,6 @@ export class StationaryChaserEnemy extends StateMachineLMent {
         super(body, id, params);
         this.backSpeed = params.backSpeed === undefined ? 1 : params.backSpeed;
         this.chaseSpeed = params.chaseSpeed === undefined ? 1 : params.chaseSpeed;
-        this.alertZoneRadius = params.alertZoneRadius === undefined ? 3 : params.alertZoneRadius;
         this.alertCooldown = params.alertCooldown === undefined ? 2 : params.alertCooldown;
         this.alertWarmUp = params.alertWarmUp === undefined ? 0.2 : params.alertWarmUp;
         this.movementForce = params.movementForce === undefined ? 50 : params.movementForce;
@@ -26,17 +23,17 @@ export class StationaryChaserEnemy extends StateMachineLMent {
     }
 
     onInit() {
-
+        super.onInit();
         let point1 = this.body.body.getPosition().clone();
         let initQuat = this.body.body.getRotation().clone();
         this.states = {
-            [EnemyStates.patrol]: new EnemyPatrolState(this, [point1], this.backSpeed,this.alertZoneRadius,this.movementForce),
-            [EnemyStates.chase]: new EnemyChaseState(this, this.chaseSpeed, this.alertZoneRadius,this.movementForce),
-            [EnemyStates.alert]: new EnemyAlertState(this,this.alertZoneRadius,this.alertCooldown,this.alertWarmUp,EnemyStates.chase),
-            [EnemyStates.idle]: new EnemyIdleState(this,this.alertZoneRadius,999999,initQuat)
+            [CharacterStates.patrol]: new characterPatrolState(this, [point1], this.backSpeed,this.movementForce),
+            [CharacterStates.chase]: new EnemyChaseState(this, this.chaseSpeed, this.movementForce),
+            [CharacterStates.alert]: new EnemyAlertState(this,this.alertCooldown,this.alertWarmUp,CharacterStates.chase),
+            [CharacterStates.idle]: new characterIdleState(this,999999,initQuat)
         }
 
-        this.switchState(EnemyStates.patrol);
+        this.switchState(CharacterStates.patrol);
     }
 
     onStart() {

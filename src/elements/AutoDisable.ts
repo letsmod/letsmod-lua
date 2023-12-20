@@ -27,24 +27,26 @@ export class AutoDisable extends LMent implements UpdateHandler, TriggerHandler 
     onInit(): void {
         GameplayScene.instance.dispatcher.addListener("update", this);
         GameplayScene.instance.dispatcher.addListener("trigger", this);
-        if (this.triggerId !== Helpers.NA)
+        if (this.triggerId !== Helpers.NA) {
             this.enabled = false;
+        }
     }
 
     onStart(): void {
     }
 
-    validateElement() {
+    validateElement(): boolean {
         return Helpers.ValidateParams(this.triggerId, this, "triggerId");
     }
 
     hasSubtype(trigger: string): boolean {
-        return trigger == this.triggerId;
+        return trigger === this.triggerId;
     }
 
     onTrigger(source: LMent, triggerId: string): void {
-        if (!this.validateElement())
+        if (!this.validateElement()) {
             return;
+        }
         GameplayScene.instance.dispatcher.queueDelayedFunction(this, () => { this.doDisable() }, this.disableDelay);
     }
 
@@ -55,20 +57,22 @@ export class AutoDisable extends LMent implements UpdateHandler, TriggerHandler 
         }
     }
 
-    doDisable() {
+    doDisable(): void {
         if (this.targets !== undefined) {
             for (let i = this.body.bodyGroup.length; i > 0; i--) {
-                let elements = this.body.bodyGroup[i - 1].getAllElementsByTypeName(this.elementName);
-                for (let i = 0; i < elements.length; i++) {
-                    if (elements[i].name === this.elementChipName || this.elementChipName === "")
-                        elements[i].enabled = false;
+                const elements = this.body.bodyGroup[i - 1].getAllElementsByTypeName(this.elementName);
+                for (let j = 0; j < elements.length; j++) {
+                    if (elements[j].name === this.elementChipName || this.elementChipName === "") {
+                        elements[j].enabled = false;
+                    }
                 }
             }
         } else {
-            let elements = this.body.getAllElementsByTypeName(this.elementName);
+            const elements = this.body.getAllElementsByTypeName(this.elementName);
             for (let i = 0; i < elements.length; i++) {
-                if (elements[i].name === this.elementChipName || this.elementChipName === "")
+                if (elements[i].name === this.elementChipName || this.elementChipName === "") {
                     elements[i].enabled = false;
+                }
             }
         }
     }

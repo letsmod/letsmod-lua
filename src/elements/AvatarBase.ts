@@ -7,6 +7,7 @@ import { Vector3 } from "three";
 import { HazardZone } from "./HazardZone";
 import { HitPoints } from "./HitPoints";
 import { CameraTarget } from "./CameraTarget";
+import { VisibilityFlicker } from "./VisibilityFlicker";
 
 export class AvatarBase extends LMent implements UpdateHandler, HitPointChangeHandler, CollisionHandler, ActorDestructionHandler {
 
@@ -19,7 +20,9 @@ export class AvatarBase extends LMent implements UpdateHandler, HitPointChangeHa
   protected dragDx = 0;
   protected dragDy = 0;
   dragDelayFunc: any | undefined;
-
+  protected camTarget: CameraTarget | undefined;
+  private enableDelayedFunc: any | undefined
+  public respawnDelay: number = 1;
   constructor(body: BodyHandle, id: number, params: Partial<AvatarBase> = {}) {
     super(body, id, params);
   }
@@ -45,6 +48,7 @@ export class AvatarBase extends LMent implements UpdateHandler, HitPointChangeHa
     this.body.body.setAngularVelocity(Helpers.zeroVector);
     AvatarBase.safeSteps.push(this.body.body.getPosition().clone());
     this.addSafeStep();
+    this.camTarget = this.body.getElement(CameraTarget);
   }
 
   onUpdate(dt?: number): void {
@@ -81,18 +85,31 @@ export class AvatarBase extends LMent implements UpdateHandler, HitPointChangeHa
 
   lose() {
     // death effect goes here
+    this.body.body.setVisible(false);
+    this.body.body.setAngularVelocity(Helpers.zeroVector);
+    this.body.body.setVelocity(Helpers.zeroVector);
     this.revive();
+    this.enabled = false;
   }
 
   addSafeStep() {
+
     GameplayScene.instance.dispatcher.queueDelayedFunction(this, () => {
-      if (this.isOnGround) {
-        if (AvatarBase.safeSteps.length > this.maxSafeSteps)
-          AvatarBase.safeSteps.splice(1, 1);
-        AvatarBase.safeSteps.push(this.body.body.getPosition().clone());
-      }
+      this.checkSafeStep();
       this.addSafeStep();
     }, this.safeStepDelay)
+  }
+
+  checkSafeStep() {
+    if (!this.isOnGround) return;
+
+    for (let h of HazardZone.AllZones)
+      if (this.body.body.getPosition().distanceTo(h.body.body.getPosition()) < h.radius)
+        return;
+
+    if (AvatarBase.safeSteps.length > this.maxSafeSteps)
+      AvatarBase.safeSteps.splice(1, 1);
+    AvatarBase.safeSteps.push(this.body.body.getPosition().clone());
   }
 
   revive() {
@@ -101,7 +118,7 @@ export class AvatarBase extends LMent implements UpdateHandler, HitPointChangeHa
 
       let step = AvatarBase.safeSteps[i];
 
-      for (let h of HazardZone.AllZones)
+      for (let h of HazardZone.AllZones){
         if (step.distanceTo(h.body.body.getPosition()) < h.radius) {
           console.log("not safe .. ");
           break;
@@ -109,41 +126,60 @@ export class AvatarBase extends LMent implements UpdateHandler, HitPointChangeHa
 
         else {
           isSafe = true;
-        }
+          console.log("safe .. ");
+        }}
       if (isSafe) {
-        this.respawnAt(step)
+        GameplayScene.instance.dispatcher.queueDelayedFunction(this, () => {
+          this.respawnAt(step,i);
+        }, this.respawnDelay);
         break;
       }
     }
 
     if (!isSafe)
-      this.respawnAt(AvatarBase.safeSteps[0]);
+      GameplayScene.instance.dispatcher.queueDelayedFunction(this, () => {
+        this.respawnAt(AvatarBase.safeSteps[0],0);
+      }, this.respawnDelay);
   }
 
   postReviveCallback() {
     this.isReviving = false;
-    let camTarget = this.body.getElement(CameraTarget);
-    if (camTarget)
-      camTarget.enabled = true;
+    if (this.camTarget) {
+      this.camTarget.enabled = true;
+      console.log("Camera Target re-enabled.");
+    }
   }
 
-  respawnAt(pos: Vector3) {
-    AvatarBase.safeSteps = [AvatarBase.safeSteps[0]];
+  respawnAt(pos: Vector3, index:number) {
+    this.body.body.setRotation(Helpers.NewQuatFromEuler(0, 0, 0));
+    this.body.body.setVisible(true);
+
+    let visibilityFlicker = this.body.getElement(VisibilityFlicker);
+    if (visibilityFlicker) {
+      visibilityFlicker.enabled = true;
+      if (this.enableDelayedFunc)
+        GameplayScene.instance.dispatcher.removeQueuedFunction(this.enableDelayedFunc);
+      this.enableDelayedFunc = GameplayScene.instance.dispatcher.queueDelayedFunction(this, () => { this.enabled  = true; }, visibilityFlicker.duration);
+    }
+
+    
     this.isReviving = true;
 
     let hp = this.body.getElement(HitPoints);
     if (hp !== undefined)
       hp.reset();
 
-    let camTarget = this.body.getElement(CameraTarget);
-    if (camTarget !== undefined) {
-      camTarget.reset();
-      camTarget.enabled = false;
+
+    if (this.camTarget !== undefined) {
+      this.camTarget.reset();
+      this.camTarget.enabled = false;
     }
     this.body.body.setAngularVelocity(Helpers.zeroVector);
     this.body.body.setVelocity(Helpers.zeroVector);
     this.body.body.setPosition(pos.clone().add(Helpers.NewVector3(0, 0.5, 0)));
     GameplayScene.instance.dispatcher.queueDelayedFunction(this, () => { this.postReviveCallback(); }, this.revivingCooldown)
+    AvatarBase.safeSteps.splice(index,AvatarBase.safeSteps.length-index);
+
   }
 
   UnequipAvatar() {
