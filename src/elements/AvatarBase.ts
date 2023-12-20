@@ -8,6 +8,7 @@ import { HazardZone } from "./HazardZone";
 import { HitPoints } from "./HitPoints";
 import { CameraTarget } from "./CameraTarget";
 import { VisibilityFlicker } from "./VisibilityFlicker";
+import { GuideBody } from "./GuideBody";
 
 export class AvatarBase extends LMent implements UpdateHandler, HitPointChangeHandler, CollisionHandler, ActorDestructionHandler {
 
@@ -15,13 +16,13 @@ export class AvatarBase extends LMent implements UpdateHandler, HitPointChangeHa
   private maxSafeSteps: number = 300;
   public isOnGround = false;
   private revivingCooldown: number = 0.5;
-  protected isReviving = false;
   private safeStepDelay: number = 1;
   protected dragDx = 0;
   protected dragDy = 0;
   dragDelayFunc: any | undefined;
   protected camTarget: CameraTarget | undefined;
-  private enableDelayedFunc: any | undefined
+  protected camGuide: GuideBody | undefined;
+  private hpDelayedFunc: any | undefined
   public respawnDelay: number = 1;
   constructor(body: BodyHandle, id: number, params: Partial<AvatarBase> = {}) {
     super(body, id, params);
@@ -34,6 +35,7 @@ export class AvatarBase extends LMent implements UpdateHandler, HitPointChangeHa
     GameplayScene.instance.dispatcher.addListener("actorDestroyed", this);
     GameplayScene.instance.dispatcher.addListener("drag", this);
     GameplayScene.instance.memory.player = this.body;
+    AvatarBase.safeSteps = [];
   }
 
   initRotation() {
@@ -49,6 +51,7 @@ export class AvatarBase extends LMent implements UpdateHandler, HitPointChangeHa
     AvatarBase.safeSteps.push(this.body.body.getPosition().clone());
     this.addSafeStep();
     this.camTarget = this.body.getElement(CameraTarget);
+    this.camGuide = this.body.getAllElements(GuideBody).find(g => g.guideName === "MainCamera_Lua");
   }
 
   onUpdate(dt?: number): void {
@@ -85,11 +88,31 @@ export class AvatarBase extends LMent implements UpdateHandler, HitPointChangeHa
 
   lose() {
     // death effect goes here
+    let visibilityFlicker = this.body.getElement(VisibilityFlicker);
+    if (visibilityFlicker) {
+      visibilityFlicker.enabled = false;
+    }
     this.body.body.setVisible(false);
     this.body.body.setAngularVelocity(Helpers.zeroVector);
     this.body.body.setVelocity(Helpers.zeroVector);
     this.revive();
+
+    //To disable movement
     this.enabled = false;
+
+    //Disable camera target element and reset it to center the player in the screen.
+    if (this.camTarget) {
+      this.camTarget.reset();
+      this.camTarget.enabled = false;
+    }
+
+    //Disable camera guide element to stop the camera from following the player.
+    if (this.camGuide)
+      this.camGuide.enabled = false;
+
+    let hp = this.body.getElement(HitPoints);
+    if (hp)
+      hp.enabled = false;
   }
 
   addSafeStep() {
@@ -118,19 +141,15 @@ export class AvatarBase extends LMent implements UpdateHandler, HitPointChangeHa
 
       let step = AvatarBase.safeSteps[i];
 
-      for (let h of HazardZone.AllZones){
-        if (step.distanceTo(h.body.body.getPosition()) < h.radius) {
-          console.log("not safe .. ");
+      for (let h of HazardZone.AllZones) {
+        if (step.distanceTo(h.body.body.getPosition()) < h.radius)
           break;
-        }
-
-        else {
+        else
           isSafe = true;
-          console.log("safe .. ");
-        }}
+      }
       if (isSafe) {
         GameplayScene.instance.dispatcher.queueDelayedFunction(this, () => {
-          this.respawnAt(step,i);
+          this.respawnAt(step, i);
         }, this.respawnDelay);
         break;
       }
@@ -138,47 +157,56 @@ export class AvatarBase extends LMent implements UpdateHandler, HitPointChangeHa
 
     if (!isSafe)
       GameplayScene.instance.dispatcher.queueDelayedFunction(this, () => {
-        this.respawnAt(AvatarBase.safeSteps[0],0);
+        this.respawnAt(AvatarBase.safeSteps[0], 0);
       }, this.respawnDelay);
   }
 
   postReviveCallback() {
-    this.isReviving = false;
     if (this.camTarget) {
       this.camTarget.enabled = true;
-      console.log("Camera Target re-enabled.");
     }
+
+    //Enable movement again.
+    this.enabled = true;
   }
 
-  respawnAt(pos: Vector3, index:number) {
+  respawnAt(pos: Vector3, index: number) {
     this.body.body.setRotation(Helpers.NewQuatFromEuler(0, 0, 0));
     this.body.body.setVisible(true);
 
     let visibilityFlicker = this.body.getElement(VisibilityFlicker);
     if (visibilityFlicker) {
+
+      //Turn on flickering
       visibilityFlicker.enabled = true;
-      if (this.enableDelayedFunc)
-        GameplayScene.instance.dispatcher.removeQueuedFunction(this.enableDelayedFunc);
-      this.enableDelayedFunc = GameplayScene.instance.dispatcher.queueDelayedFunction(this, () => { this.enabled  = true; }, visibilityFlicker.duration);
+
+      //Enabling HP when flickering is done
+      if (this.hpDelayedFunc)
+        GameplayScene.instance.dispatcher.removeQueuedFunction(this.hpDelayedFunc);
+      this.hpDelayedFunc = GameplayScene.instance.dispatcher.queueDelayedFunction(this, () => {
+        let hp = this.body.getElement(HitPoints);
+        if (hp) {
+          hp.reset();
+          hp.enabled = true;
+        }
+      }, visibilityFlicker.duration);
     }
 
-    
-    this.isReviving = true;
+    //Enable the camera guide to follow the player again.
+    if (this.camGuide)
+      this.camGuide.enabled = true;
 
-    let hp = this.body.getElement(HitPoints);
-    if (hp !== undefined)
-      hp.reset();
+    //enable the player movement after the cooldown is done.
+    GameplayScene.instance.dispatcher.queueDelayedFunction(this, () => { this.postReviveCallback(); }, this.revivingCooldown)
 
-
-    if (this.camTarget !== undefined) {
-      this.camTarget.reset();
-      this.camTarget.enabled = false;
-    }
+    //Reset the player's position and velocity.
     this.body.body.setAngularVelocity(Helpers.zeroVector);
     this.body.body.setVelocity(Helpers.zeroVector);
     this.body.body.setPosition(pos.clone().add(Helpers.NewVector3(0, 0.5, 0)));
-    GameplayScene.instance.dispatcher.queueDelayedFunction(this, () => { this.postReviveCallback(); }, this.revivingCooldown)
-    AvatarBase.safeSteps.splice(index,AvatarBase.safeSteps.length-index);
+
+    //Remove all safe steps after the current one.
+    if(AvatarBase.safeSteps.length > 1)
+      AvatarBase.safeSteps.splice(index, AvatarBase.safeSteps.length - index);
 
   }
 
