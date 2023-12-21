@@ -3,12 +3,14 @@ import { MessageDispatcher } from "engine/MessageDispatcher";
 import { GameplayMemory } from "engine/GameplayMemory";
 import { LuaClientInterface } from "./LuaClientInterface";
 
-export class GameplayScene
-{
-  static _instance : GameplayScene;
+type GamePreferences = {
+  defaultPlayDifficulty: "normal" | "hardcore";
+};
+
+export class GameplayScene {
+  static _instance: GameplayScene;
   static get instance() {
-    if (this._instance == undefined)
-    {
+    if (this._instance == undefined) {
       this._instance = new GameplayScene();
     }
     return this._instance;
@@ -16,25 +18,25 @@ export class GameplayScene
 
   bodies: BodyHandle[] = [];
   prefabs: BodyHandle[] = [];
-  groups: {[key: number] : BodyHandle[]} = {};
+  groups: { [key: number]: BodyHandle[] } = {};
   nextGroupId: number = -1;
-  bodyIdMap : Map<number, BodyHandle> = new Map<number, BodyHandle>();
-  dispatcher : MessageDispatcher = new MessageDispatcher(this);
-  memory : GameplayMemory = new GameplayMemory();
+  bodyIdMap: Map<number, BodyHandle> = new Map<number, BodyHandle>();
+  dispatcher: MessageDispatcher = new MessageDispatcher(this);
+  memory: GameplayMemory = new GameplayMemory();
   clientInterface: LuaClientInterface | undefined = undefined;
   currentDt: number = 0;
+  gamePreferences: GamePreferences = {
+    defaultPlayDifficulty: "normal",
+  };
+  private constructor() {}
 
-  private constructor()
-  {
-  }
-
-  setClientInterface(clientInterface: LuaClientInterface)
-  {
+  setClientInterface(clientInterface: LuaClientInterface) {
     this.clientInterface = clientInterface;
   }
-
-  addBody (bodyNode: BodyPointer)
-  {
+  setGamePreferences(preferences: GamePreferences) {
+    this.gamePreferences = preferences;
+  }
+  addBody(bodyNode: BodyPointer) {
     let handle = new BodyHandle(bodyNode);
     handle.isInScene = true;
     this.bodies.push(handle);
@@ -42,13 +44,10 @@ export class GameplayScene
     return handle;
   }
 
-  addBodyToGroup(bodyId: number, groupId: number)
-  {
+  addBodyToGroup(bodyId: number, groupId: number) {
     let body = this.getBodyById(bodyId);
-    if (body !== undefined)
-    {
-      if (this.groups[groupId] === undefined)
-      {
+    if (body !== undefined) {
+      if (this.groups[groupId] === undefined) {
         this.groups[groupId] = [];
       }
 
@@ -58,29 +57,25 @@ export class GameplayScene
     }
   }
 
-  createEmptyGroup()
-  {
+  createEmptyGroup() {
     let group: BodyHandle[] = [];
     let groupId = this.nextGroupId;
     this.groups[groupId] = group;
     this.nextGroupId--;
-    return {id: groupId, group: group};
+    return { id: groupId, group: group };
   }
 
-  addPrefab (bodyNode: BodyPointer)
-  {
+  addPrefab(bodyNode: BodyPointer) {
     let handle = new BodyHandle(bodyNode);
     this.prefabs.push(handle);
     return handle;
   }
 
-  getBodyById(id : number) : BodyHandle | undefined
-  {
+  getBodyById(id: number): BodyHandle | undefined {
     return this.bodyIdMap.get(id);
   }
 
-  clear()
-  {
+  clear() {
     this.bodies = [];
     this.bodyIdMap.clear();
     this.prefabs = [];
@@ -89,72 +84,58 @@ export class GameplayScene
     this.dispatcher.clearListeners();
   }
 
-  initializeMemory(memoryOverride : Partial<GameplayMemory>)
-  {
-    this.memory = {...new GameplayMemory(), ...memoryOverride};
+  initializeMemory(memoryOverride: Partial<GameplayMemory>) {
+    this.memory = { ...new GameplayMemory(), ...memoryOverride };
   }
 
-  preUpdate(dt : number)
-  {
+  preUpdate(dt: number) {
     this.memory.timeSinceStart += dt;
     this.currentDt = dt;
-    for (let body of this.bodies)
-    {
+    for (let body of this.bodies) {
       body.initializeElements();
     }
-    
-    for (let body of this.bodies)
-    {
+
+    for (let body of this.bodies) {
       body.startElements();
     }
 
     this.dispatcher.updateFunctionQueue(dt);
   }
 
-  update()
-  {
+  update() {
     this.dispatcher.onUpdate(this.currentDt);
   }
 
-  cloneBody(body: BodyHandle) : BodyHandle | undefined
-  {
+  cloneBody(body: BodyHandle): BodyHandle | undefined {
     let handle = body.body.cloneBody();
-    if (handle !== undefined)
-    {
+    if (handle !== undefined) {
       handle.initializeElements();
       return handle;
     }
     return undefined;
   }
 
-  clonePrefab(prefabName: string)
-  {
-    for (let prefab of this.prefabs)
-    {
-      if (prefab.body.name == prefabName)
-      {
+  clonePrefab(prefabName: string) {
+    for (let prefab of this.prefabs) {
+      if (prefab.body.name == prefabName) {
         return this.cloneBody(prefab);
       }
     }
     return undefined;
   }
 
-  destroyBody(body: BodyHandle)
-  {
+  destroyBody(body: BodyHandle) {
     let index = this.bodies.indexOf(body);
-    if (index >= 0)
-    {
+    if (index >= 0) {
       this.dispatcher.onActorDestroyed(body);
       this.dispatcher.removeAllListenersFromBody(body);
 
       this.bodies.splice(index, 1);
 
-      if (body.bodyGroup.length > 1)
-      {
+      if (body.bodyGroup.length > 1) {
         let group = body.bodyGroup;
         let groupIndex = group.indexOf(body);
-        if (groupIndex >= 0)
-        {
+        if (groupIndex >= 0) {
           group.splice(groupIndex, 1);
         }
       }
@@ -163,10 +144,9 @@ export class GameplayScene
     }
   }
 
-  testErrorHandler()
-  {
+  testErrorHandler() {
     console.log("test error");
-    let foo : any = undefined;
+    let foo: any = undefined;
     foo.bar();
     return 3;
   }
