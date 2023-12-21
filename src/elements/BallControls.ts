@@ -17,26 +17,9 @@ export class BallControls extends AvatarBase {
     constructor(body: BodyHandle, id: number, params: Partial<BallControls> = {}) {
         super(body, id, params);
         this.maxSpeed = params.maxSpeed === undefined ? 5 : params.maxSpeed;
-        this.deceleration = this.acc_dec_init("deceleration",params.deceleration);
-        this.acceleration = this.acc_dec_init("acceleration",params.acceleration);
+        this.deceleration = params.deceleration === undefined?5:params.deceleration;
+        this.acceleration = params.acceleration === undefined?5:params.acceleration;
         this.turningSpeed = params.turningSpeed===undefined?1:params.turningSpeed;
-    }
-
-    acc_dec_init(name:string,param:number|undefined):number
-    {
-        if(param === undefined)
-            return 1;
-        if(param <0)
-        {
-            console.log(name+" should be between 0 and 1, it will automatically set to 0.");
-            return 0;
-        }
-        if(param > 1)
-        {
-            console.log(name+" should be between 0 and 1, it will automatically set to 1.");
-            return 1;
-        }
-        return param;
     }
 
     initBallGuide() {
@@ -119,7 +102,9 @@ export class BallControls extends AvatarBase {
         let dragDistance = Math.sqrt(Math.pow(dragDxAdjusted, 2) + Math.pow(dragDyAdjusted, 2));
     
         let torqueFwd = Helpers.rightVector.applyQuaternion(this.ballGuide.body.getRotation()).multiplyScalar(-dragDyAdjusted * dragDistance);
-        let torqueTurn = Helpers.forwardVector.applyQuaternion(this.ballGuide.body.getRotation()).multiplyScalar(dragDxAdjusted);
+        let torqueTurn = Helpers.forwardVector.applyQuaternion(this.ballGuide.body.getRotation()).multiplyScalar(dragDxAdjusted*Math.abs(dragDyAdjusted));
+
+        console.log("DX, DY: "+dragDxAdjusted+", "+dragDyAdjusted);
     
         let angularVelo = this.body.body.getAngularVelocity();
         let targetVelo = (torqueFwd.add(torqueTurn)).normalize().multiplyScalar(this.maxSpeed);
