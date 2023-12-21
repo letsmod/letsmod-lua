@@ -26,7 +26,6 @@ export class WingSuitControls extends AvatarBase implements ButtonHandler, DragG
   private isAscending: boolean = false;
   private flapsCounter = 0;
   private anim: ShapeStateController | undefined;
-  private camGuide: GuideBody | undefined;
   private staminaBarControl: InfoBar | undefined;
 
   constructor(body: BodyHandle, id: number, params: Partial<WingSuitControls> = {}) {
@@ -55,7 +54,6 @@ export class WingSuitControls extends AvatarBase implements ButtonHandler, DragG
 
     if (info.getDeltaVSelf().normalize().dot(Helpers.upVector) > 0.7) {
       this.isOnGround = true;
-      this.flapsCounter = 0;
       this.resetStamina();
       this.disableGlide();
     }
@@ -95,11 +93,13 @@ export class WingSuitControls extends AvatarBase implements ButtonHandler, DragG
 
   useStamina() {
     if (!this.staminaBarControl) return;
+    this.flapsCounter++;
     this.staminaBarControl.DecreaseBar();
   }
 
   resetStamina() {
     if (!this.staminaBarControl) return;
+    this.flapsCounter = 0;
     this.staminaBarControl.ResetBar();
   }
 
@@ -203,7 +203,6 @@ export class WingSuitControls extends AvatarBase implements ButtonHandler, DragG
     let directionVector = Helpers.forwardVector.multiplyScalar(this.flapFwdForceRaio).applyQuaternion(this.body.body.getRotation());
     directionVector.add(Helpers.upVector);
     this.body.body.setVelocity(directionVector.multiplyScalar(this.flapForce));
-    this.flapsCounter++;
     this.isAscending = true;
     this.playAnimation("Fly");
     this.useStamina();
@@ -286,9 +285,10 @@ export class WingSuitControls extends AvatarBase implements ButtonHandler, DragG
       this.staminaBarControl.body.body.setVisible(false);
   }
   
-  override respawnAt(pos: Vector3, index:number): void {
-    super.respawnAt(pos, index);
+  override respawnAtIndex(index:number): void {
+    super.respawnAtIndex(index);
     if(this.staminaBarControl)
         this.staminaBarControl.body.body.setVisible(true);
+    this.resetStamina();
   }
 }

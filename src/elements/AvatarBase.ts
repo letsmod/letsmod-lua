@@ -14,7 +14,10 @@ import { SfxPlayer } from "./SfxPlayer";
 export class AvatarBase extends LMent implements UpdateHandler, HitPointChangeHandler, CollisionHandler, ActorDestructionHandler {
 
   public static safeSteps: Vector3[] = [];
-  private maxSafeSteps: number = 300;
+  private maxSafeSteps: number = 500;
+  private reviveMinDistance: number = 0;
+  private reviveCounter: number = 3;
+  private gameplayIsDifficult: boolean = true;
   public isOnGround = false;
   private revivingCooldown: number = 0.5;
   private safeStepDelay: number = 1;
@@ -37,13 +40,17 @@ export class AvatarBase extends LMent implements UpdateHandler, HitPointChangeHa
     GameplayScene.instance.dispatcher.addListener("drag", this);
     GameplayScene.instance.memory.player = this.body;
     AvatarBase.safeSteps = [];
+
+    this.gameplayIsDifficult = true;//---> TODO[Ahmad]: Get this from the Backend
+
+    this.reviveMinDistance = this.gameplayIsDifficult?20:1;
+
   }
 
   initRotation() {
     let rotation = this.body.body.getRotation().clone();
     rotation.setFromAxisAngle(Helpers.upVector, Helpers.GetYaw(rotation));
     this.body.body.setRotation(rotation);
-
   }
 
   onStart(): void {
@@ -140,7 +147,7 @@ export class AvatarBase extends LMent implements UpdateHandler, HitPointChangeHa
   }
 
   revive() {
-    let isSafe = false;
+    let stepPickedUp = false;
     for (let i = AvatarBase.safeSteps.length - 1; i >= 0; i--) {
 
       let step = AvatarBase.safeSteps[i];
@@ -148,20 +155,22 @@ export class AvatarBase extends LMent implements UpdateHandler, HitPointChangeHa
       for (let h of HazardZone.AllZones) {
         if (step.distanceTo(h.body.body.getPosition()) < h.radius)
           break;
-        else
-          isSafe = true;
+        else if(step.distanceTo(this.body.body.getPosition()) < this.reviveMinDistance)
+          break;
+        else stepPickedUp = true;
       }
-      if (isSafe) {
+
+      if (stepPickedUp) {
         GameplayScene.instance.dispatcher.queueDelayedFunction(this, () => {
-          this.respawnAt(step, i);
+          this.respawnAtIndex(i);
         }, this.respawnDelay);
         break;
       }
     }
 
-    if (!isSafe)
+    if (!stepPickedUp)
       GameplayScene.instance.dispatcher.queueDelayedFunction(this, () => {
-        this.respawnAt(AvatarBase.safeSteps[0], 0);
+        this.respawnAtIndex(0);
       }, this.respawnDelay);
   }
 
@@ -174,7 +183,7 @@ export class AvatarBase extends LMent implements UpdateHandler, HitPointChangeHa
     this.enabled = true;
   }
 
-  respawnAt(pos: Vector3, index: number) {
+  respawnAtIndex(index: number) {
     this.body.body.setRotation(Helpers.NewQuatFromEuler(0, 0, 0));
     this.body.body.setVisible(true);
 
@@ -206,6 +215,19 @@ export class AvatarBase extends LMent implements UpdateHandler, HitPointChangeHa
     //Reset the player's position and velocity.
     this.body.body.setAngularVelocity(Helpers.zeroVector);
     this.body.body.setVelocity(Helpers.zeroVector);
+
+    //Set the player's position to the safe step.
+    let pos = AvatarBase.safeSteps[index];
+    if(this.gameplayIsDifficult){
+      this.reviveCounter--;
+      if(this.reviveCounter < 1){
+        this.reviveCounter = 3;
+        pos = AvatarBase.safeSteps[0];
+        index = 0;
+      }
+      /* TODO[Ahmad]: UPDATE UI for the hearts here */
+    }
+
     this.body.body.setPosition(pos.clone().add(Helpers.NewVector3(0, 0.5, 0)));
 
     //Remove all safe steps after the current one.
