@@ -9,6 +9,7 @@ import { HitPoints } from "./HitPoints";
 import { CameraTarget } from "./CameraTarget";
 import { VisibilityFlicker } from "./VisibilityFlicker";
 import { GuideBody } from "./GuideBody";
+import { SfxPlayer } from "./SfxPlayer";
 
 export class AvatarBase extends LMent implements UpdateHandler, HitPointChangeHandler, CollisionHandler, ActorDestructionHandler {
 
@@ -59,8 +60,8 @@ export class AvatarBase extends LMent implements UpdateHandler, HitPointChangeHa
   }
 
   onActorDestroyed(actor: BodyHandle): void {
-    if (actor === this.body)
-      this.lose();
+    //if (actor === this.body)
+      //this.lose();
   }
 
   onCollision(info: CollisionInfo): void {
@@ -96,7 +97,10 @@ export class AvatarBase extends LMent implements UpdateHandler, HitPointChangeHa
     this.body.body.setAngularVelocity(Helpers.zeroVector);
     this.body.body.setVelocity(Helpers.zeroVector);
     this.revive();
-
+    const sound = this.body.getElementByName("DeathAudio") as SfxPlayer;
+    if (sound) {
+      sound.playAudio();
+    }
     //To disable movement
     this.enabled = false;
 

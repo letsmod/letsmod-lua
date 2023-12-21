@@ -30,11 +30,12 @@ export class SfxPlayer extends LMent implements UpdateHandler, TriggerHandler {
     }
 
     onTrigger(source: LMent, triggerId: string): void {
-
+        this.playAudio();
     }
 
     onInit(): void {
         GameplayScene.instance.dispatcher.addListener("update", this);
+        GameplayScene.instance.dispatcher.addListener("trigger", this);
     }
 
     onStart(): void {
@@ -61,7 +62,7 @@ export class SfxPlayer extends LMent implements UpdateHandler, TriggerHandler {
     playAudio() {
         const clientInterface = GameplayScene.instance.clientInterface;
         if (!clientInterface || this.loopTimer > 0) return;
-        clientInterface.playAudio(this.audio, this.body.body.id.toString());
+        clientInterface.playAudio(this.audio, this.id.toString());
         this.loopTimer = this.delay;
     }
 }
