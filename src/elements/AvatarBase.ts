@@ -8,8 +8,9 @@ import { HazardZone } from "./HazardZone";
 import { HitPoints } from "./HitPoints";
 import { CameraTarget } from "./CameraTarget";
 import { VisibilityFlicker } from "./VisibilityFlicker";
+import { StateMachineLMent } from "engine/StateMachineLMent";
 
-export class AvatarBase extends LMent implements UpdateHandler, HitPointChangeHandler, CollisionHandler, ActorDestructionHandler {
+export class AvatarBase extends StateMachineLMent {
 
   public static safeSteps: Vector3[] = [];
   private maxSafeSteps: number = 300;
@@ -17,8 +18,8 @@ export class AvatarBase extends LMent implements UpdateHandler, HitPointChangeHa
   private revivingCooldown: number = 0.5;
   protected isReviving = false;
   private safeStepDelay: number = 1;
-  protected dragDx = 0;
-  protected dragDy = 0;
+  public dragDx = 0;
+  public dragDy = 0;
   dragDelayFunc: any | undefined;
   protected camTarget: CameraTarget | undefined;
   private enableDelayedFunc: any | undefined
@@ -28,6 +29,11 @@ export class AvatarBase extends LMent implements UpdateHandler, HitPointChangeHa
   }
 
   onInit(): void {
+    this.alwaysOnListeners.add("update");
+    this.alwaysOnListeners.add("hitPointsChanged");
+    this.alwaysOnListeners.add("collision");
+    this.alwaysOnListeners.add("actorDestroyed");
+    this.alwaysOnListeners.add("drag");
     GameplayScene.instance.dispatcher.addListener("update", this);
     GameplayScene.instance.dispatcher.addListener("hitPointsChanged", this);
     GameplayScene.instance.dispatcher.addListener("collision", this);
@@ -40,7 +46,6 @@ export class AvatarBase extends LMent implements UpdateHandler, HitPointChangeHa
     let rotation = this.body.body.getRotation().clone();
     rotation.setFromAxisAngle(Helpers.upVector, Helpers.GetYaw(rotation));
     this.body.body.setRotation(rotation);
-
   }
 
   onStart(): void {
@@ -51,24 +56,28 @@ export class AvatarBase extends LMent implements UpdateHandler, HitPointChangeHa
     this.camTarget = this.body.getElement(CameraTarget);
   }
 
-  onUpdate(dt?: number): void {
+  onUpdate(dt: number): void {
+    super.onUpdate(dt);
     this.sinkCheck();
   }
 
   onActorDestroyed(actor: BodyHandle): void {
+    super.onActorDestroyed(actor);
     if (actor === this.body)
+    {
       this.lose();
-  }
-
-  onCollision(info: CollisionInfo): void {
+    }
   }
 
   sinkCheck() {
     if (this.body.body.getPosition().y < 0)
+    {
       this.lose();
+    }
   }
 
   onHitPointChange(source: BodyHandle, previousHP: number, currentHP: number): void {
+    super.onHitPointChange(source, previousHP, currentHP);
     //Update healthbar goes here.
     if (source === this.body && currentHP <= 0) {
       this.lose();
@@ -76,6 +85,7 @@ export class AvatarBase extends LMent implements UpdateHandler, HitPointChangeHa
   }
 
   onDrag(dx: number, dy: number): void {
+    super.onDrag(dx, dy);
     this.dragDx = dx;
     this.dragDy = dy;
     if (this.dragDelayFunc)
@@ -96,7 +106,9 @@ export class AvatarBase extends LMent implements UpdateHandler, HitPointChangeHa
     GameplayScene.instance.dispatcher.queueDelayedFunction(this, () => {
       if (this.isOnGround) {
         if (AvatarBase.safeSteps.length > this.maxSafeSteps)
+        {
           AvatarBase.safeSteps.splice(1, 1);
+        }
         AvatarBase.safeSteps.push(this.body.body.getPosition().clone());
       }
       this.addSafeStep();

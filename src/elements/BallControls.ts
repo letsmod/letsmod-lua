@@ -72,8 +72,8 @@ export class BallControls extends AvatarBase {
         this.initBallGuide();
     }
 
-    override onUpdate(): void {
-        super.onUpdate();
+    override onUpdate(dt: number): void {
+        super.onUpdate(dt);
 
         this.onGroundReset();
 

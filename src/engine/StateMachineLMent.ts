@@ -1,4 +1,4 @@
-import { BodyHandle } from "./BodyHandle";
+import { BodyHandle, ShapePointer } from "./BodyHandle";
 import { GameplayScene } from "./GameplayScene";
 import { LMent } from "./LMent";
 import {
@@ -15,7 +15,8 @@ import {
   ActorDestructionHandler,
   HitPointChangeHandler,
   TriggerHandler,
-  CollisionInfo
+  CollisionInfo,
+  HandlerTypeMap
 } from "./MessageHandlers";
 
 export abstract class State implements 
@@ -80,6 +81,29 @@ export abstract class State implements
   hasSubtype?(subtype: string): boolean;
 }
 
+export abstract class AnimatedState extends State
+{
+  animName: string;
+  animBlendTime: number;
+  shape: ShapePointer | undefined;
+
+  constructor(name: string, stateMachine: StateMachineLMent, shapeToAnimate: ShapePointer | undefined, animName: string, animBlendTime: number)
+  {
+    super(name, stateMachine);
+    this.shape = shapeToAnimate;
+    this.animName = animName;
+    this.animBlendTime = animBlendTime;
+  }
+
+  onEnterState(previousState: State | undefined): void {
+    if (this.shape)
+    {
+      this.shape.playAnimation(this.animName, this.animBlendTime);
+    }
+  
+  }
+}
+
 export abstract class StateMachineLMent extends LMent implements
   UpdateHandler,
   CollisionHandler,
@@ -97,12 +121,14 @@ export abstract class StateMachineLMent extends LMent implements
   states: {[key: string]: State | undefined};
   currentState: State | undefined;
   switchStateQueue: (State | undefined)[];
+  alwaysOnListeners: Set<keyof HandlerTypeMap>;
 
   constructor(body: BodyHandle, id: number, params: Partial<StateMachineLMent> = {})
   {
     super(body, id, params);
     this.states = {};
     this.switchStateQueue = [];
+    this.alwaysOnListeners = new Set<keyof HandlerTypeMap>();
   }
 
   // responsible for calling switchState to the initial state
@@ -113,6 +139,12 @@ export abstract class StateMachineLMent extends LMent implements
   switchState(stateName: string)
   {
     let nextState = this.states[stateName];
+    if (nextState === undefined)
+    {
+      console.warn("unknown state", stateName);
+      return;
+    }
+
     this.switchStateQueue.push(nextState);
     let length = this.switchStateQueue.length;
  
@@ -155,62 +187,62 @@ export abstract class StateMachineLMent extends LMent implements
   {
     let dispatcher = GameplayScene.instance.dispatcher;
     
-    if (state.onUpdate)
+    if (state.onUpdate && !this.alwaysOnListeners.has("update"))
     {
       dispatcher.removeListener("update", this);
     }
 
-    if (state.onCollision)
+    if (state.onCollision && !this.alwaysOnListeners.has("collision"))
     {
       dispatcher.removeListener("collision", this);
     }
 
-    if (state.onButtonHold || state.onButtonPress || state.onButtonRelease)
+    if ((state.onButtonHold || state.onButtonPress || state.onButtonRelease)  && !this.alwaysOnListeners.has("button"))
     {
       dispatcher.removeListener("button", this);
     }
 
-    if (state.onDrag)
+    if (state.onDrag && !this.alwaysOnListeners.has("drag"))
     {
       dispatcher.removeListener("drag", this);
     }
 
-    if (state.onTap)
+    if (state.onTap && !this.alwaysOnListeners.has("tap"))
     {
       dispatcher.removeListener("tap", this);
     }
 
-    if (state.onSwipe)
+    if (state.onSwipe && !this.alwaysOnListeners.has("swipe"))
     {
       dispatcher.removeListener("swipe", this);
     }
 
-    if (state.onHoldStart || state.onHoldRelease)
+    if ((state.onHoldStart || state.onHoldRelease) && !this.alwaysOnListeners.has("hold"))
     {
       dispatcher.removeListener("hold", this);
     }
 
-    if (state.onAimStart || state.onAim || state.onAimRelease)
+    if ((state.onAimStart || state.onAim || state.onAimRelease) && !this.alwaysOnListeners.has("aim"))
     {
       dispatcher.removeListener("aim", this);
     }
 
-    if (state.onInteract)
+    if (state.onInteract && !this.alwaysOnListeners.has("interact"))
     {
       dispatcher.removeListener("interact", this);
     }
 
-    if (state.onActorDestroyed)
+    if (state.onActorDestroyed && !this.alwaysOnListeners.has("actorDestroyed"))
     {
       dispatcher.removeListener("actorDestroyed", this);
     }
 
-    if (state.onHitPointChange)
+    if (state.onHitPointChange && !this.alwaysOnListeners.has("hitPointsChanged"))
     {
       dispatcher.removeListener("hitPointsChanged", this);
     }
 
-    if (state.onTrigger)
+    if (state.onTrigger && !this.alwaysOnListeners.has("trigger"))
     {
       dispatcher.removeListener("trigger", this);
     }
@@ -220,62 +252,62 @@ export abstract class StateMachineLMent extends LMent implements
   {
     let dispatcher = GameplayScene.instance.dispatcher;
     
-    if (state.onUpdate)
+    if (state.onUpdate && !this.alwaysOnListeners.has("update"))
     {
       dispatcher.addListener("update", this);
     }
 
-    if (state.onCollision)
+    if (state.onCollision && !this.alwaysOnListeners.has("collision"))
     {
       dispatcher.addListener("collision", this);
     }
 
-    if (state.onButtonHold || state.onButtonPress || state.onButtonRelease)
+    if ((state.onButtonHold || state.onButtonPress || state.onButtonRelease)  && !this.alwaysOnListeners.has("button"))
     {
       dispatcher.addListener("button", this);
     }
 
-    if (state.onDrag)
+    if (state.onDrag && !this.alwaysOnListeners.has("drag"))
     {
       dispatcher.addListener("drag", this);
     }
 
-    if (state.onTap)
+    if (state.onTap && !this.alwaysOnListeners.has("tap"))
     {
       dispatcher.addListener("tap", this);
     }
 
-    if (state.onSwipe)
+    if (state.onSwipe && !this.alwaysOnListeners.has("swipe"))
     {
       dispatcher.addListener("swipe", this);
     }
 
-    if (state.onHoldStart || state.onHoldRelease)
+    if ((state.onHoldStart || state.onHoldRelease) && !this.alwaysOnListeners.has("hold"))
     {
       dispatcher.addListener("hold", this);
     }
 
-    if (state.onAimStart || state.onAim || state.onAimRelease)
+    if ((state.onAimStart || state.onAim || state.onAimRelease) && !this.alwaysOnListeners.has("aim"))
     {
       dispatcher.addListener("aim", this);
     }
 
-    if (state.onInteract)
+    if (state.onInteract && !this.alwaysOnListeners.has("interact"))
     {
       dispatcher.addListener("interact", this);
     }
 
-    if (state.onActorDestroyed)
+    if (state.onActorDestroyed && !this.alwaysOnListeners.has("actorDestroyed"))
     {
       dispatcher.addListener("actorDestroyed", this);
     }
 
-    if (state.onHitPointChange)
+    if (state.onHitPointChange && !this.alwaysOnListeners.has("hitPointsChanged"))
     {
-      dispatcher.addListener("hitPointsChanged", this);
+      dispatcher.removeListener("hitPointsChanged", this);
     }
 
-    if (state.onTrigger)
+    if (state.onTrigger && !this.alwaysOnListeners.has("trigger"))
     {
       dispatcher.addListener("trigger", this);
     }

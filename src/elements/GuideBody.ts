@@ -28,6 +28,7 @@ export class GuideBody extends LMent implements UpdateHandler {
     move: boolean; /*Defaults to TRUE, which allows it to update position to match target every frame*/
     mode: string; /*To tell whether to leade the target or follow the target*/
     makeInvisible: boolean; /*To make the body invisible*/
+    rotationTolerance: number; /*The tolerance for rotation to be considered "aligned"*/
 
     private leader: BodyHandle | undefined;
     private follower: BodyHandle | undefined;
@@ -54,6 +55,8 @@ export class GuideBody extends LMent implements UpdateHandler {
         this.makeInvisible = params.makeInvisible === undefined ? false : params.makeInvisible;
 
         this.targetContext = params.targetContext === undefined ? "group" : params.targetContext;
+        
+        this.rotationTolerance = params.rotationTolerance === undefined ? 0 : params.rotationTolerance;
     }
 
     onInit(): void {

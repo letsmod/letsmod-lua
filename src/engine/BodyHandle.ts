@@ -82,6 +82,12 @@ export interface BodyPointer
 
   setCastShadow(shadowCasting: boolean) : void;
 
+  isPhysical() : boolean;
+
+  isKinematic() : boolean;
+
+  isHologram() : boolean;
+
   // internal use; use gameplayScene.destroyBody / cloneBody instead
   destroyBody() : void;
   cloneBody() : BodyHandle;

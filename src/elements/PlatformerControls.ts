@@ -64,7 +64,7 @@ export class PlatformerControls extends AvatarBase implements ButtonHandler {
 
   decelDelayFunc: any | undefined;
   override onUpdate(dt: number): void {
-    super.onUpdate();
+    super.onUpdate(dt);
 
     this.onGroundReset();
 
