@@ -228,35 +228,10 @@ export class MessageDispatcher
     }
   }
 
-  // public collisionCount = 0;
-  // public eventCount = 0;
-  // public loopCount = 0;
-
   // CollisionHandler
 
   onCollision (infoFactory: CollisionInfoFactory)
   {
-    // // iterate over copy of listeners in case onCollision adds/removes listeners
-    // for (let listener of this.listeners["collision"].slice())
-    // {
-    //   // this.loopCount++;
-    //   if (infoFactory.aId !== undefined && listener.body.body.id == infoFactory.aId)
-    //   {
-    //     if (listener.enabled) {
-    //       listener.onCollision(infoFactory.makeCollisionInfo("a"));
-    //       // this.eventCount++;
-    //     }
-    //   }
-    //   else if (infoFactory.bId !== undefined && listener.body.body.id == infoFactory.bId)
-    //   {
-    //     if (listener.enabled) {
-    //       listener.onCollision(infoFactory.makeCollisionInfo("b"));
-    //       // this.eventCount++;
-    //     }
-    //   }
-    // }
-    // // this.collisionCount++;
-
     let listenersA = this.collisionListenersByBody[infoFactory.aId];
     if (listenersA !== undefined)
     {
