@@ -31,6 +31,8 @@ export class Climbable extends LMent implements CollisionHandler {
             this.player = GameplayScene.instance.memory.player;
         if (this.player.getElement(PlatformerControls) !== undefined)
             this.controls = this.player.getElement(PlatformerControls);
+        else
+            this.controls = undefined;
     }
 
     onCollision(info: CollisionInfo) {
