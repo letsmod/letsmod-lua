@@ -18,7 +18,7 @@ class BouncerPatrol extends characterPatrolState {
         if (this.bounceTimer >= this.bounceAfter) {
             this.bounceTimer = 0;
             this.stateMachine.body.body.applyCentralForce(Helpers.upVector.multiplyScalar(this.bounceForce * this.stateMachine.body.body.getMass()));
-            const sound = this.stateMachine.body.getElementByName("Bounce") as SfxPlayer;
+            const sound = this.stateMachine.body.getElementByName("Move") as SfxPlayer;
             if (sound) {
                 const player = GameplayScene.instance.memory.player;
 
@@ -43,7 +43,7 @@ class BouncerChase extends EnemyChaseState {
         if (this.bounceTimer >= this.bounceAfter) {
             this.bounceTimer = 0;
             this.stateMachine.body.body.applyCentralForce(Helpers.upVector.multiplyScalar(this.bounceForce * this.stateMachine.body.body.getMass()));
-            const sound = this.stateMachine.body.getElementByName("Bounce") as SfxPlayer;
+            const sound = this.stateMachine.body.getElementByName("Move") as SfxPlayer;
             if (sound) {
                 sound.playAudio();
             }

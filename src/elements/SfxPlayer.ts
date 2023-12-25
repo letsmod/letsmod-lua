@@ -11,6 +11,8 @@ export class SfxPlayer extends LMent implements UpdateHandler, TriggerHandler {
     loop: boolean = true;
     delay: number = 0;
     triggerId: string;
+    randomMax: number | undefined;
+    randomMin: number | undefined;
     receivesTriggersWhenDisabled?: boolean | undefined;
     private loopTimer: number = 0;
 
@@ -23,6 +25,8 @@ export class SfxPlayer extends LMent implements UpdateHandler, TriggerHandler {
         this.enabled = Helpers.ValidateParams(this.audio, this, "audio");
         this.triggerId = params.triggerId === undefined ? Helpers.NA : params.triggerId;
         this.receivesTriggersWhenDisabled = true;
+        this.randomMax = params.randomMax;
+        this.randomMin = params.randomMin;
     }
 
     hasSubtype(trigger: string): boolean {
@@ -62,7 +66,17 @@ export class SfxPlayer extends LMent implements UpdateHandler, TriggerHandler {
     playAudio() {
         const clientInterface = GameplayScene.instance.clientInterface;
         if (!clientInterface || this.loopTimer > 0) return;
-        clientInterface.playAudio(this.audio, this.id.toString());
+        if (this.randomMax && this.randomMin) {
+            this.randomizeAudio();
+        } else clientInterface.playAudio(this.audio, this.id.toString());
         this.loopTimer = this.delay;
+    }
+
+    randomizeAudio() {
+        const clientInterface = GameplayScene.instance.clientInterface;
+        if (!clientInterface) return;
+        const random = Math.floor(Math.random() * (this.randomMax ?? 3) + (this.randomMin ?? 0));
+        console.log(this.audio+random);
+        clientInterface.playAudio(this.audio + random, this.id.toString());
     }
 }
