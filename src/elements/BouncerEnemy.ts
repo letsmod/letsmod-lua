@@ -6,28 +6,35 @@ import { CharacterStateMachineLMent, EnemyAlertState, EnemyChaseState } from "./
 import { CharacterStates, characterIdleState, characterPatrolState } from "./CharacterStates";
 import { SfxPlayer } from "./SfxPlayer";
 import { GameplayScene } from "engine/GameplayScene";
+import { Vector3 } from "three";
 
 class BouncerPatrol extends characterPatrolState {
 
     bounceTimer: number = 0;
     bounceAfter: number = 0.4;
     bounceForce: number = 250;
+    sound: SfxPlayer;
+
+    constructor(stateMachine: CharacterStateMachineLMent, points: Vector3[], patrolSpeed: number, roamForce: number, sound: SfxPlayer) {
+        super(stateMachine, points, patrolSpeed, roamForce);
+        this.sound = sound;
+    }
+
 
     override playStateAnimation(dt: number): void {
         this.bounceTimer += dt;
         if (this.bounceTimer >= this.bounceAfter) {
             this.bounceTimer = 0;
             this.stateMachine.body.body.applyCentralForce(Helpers.upVector.multiplyScalar(this.bounceForce * this.stateMachine.body.body.getMass()));
-            const sound = this.stateMachine.body.getElementByName("Move") as SfxPlayer;
-            if (sound) {
+            if (this.sound) {
                 const player = GameplayScene.instance.memory.player;
 
                 if (!player) return;
                 const playerPos = player.body.getPosition();
-                const distance = playerPos.distanceTo(sound.body.body.getPosition());
+                const distance = playerPos.distanceTo(this.sound.body.body.getPosition());
 
-                if (distance < sound.playDistance)
-                    sound.playAudio();
+                if (distance < this.sound.playDistance)
+                    this.sound.playAudio();
             }
         }
     }
@@ -79,9 +86,9 @@ export class BouncerEnemy extends CharacterStateMachineLMent {
         super.onInit();
         let point1 = this.body.body.getPosition().clone();
         let point2 = point1.clone().add(Helpers.forwardVector.multiplyScalar(this.patrolDistance).applyQuaternion(this.body.body.getRotation()))
-
+        let sound = this.body.getElementByName("Move") as SfxPlayer
         this.states = {
-            [CharacterStates.patrol]: new BouncerPatrol(this, [point1, point2], this.patrolSpeed, this.movementForce),
+            [CharacterStates.patrol]: new BouncerPatrol(this, [point1, point2], this.patrolSpeed, this.movementForce, sound),
             [CharacterStates.chase]: new BouncerChase(this, this.chaseSpeed, this.movementForce),
             [CharacterStates.alert]: new EnemyAlertState(this, this.alertCooldown, this.alertWarmUp, CharacterStates.chase),
             [CharacterStates.idle]: new characterIdleState(this, this.idleDelay)
