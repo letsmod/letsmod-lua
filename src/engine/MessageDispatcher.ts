@@ -1,6 +1,7 @@
 
 import { js_new, global } from "js";
 import {
+  CollisionHandler,
   CollisionInfoFactory,
   HandlerTypeMap,
   HandlerTypes
@@ -38,6 +39,7 @@ export class MessageDispatcher
 {
   scene: GameplayScene;
   listeners : ListenerDict = MakeListenerDict();
+  collisionListenersByBody : {[key: number]: ListenerType<"collision">[]} = {};
   functionQueue : DelayedFunction<any>[] = [];
 
   constructor(scene: GameplayScene)
@@ -49,6 +51,7 @@ export class MessageDispatcher
   {
     this.listeners = MakeListenerDict();
     this.functionQueue = [];
+    this.collisionListenersByBody = {};
   }
 
   removeAllListenersFromBody(body: BodyHandle)
@@ -81,6 +84,18 @@ export class MessageDispatcher
         i--;
       }
     }
+    for (let bodyId in this.collisionListenersByBody)
+    {
+      let listeners = this.collisionListenersByBody[bodyId];
+      for (let i = 0; i < listeners.length; i++)
+      {
+        if (listeners[i] === elem)
+        {
+          listeners.splice(i, 1);
+          i--;
+        }
+      }
+    }
   }
 
   removeListener<T extends keyof HandlerTypeMap>(type: T, listener: ListenerType<T>)
@@ -91,11 +106,30 @@ export class MessageDispatcher
     {
       listeners.splice(index, 1);
     }
+
+    if (type == "collision")
+    {
+      let listeners = this.collisionListenersByBody[listener.body.body.id];
+      let index = listeners.indexOf(listener as ListenerType<"collision">);
+      if (index >= 0)
+      {
+        listeners.splice(index, 1);
+      }
+    }
   }
 
   addListener<T extends keyof HandlerTypeMap>(type: T, listener: ListenerType<T>)
   {
     this.listeners[type].push(listener);
+
+    if (type == "collision")
+    {
+      if (this.collisionListenersByBody[listener.body.body.id] === undefined)
+      {
+        this.collisionListenersByBody[listener.body.body.id] = [];
+      }
+      this.collisionListenersByBody[listener.body.body.id].push(listener as ListenerType<"collision">);
+    }
   }
 
   hasListenerOfType<T extends keyof HandlerTypeMap>(type: T, subtype? : string) : boolean
@@ -158,8 +192,9 @@ export class MessageDispatcher
       }
     }
 
-    for (let fq of funcsToCall)
+    for (let i = 0; i < funcsToCall.length; i++)
     {
+      let fq = funcsToCall[i];
       fq.func(...fq.args);
     }
   }
@@ -169,8 +204,10 @@ export class MessageDispatcher
   onUpdate(dt: number)
   {
     // iterate over copy of listeners in case onUpdate adds/removes listeners
-    for (let listener of this.listeners["update"].slice())
+    let listeners = this.listeners["update"].slice();
+    for (let i = 0; i < listeners.length; i++)
     {
+      let listener = listeners[i];
       if (listener.enabled) {
         listener.onUpdate(dt);
       }
@@ -181,8 +218,10 @@ export class MessageDispatcher
   onPhysicsSubstep(dt: number)
   {
     // iterate over copy of listeners in case onPhysicsSubstep adds/removes listeners
-    for (let listener of this.listeners["physicsSubstep"].slice())
+    let listeners = this.listeners["physicsSubstep"].slice();
+    for (let i = 0; i < listeners.length; i++)
     {
+      let listener = listeners[i];
       if (listener.enabled) {
         listener.onPhysicsSubstep(dt);
       }
@@ -193,17 +232,23 @@ export class MessageDispatcher
 
   onCollision (infoFactory: CollisionInfoFactory)
   {
-    // iterate over copy of listeners in case onCollision adds/removes listeners
-    for (let listener of this.listeners["collision"].slice())
+    let listenersA = this.collisionListenersByBody[infoFactory.aId];
+    if (listenersA !== undefined)
     {
-      if (infoFactory.aId !== undefined && listener.body.body.id == infoFactory.aId)
+      for (let i = 0; i < listenersA.length; i++)
       {
+        let listener = listenersA[i];
         if (listener.enabled) {
           listener.onCollision(infoFactory.makeCollisionInfo("a"));
         }
       }
-      else if (infoFactory.bId !== undefined && listener.body.body.id == infoFactory.bId)
+    }
+    let listenersB = this.collisionListenersByBody[infoFactory.bId];
+    if (listenersB !== undefined)
+    {
+      for (let i = 0; i < listenersB.length; i++)
       {
+        let listener = listenersB[i];
         if (listener.enabled) {
           listener.onCollision(infoFactory.makeCollisionInfo("b"));
         }
@@ -216,8 +261,10 @@ export class MessageDispatcher
   onButtonPress(button: string)
   {
     // iterate over copy of listeners in case onButtonPress adds/removes listeners
-    for (let listener of this.listeners["button"].slice())
+    let listeners = this.listeners["button"].slice();
+    for (let i = 0; i < listeners.length; i++)
     {
+      let listener = listeners[i];
       if (listener.enabled) {
         listener.onButtonPress(button);
       }
@@ -227,8 +274,10 @@ export class MessageDispatcher
   onButtonHold(button: string)
   {
     // iterate over copy of listeners in case onButtonHold adds/removes listeners
-    for (let listener of this.listeners["button"].slice())
+    let listeners = this.listeners["button"].slice();
+    for (let i = 0; i < listeners.length; i++)
     {
+      let listener = listeners[i];
       if (listener.enabled) {
         listener.onButtonHold(button);
       }
@@ -238,8 +287,10 @@ export class MessageDispatcher
   onButtonRelease(button: string)
   {
     // iterate over copy of listeners in case onButtonRelease adds/removes listeners
-    for (let listener of this.listeners["button"].slice())
+    let listeners = this.listeners["button"].slice();
+    for (let i = 0; i < listeners.length; i++)
     {
+      let listener = listeners[i];
       if (listener.enabled) {
         listener.onButtonRelease(button);
       }
@@ -250,8 +301,10 @@ export class MessageDispatcher
 
   onDrag(dx: number, dy: number)
   {
-    for (let listener of this.listeners["drag"])
+    let listeners = this.listeners["drag"].slice();
+    for (let i = 0; i < listeners.length; i++)
     {
+      let listener = listeners[i];
       if (listener.enabled) {
         listener.onDrag(dx, dy);
       }
@@ -274,8 +327,10 @@ export class MessageDispatcher
     if (!didInteract)
     {
       // iterate over copy of listeners in case onTap adds/removes listeners
-      for (let listener of this.listeners["tap"].slice())
-      {
+    let listeners = this.listeners["tap"].slice();
+    for (let i = 0; i < listeners.length; i++)
+    {
+      let listener = listeners[i];
         if (listener.enabled) {
           listener.onTap();
         }
@@ -287,8 +342,10 @@ export class MessageDispatcher
 
   onSwipe(dx: number, dy: number)
   {
-    for (let listener of this.listeners["swipe"].slice())
+    let listeners = this.listeners["swipe"].slice();
+    for (let i = 0; i < listeners.length; i++)
     {
+      let listener = listeners[i];
       if (listener.enabled) {
         listener.onSwipe(dx, dy);
       }
@@ -299,8 +356,10 @@ export class MessageDispatcher
 
   onHoldStart()
   {
-    for (let listener of this.listeners["hold"].slice())
+    let listeners = this.listeners["hold"].slice();
+    for (let i = 0; i < listeners.length; i++)
     {
+      let listener = listeners[i];
       if (listener.enabled) {
         listener.onHoldStart();
       }
@@ -309,8 +368,10 @@ export class MessageDispatcher
 
   onHoldRelease()
   {
-    for (let listener of this.listeners["hold"].slice())
+    let listeners = this.listeners["hold"].slice();
+    for (let i = 0; i < listeners.length; i++)
     {
+      let listener = listeners[i];
       if (listener.enabled) {
         listener.onHoldRelease();
       }
@@ -321,8 +382,10 @@ export class MessageDispatcher
 
   onAimStart()
   {
-    for (let listener of this.listeners["aim"].slice())
+    let listeners = this.listeners["aim"].slice();
+    for (let i = 0; i < listeners.length; i++)
     {
+      let listener = listeners[i];
       if (listener.enabled) {
         listener.onAimStart();
       }
@@ -331,8 +394,10 @@ export class MessageDispatcher
 
   onAim(dx: number, dy: number)
   {
-    for (let listener of this.listeners["aim"].slice())
+    let listeners = this.listeners["aim"].slice();
+    for (let i = 0; i < listeners.length; i++)
     {
+      let listener = listeners[i];
       if (listener.enabled) {
         listener.onAim(dx, dy);
       }
@@ -341,8 +406,10 @@ export class MessageDispatcher
 
   onAimRelease(dx: number, dy: number)
   {
-    for (let listener of this.listeners["aim"].slice())
+    let listeners = this.listeners["aim"].slice();
+    for (let i = 0; i < listeners.length; i++)
     {
+      let listener = listeners[i];
       if (listener.enabled) {
         listener.onAimRelease(dx, dy);
       }
@@ -355,8 +422,10 @@ export class MessageDispatcher
 
   onInteract(interactor : BodyHandle)
   {
-    for (let listener of this.listeners["interact"].slice())
+    let listeners = this.listeners["interact"].slice();
+    for (let i = 0; i < listeners.length; i++)
     {
+      let listener = listeners[i];
       if (listener.enabled && listener.isInInteractionRange(interactor))
       {
         let didInteract = listener.onInteract(interactor);
@@ -375,8 +444,10 @@ export class MessageDispatcher
 
   onActorDestroyed(actor : BodyHandle)
   {
-    for (let listener of this.listeners["actorDestroyed"].slice())
+    let listeners = this.listeners["actorDestroyed"].slice();
+    for (let i = 0; i < listeners.length; i++)
     {
+      let listener = listeners[i];
       if (listener.enabled) {
         listener.onActorDestroyed(actor);
       }
@@ -387,8 +458,10 @@ export class MessageDispatcher
 
   onHitPointChange(source: BodyHandle, previousHP: number, currentHP: number)
   {
-    for (let listener of this.listeners["hitPointsChanged"].slice())
+    let listeners = this.listeners["hitPointsChanged"].slice();
+    for (let i = 0; i < listeners.length; i++)
     {
+      let listener = listeners[i];
       if (listener.enabled) {
         listener.onHitPointChange(source, previousHP, currentHP);
       }
@@ -402,8 +475,10 @@ export class MessageDispatcher
     if (context == "local")
     {
       let body = source.body;
-      for (let listener of this.listeners["trigger"].slice())
+      let listeners = this.listeners["trigger"].slice();
+      for (let i = 0; i < listeners.length; i++)
       {
+        let listener = listeners[i];
         if ((listener.enabled || listener.receivesTriggersWhenDisabled) && listener.body == body && listener.hasSubtype(triggerId)) {
           listener.onTrigger(source, triggerId);
         }
@@ -411,8 +486,10 @@ export class MessageDispatcher
     }
     else if (context == "group")
     {
-      for (let listener of this.listeners["trigger"].slice())
+      let listeners = this.listeners["trigger"].slice();
+      for (let i = 0; i < listeners.length; i++)
       {
+        let listener = listeners[i];
         if ((listener.enabled || listener.receivesTriggersWhenDisabled) && listener.hasSubtype(triggerId)) {
           for (let body of source.body.bodyGroup)
           {
@@ -426,8 +503,10 @@ export class MessageDispatcher
     }
     else // context == "global"
     {
-      for (let listener of this.listeners["trigger"].slice())
+      let listeners = this.listeners["trigger"].slice();
+      for (let i = 0; i < listeners.length; i++)
       {
+        let listener = listeners[i];
         if ((listener.enabled || listener.receivesTriggersWhenDisabled) && listener.hasSubtype(triggerId)) {
           listener.onTrigger(source, triggerId);
         }
