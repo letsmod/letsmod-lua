@@ -6,15 +6,17 @@ import { AvatarBase } from "./AvatarBase";
 import { ShapeStateController } from "./ShapeStateController";
 import { Helpers } from "engine/Helpers";
 import { Vector3 } from "three";
+import { SfxPlayer } from "./SfxPlayer";
 
 export class PlatformerControls extends AvatarBase implements ButtonHandler {
   maxSpeed: number; // meters per second
   acceleration: number; // meters per second per second
   deceleration: number; // meters per second per second
   jumpVelo: number;
-  
+
   private topAnim: ShapeStateController | undefined;
   private bottomAnim: ShapeStateController | undefined;
+  private lastGroundedTime: number = 0;
 
   constructor(body: BodyHandle, id: number, params: Partial<PlatformerControls> = {}) {
     super(body, id, params);
@@ -31,13 +33,34 @@ export class PlatformerControls extends AvatarBase implements ButtonHandler {
     this.body.body.lockRotation(true, false, true);
   }
 
+
   override onCollision(info: CollisionInfo): void {
     super.onCollision(info);
 
-    if (info.getDeltaVSelf().normalize().dot(Helpers.upVector) > 0.7)
+    if (info.getDeltaVSelf().normalize().dot(Helpers.upVector) > 0.7) {
+      if (!this.isOnGround) {
+        const currentTime = GameplayScene.instance.memory.timeSinceStart;
+        const timeSinceLastGrounded = (currentTime - this.lastGroundedTime);
+
+        if (timeSinceLastGrounded > 0.5) {
+          this.PlayLandingSound();
+        }
+      }
+
       this.isOnGround = true;
+      this.lastGroundedTime = GameplayScene.instance.memory.timeSinceStart;
+    }
 
     this.body.body.setAngularVelocity(Helpers.zeroVector);
+  }
+
+  PlayLandingSound(){
+    const sound = this.body.getElementByName("LandAudio") as SfxPlayer;
+        if (sound) {
+          let audio = "Landing" + Math.floor(Math.random() * 3 + 1);
+          sound.audio = audio;
+          sound.playAudio();
+        }
   }
 
   override onStart(): void {
@@ -105,7 +128,7 @@ export class PlatformerControls extends AvatarBase implements ButtonHandler {
   }
 
   decelerate() {
-    if (this.dragDx != 0 || this.dragDy != 0)return;
+    if (this.dragDx != 0 || this.dragDy != 0) return;
     console.log("Meh");
     let accel = this.deceleration * Helpers.deltaTime;
     if (this.isOnGround) {
@@ -165,7 +188,7 @@ export class PlatformerControls extends AvatarBase implements ButtonHandler {
   }
 
   override onDrag(dx: number, dy: number): void {
-    super.onDrag(dx,dy);
+    super.onDrag(dx, dy);
     this.accelerate();
   }
 

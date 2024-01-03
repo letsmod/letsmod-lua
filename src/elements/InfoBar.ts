@@ -13,6 +13,13 @@ export class InfoBar extends LMent {
     onInit(): void {
         this.bodyShapes = this.convertArray(this.body.body.getShapes()) || [];
         this.hiddenIndex = this.bodyShapes.length - 1;
+
+        this.bodyShapes.sort((a, b) => {
+            let numberA = parseInt(a.name.slice(-2));
+            let numberB = parseInt(b.name.slice(-2));
+            return numberA - numberB;
+        });
+    
     }
 
     onStart(): void {

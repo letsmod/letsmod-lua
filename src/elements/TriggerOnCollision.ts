@@ -11,7 +11,7 @@ export class TriggerOnCollision extends LMent implements CollisionHandler {
   triggerOnCollisionWithElementType: string | undefined;
   contactDirection: Vector3;
   dotMinimum: number | undefined;
-  
+
   constructor(body: BodyHandle, id: number, params: Partial<TriggerOnCollision> = {}) {
     super(body, id, params);
     this.triggerId = params.triggerId;
@@ -30,7 +30,12 @@ export class TriggerOnCollision extends LMent implements CollisionHandler {
 
   onCollision(info: CollisionInfo) {
     let other = GameplayScene.instance.getBodyById(info.getOtherObjectId());
-    if (other) {
+    let inBodyGroup = false;
+    for (let i of this.body.bodyGroup) {
+      if (other !== undefined && i == other)
+        inBodyGroup = true;
+    }
+    if (!inBodyGroup && other && other.body.getPhysicsBodyType() !== 2) {
       let collisionDirection = info.getDeltaVOther().normalize();
       let adjustedContactDirection = this.contactDirection.clone().applyQuaternion(this.body.body.getRotation());
 
