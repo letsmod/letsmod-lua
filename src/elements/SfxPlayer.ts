@@ -52,31 +52,33 @@ export class SfxPlayer extends LMent implements UpdateHandler, TriggerHandler {
 
         if (!this.loop) return;
 
+
+        this.playAudio();
+    }
+
+
+    playAudio() {
         const player = GameplayScene.instance.memory.player;
 
         if (!player) return;
         const playerPos = player.body.getPosition();
         const distance = playerPos.distanceTo(this.body.body.getPosition());
 
-        if (distance < this.playDistance && this.loopTimer <= 0)
-            this.playAudio();
-    }
-
-
-    playAudio() {
-        const clientInterface = GameplayScene.instance.clientInterface;
-        if (!clientInterface || this.loopTimer > 0) return;
-        if (this.randomMax && this.randomMin) {
+        if (distance < this.playDistance && this.loopTimer <= 0) {
+            const clientInterface = GameplayScene.instance.clientInterface;
+            if (!clientInterface || this.loopTimer > 0) return;
             this.randomizeAudio();
-        } else clientInterface.playAudio(this.audio, this.id.toString());
-        this.loopTimer = this.delay;
+            clientInterface.playAudio(this.audio, this.id.toString());
+            this.loopTimer = this.delay;
+        }
     }
 
     randomizeAudio() {
         const clientInterface = GameplayScene.instance.clientInterface;
         if (!clientInterface) return;
-        const random = Math.floor(Math.random() * (this.randomMax ?? 3) + (this.randomMin ?? 0));
-        console.log(this.audio+random);
+        if (!this.randomMax || !this.randomMin) return;
+        const random = Math.floor(Math.random() * (this.randomMax) + (this.randomMin));
+        console.log(this.audio + random);
         clientInterface.playAudio(this.audio + random, this.id.toString());
     }
 }

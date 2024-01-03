@@ -17,7 +17,11 @@ class BouncerPatrol extends characterPatrolState {
 
     constructor(stateMachine: CharacterStateMachineLMent, points: Vector3[], patrolSpeed: number, roamForce: number, sound: SfxPlayer) {
         super(stateMachine, points, patrolSpeed, roamForce);
-        this.sound = sound;
+        this.sound = this.stateMachine.body.getElementByName("Move") as SfxPlayer;
+        if(!sound)
+            console.log("A sound with name \"Move\" is not found");
+
+        
     }
 
 
@@ -26,16 +30,9 @@ class BouncerPatrol extends characterPatrolState {
         if (this.bounceTimer >= this.bounceAfter) {
             this.bounceTimer = 0;
             this.stateMachine.body.body.applyCentralForce(Helpers.upVector.multiplyScalar(this.bounceForce * this.stateMachine.body.body.getMass()));
-            if (this.sound) {
-                const player = GameplayScene.instance.memory.player;
+            if (this.sound)
+                this.sound.playAudio();
 
-                if (!player) return;
-                const playerPos = player.body.getPosition();
-                const distance = playerPos.distanceTo(this.sound.body.body.getPosition());
-
-                if (distance < this.sound.playDistance)
-                    this.sound.playAudio();
-            }
         }
     }
 }
