@@ -8,6 +8,7 @@ import { HazardZone } from "./HazardZone";
 import { HitPoints } from "./HitPoints";
 import { CameraTarget } from "./CameraTarget";
 import { VisibilityFlicker } from "./VisibilityFlicker";
+import { ScaleLoop } from "./ScaleLoop";
 
 export class AvatarBase extends LMent implements UpdateHandler, HitPointChangeHandler, CollisionHandler, ActorDestructionHandler {
 
@@ -85,11 +86,22 @@ export class AvatarBase extends LMent implements UpdateHandler, HitPointChangeHa
 
   lose() {
     // death effect goes here
-    this.body.body.setVisible(false);
+    this.deathAnim();
+    
     this.body.body.setAngularVelocity(Helpers.zeroVector);
     this.body.body.setVelocity(Helpers.zeroVector);
     this.revive();
     this.enabled = false;
+  }
+
+  deathAnim(){
+    let scaleanim = this.body.getElement(ScaleLoop);
+    if (scaleanim) {
+      scaleanim.enabled = true;
+      if (this.enableDelayedFunc)
+        GameplayScene.instance.dispatcher.removeQueuedFunction(this.enableDelayedFunc);
+      this.enableDelayedFunc = GameplayScene.instance.dispatcher.queueDelayedFunction(this, () => { this.body.body.setVisible(false); }, scaleanim.duration);
+    }
   }
 
   addSafeStep() {
