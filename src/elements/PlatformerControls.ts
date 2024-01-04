@@ -39,10 +39,8 @@ export class PlatformerControls extends AvatarBase implements ButtonHandler {
 
     if (info.getDeltaVSelf().normalize().dot(Helpers.upVector) > 0.7) {
       if (!this.isOnGround) {
-        const currentTime = GameplayScene.instance.memory.timeSinceStart;
-        const timeSinceLastGrounded = (currentTime - this.lastGroundedTime);
 
-        if (timeSinceLastGrounded > 0.5) {
+        if (info.getDeltaVRelative().length() > 5) {
           this.PlayLandingSound();
         }
       }
@@ -57,8 +55,6 @@ export class PlatformerControls extends AvatarBase implements ButtonHandler {
   PlayLandingSound(){
     const sound = this.body.getElementByName("LandAudio") as SfxPlayer;
         if (sound) {
-          let audio = "Landing" + Math.floor(Math.random() * 3 + 1);
-          sound.audio = audio;
           sound.playAudio();
         }
   }
