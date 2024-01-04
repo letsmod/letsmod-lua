@@ -33,6 +33,10 @@ export interface ShapePointer
 
   getScale() : THREE.Vector3;
   setScale(scale: THREE.Vector3) : void;
+
+  getCurrentAnimation() : string;
+
+  isAnimationFinished() : boolean;
   
   playAnimation(animKey : string, blendTime: number, forceRestart?: boolean) : void;
 }
@@ -87,6 +91,12 @@ export interface BodyPointer
   isKinematic() : boolean;
 
   isHologram() : boolean;
+
+  setUseRootMotion(useRootMotion: boolean, targetShape: ShapePointer | undefined) : void;
+
+  disableCollisionWith(other: BodyPointer) : void;
+  
+  enableCollisionWith(other: BodyPointer) : void;
 
   // internal use; use gameplayScene.destroyBody / cloneBody instead
   destroyBody() : void;

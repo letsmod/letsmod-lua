@@ -2,7 +2,7 @@ import { AnimatedState, State } from "engine/StateMachineLMent";
 import { AvatarBase } from "./AvatarBase";
 import { BodyHandle, ShapePointer } from "engine/BodyHandle";
 import { CollisionInfo } from "engine/MessageHandlers";
-import { Vector3 } from "three";
+import { Quaternion, Vector3 } from "three";
 import { Helpers } from "engine/Helpers";
 import { GameplayScene } from "engine/GameplayScene";
 
@@ -68,18 +68,6 @@ export class IdleState extends StaggerableState
     {
       this.stateMachine.switchState("jog");
     }
-    else
-    {
-      let velocity = this.stateMachine.body.body.getVelocity().clone();
-      velocity.y = 0; // ignore y axis
-      let deceleration = this.stateMachine.idleDeceleration;
-      let body = this.stateMachine.body.body;
-  
-      if (velocity.length() > deceleration * dt)
-      {
-        body.applyCentralForce(velocity.multiplyScalar(-1 * deceleration * body.getMass()));
-      }
-    }
   }
 }
 
@@ -87,7 +75,7 @@ export class JogState extends StaggerableState
 {
   constructor(stateMachine: AdventurerAvatar, shapeToAnimate: ShapePointer | undefined)
   {
-    super("jog", stateMachine, shapeToAnimate, "jog", stateMachine.idleBlendTime);
+    super("jog", stateMachine, shapeToAnimate, "jog", stateMachine.baseBlendTime);
   }
 
   onEnterState(previousState: State | undefined): void {
@@ -99,6 +87,16 @@ export class JogState extends StaggerableState
   }
 
   onUpdate(dt: number): void {
+    if (this.stateMachine.autoJumpMinDistance > 0 && GameplayScene.instance.clientInterface)
+    {
+      let intersection = GameplayScene.instance.clientInterface.raycast(this.stateMachine.body.body.getPosition(), Helpers.downVector, this.stateMachine.body.body.id, true);
+      if (intersection.distance > this.stateMachine.autoJumpMinDistance)
+      {
+        this.stateMachine.switchState("jump");
+        return;
+      }
+    }
+
     if (this.stateMachine.lastOnGround > this.stateMachine.coyoteTime)
     {
       this.stateMachine.switchState("fall");
@@ -109,70 +107,203 @@ export class JogState extends StaggerableState
     }
     else
     {
-      this.stateMachine.setFacing(-this.stateMachine.dragDx, -this.stateMachine.dragDy);
-      let facing = this.stateMachine.getFacing();
-      // console.log("facing", facing.x, facing.y, facing.z);
-      let targetVelocity : Vector3;
-      let currentPlanarVelocity = this.stateMachine.getPlanarVelocity();
-      let currentPlanarSpeed = currentPlanarVelocity.length();
-      // console.log("current velocity", currentPlanarVelocity.x, currentPlanarVelocity.y, currentPlanarVelocity.z);
+      this.stateMachine.accelerateWithParams(this.stateMachine.jogAcceleration, this.stateMachine.jogAccelerationSmoothFactor, this.stateMachine.jogMaxSpeed, dt);
+    }
+  }
 
-      let isTurnaround = facing.dot(currentPlanarVelocity) < 0;
-      // console.log("turnaround", isTurnaround);
+  onCollision(info: CollisionInfo): void {
+    super.onCollision(info);
 
-      let speedLerp = Math.sqrt(this.stateMachine.dragDx * this.stateMachine.dragDx + this.stateMachine.dragDy * this.stateMachine.dragDy);
-      // // console.log("speedLerp", speedLerp);
-      // if (speedLerp > 0.99 && !isTurnaround)
-      // {
-      //   // if avatar is moving in the target direction faster than the max speed, allow them to continue moving at that speed and adjust
-      //   // their velocity toward the target direction
-      //   let projectedVelocity = currentPlanarVelocity.clone().projectOnVector(facing);
-      //   let projectedSpeed = projectedVelocity.length();
-      //   // console.log("projected speed", projectedSpeed);
-      //   // console.log("facing", facing.x, facing.y, facing.z);
-      //   // console.log("planar velocity", currentPlanarVelocity.x, currentPlanarVelocity.y, currentPlanarVelocity.z);
-      //   // console.log("projected velocity", projectedVelocity.x, projectedVelocity.y, projectedVelocity.z);
-      //   if (projectedSpeed > this.stateMachine.jogMaxSpeed)
-      //   {
-      //     targetVelocity = projectedVelocity;
-      //   }
-      //   else
-      //   {
-      //     targetVelocity = facing.clone().multiplyScalar(this.stateMachine.jogMaxSpeed * speedLerp);
-      //   }
-      // }
-      // else
+    let deltaV = info.getDeltaVSelf();
+    let facing = this.stateMachine.getFacing();
+    if (Math.abs(deltaV.y) < 0.01 && deltaV.normalize().dot(facing) < -0.8)
+    {
+      let other = GameplayScene.instance.getBodyById(info.getOtherObjectId());
+      if (other?.body.isKinematic())
       {
-        if (currentPlanarVelocity.dot(facing) > 0)
+        this.stateMachine.climbTarget = other;
+        this.stateMachine.climbTargetOffset = this.stateMachine.body.body.getPosition().clone().sub(other.body.getPosition()).applyQuaternion(other.body.getRotation().clone().invert());
+        this.stateMachine.switchState("clamber");
+      }  
+    }
+  }
+}
+
+export class JumpState extends StaggerableState
+{
+  constructor(stateMachine: AdventurerAvatar, shapeToAnimate: ShapePointer | undefined)
+  {
+    super("jump", stateMachine, shapeToAnimate, "jump", stateMachine.baseBlendTime);
+  }
+
+  onEnterState(previousState: State | undefined): void {
+    super.onEnterState(previousState);
+    let velocity = this.stateMachine.body.body.getVelocity();
+    velocity.y += this.stateMachine.jumpInitialVelocity;
+    this.stateMachine.body.body.setVelocity(velocity);
+    this.stateMachine.lastOnGround = Infinity;
+  }
+
+  onExitState(nextState: State | undefined): void {
+    
+  }
+
+  onUpdate(dt: number): void {
+    if (this.stateMachine.lastOnGround == 0)
+    {
+      if (this.stateMachine.dragDx != 0 || this.stateMachine.dragDy != 0)
+      {
+        this.stateMachine.switchState("jog");
+      }
+      else
+      {
+        this.stateMachine.switchState("idle");
+      }
+    }
+    else if (this.stateMachine.body.body.getVelocity().y < 0)
+    {
+      this.stateMachine.switchState("fall");
+    }
+    else
+    {
+      if (this.stateMachine.dragDx != 0 || this.stateMachine.dragDy != 0)
+      {
+        this.stateMachine.accelerateWithParams(this.stateMachine.midairAcceleration, this.stateMachine.midairAccelerationSmoothFactor, this.stateMachine.midairMaxSpeed, dt);
+      }
+      else
+      {
+        let body = this.stateMachine.body.body;
+        let velocity = body.getVelocity().clone();
+        let origY = velocity.y;
+        velocity.y = 0; // ignore y axis
+        let deceleration = this.stateMachine.midairDeceleration;
+    
+        if (velocity.length() > deceleration * dt)
         {
-          currentPlanarVelocity.projectOnVector(facing);
+          velocity.add(velocity.clone().normalize().multiplyScalar(-1 * deceleration * dt));
+          velocity.y = origY;
         }
         else
         {
-          currentPlanarVelocity.copy(Helpers.zeroVector);
+          velocity.set(0,origY,0);
         }
-        targetVelocity = facing.clone().multiplyScalar(this.stateMachine.jogMaxSpeed * speedLerp).add(currentPlanarVelocity.clone().multiplyScalar(this.stateMachine.jogAccelerationSmoothFactor));
+        body.setVelocity(velocity);
+      }
+    }
+  }
+}
+
+export class FallState extends StaggerableState
+{
+  constructor(stateMachine: AdventurerAvatar, shapeToAnimate: ShapePointer | undefined)
+  {
+    super("fall", stateMachine, shapeToAnimate, "fall", stateMachine.baseBlendTime);
+  }
+
+  onEnterState(previousState: State | undefined): void {
+    super.onEnterState(previousState);
+    this.stateMachine.lastOnGround = Infinity;
+  }
+
+  onExitState(nextState: State | undefined): void {
+    
+  }
+
+  onUpdate(dt: number): void {
+    if (this.stateMachine.lastOnGround == 0)
+    {
+      if (this.stateMachine.dragDx != 0 || this.stateMachine.dragDy != 0)
+      {
+        this.stateMachine.switchState("jog");
+      }
+      else
+      {
+        this.stateMachine.switchState("idle");
+      }
+    }
+    else
+    {
+      if (this.stateMachine.dragDx != 0 || this.stateMachine.dragDy != 0)
+      {
+        this.stateMachine.accelerateWithParams(this.stateMachine.midairAcceleration, this.stateMachine.midairAccelerationSmoothFactor, this.stateMachine.midairMaxSpeed, dt);
+      }
+      else
+      {
+        let body = this.stateMachine.body.body;
+        let velocity = body.getVelocity().clone();
+        let origY = velocity.y;
+        velocity.y = 0; // ignore y axis
+        let deceleration = this.stateMachine.midairDeceleration;
+    
+        if (velocity.length() > deceleration * dt)
+        {
+          velocity.add(velocity.clone().normalize().multiplyScalar(-1 * deceleration * dt));
+          velocity.y = origY;
+        }
+        else
+        {
+          velocity.set(0,origY,0);
+        }
+        body.setVelocity(velocity);
+      }
+    }
+  }
+}
+
+export class ClamberState extends StaggerableState
+{
+  lastTargetPosition: Vector3;
+
+  constructor(stateMachine: AdventurerAvatar, shapeToAnimate: ShapePointer | undefined)
+  {
+    super("clamber", stateMachine, shapeToAnimate, "clamber", stateMachine.baseBlendTime);
+    this.lastTargetPosition = Helpers.NewVector3(0, 0, 0);
+  }
+
+  onEnterState(previousState: State | undefined): void {
+    super.onEnterState(previousState);
+    this.stateMachine.body.body.setUseRootMotion(true, this.shape);
+    this.stateMachine.body.body.setVelocity(Helpers.zeroVector);
+    if (this.stateMachine.climbTarget && this.stateMachine.climbTargetOffset)
+    {
+      this.lastTargetPosition.copy(this.stateMachine.climbTargetOffset).applyQuaternion(this.stateMachine.climbTarget.body.getRotation()).add(this.stateMachine.climbTarget.body.getPosition());
+      this.stateMachine.body.body.disableCollisionWith(this.stateMachine.climbTarget.body);
+    }
+  }
+
+  onExitState(nextState: State | undefined): void {
+    this.stateMachine.body.body.setUseRootMotion(false, undefined);
+    if (this.stateMachine.climbTarget)
+    {
+      this.stateMachine.body.body.enableCollisionWith(this.stateMachine.climbTarget.body);
+    }
+  }
+
+  onUpdate(dt: number): void
+  {
+    if (this.stateMachine.climbTarget !== undefined && this.stateMachine.climbTargetOffset !== undefined)
+    {
+      let targetPosition = this.stateMachine.climbTargetOffset.clone().applyQuaternion(this.stateMachine.climbTarget.body.getRotation()).add(this.stateMachine.climbTarget.body.getPosition());
+      let delta = targetPosition.clone().sub(this.lastTargetPosition);
+      let length = delta.length();
+
+      if (length > this.stateMachine.climbTooFarThreshold)
+      {
+        this.stateMachine.switchState("fall");
+        console.log("climb target moved too much; falling");
+        return;
+      }
+      
+      if (length > 0)
+      {
+        this.stateMachine.body.body.setVelocity(delta.multiplyScalar(1 / dt));
       }
 
-        // add multiple of facing to smooth out acceleration when speed is close to target
-        // .add(facing.multiplyScalar(this.stateMachine.jogAccelerationSmoothFactor * (this.stateMachine.jogMaxSpeed + 1.0) / (currentPlanarSpeed + 1.0)));
-      // let delta = facing.multiplyScalar(this.stateMachine.jogAccelerationSmoothFactor * (this.stateMachine.jogMaxSpeed + 1.0) / (currentPlanarSpeed + 1.0));
-      let accelerationLerp = Math
-        .max(
-          Math.min(
-            targetVelocity.clone().sub(currentPlanarVelocity).length() / (this.stateMachine.jogMaxSpeed * this.stateMachine.jogAccelerationSmoothFactor),
-            1.0
-          ),
-        0.0);
-
-      accelerationLerp = Math.pow(accelerationLerp, 2.0);
-
-      console.log(currentPlanarSpeed, accelerationLerp, targetVelocity.length());
-
-      let acceleration = targetVelocity.normalize().multiplyScalar(this.stateMachine.jogAccelerationMax * accelerationLerp);
-     
-      // console.log("acceleartion", acceleration.x, acceleration.y, acceleration.z);
-      this.stateMachine.body.body.applyCentralForce(acceleration.multiplyScalar(this.stateMachine.body.body.getMass()));
+      this.lastTargetPosition.copy(targetPosition);
+    }
+    if (this.shape?.isAnimationFinished())
+    {
+      this.stateMachine.switchState("idle");
     }
   }
 }
@@ -252,39 +383,115 @@ Climb : duration: 1 s
 
 export class AdventurerAvatar extends AvatarBase
 {
+  // configurable fields
   forceStaggerThreshold : number;
-  jogAccelerationMin: number;
-  jogAccelerationMax: number;
+
+  jogAcceleration: number;
   jogAccelerationSmoothFactor: number;
   jogMaxSpeed: number;
-  midairMinAcceleration: number;
-  midairMaxAcceleration: number;
+
+  midairAcceleration: number;
+  midairAccelerationSmoothFactor: number;
   midairMaxSpeed: number;
+
   idleDeceleration: number;
   midairDeceleration: number;
+
+  jumpInitialVelocity: number;
+  autoJumpMinDistance: number;
+
   baseBlendTime : number;
   idleBlendTime : number;
   coyoteTime : number;
 
+  climbTooFarThreshold : number;
+
+  // runtime fields
   lastOnGround : number = Infinity;
+
+  climbTarget: BodyHandle | undefined = undefined;
+  climbTargetOffset: Vector3 | undefined = undefined;
 
   constructor(body: BodyHandle, id: number, params: Partial<AdventurerAvatar> = {})
   {
     super(body, id, params);
 
     this.forceStaggerThreshold = params.forceStaggerThreshold ?? 2;
-    this.jogAccelerationMin = params.jogAccelerationMin ?? 30;
-    this.jogAccelerationMax = params.jogAccelerationMax ?? 50;
+
+    this.jogAcceleration = params.jogAcceleration ?? 50;
     this.jogAccelerationSmoothFactor = params.jogAccelerationSmoothFactor ?? 0.25;
     this.jogMaxSpeed = params.jogMaxSpeed ?? 5;
-    this.midairMinAcceleration = params.midairMinAcceleration ?? 5;
-    this.midairMaxAcceleration = params.midairMaxAcceleration ?? 15;
+    
+    this.midairAcceleration = params.midairAcceleration ?? 15;
     this.midairMaxSpeed = params.midairMaxSpeed ?? 5;
+    this.midairAccelerationSmoothFactor = params.jogAccelerationSmoothFactor ?? 0.5;
+    
     this.idleDeceleration = params.idleDeceleration ?? 20;
     this.midairDeceleration  = params.midairDeceleration ?? 5;
+
+    this.jumpInitialVelocity = params.jumpInitialVelocity ?? 9;
+    this.autoJumpMinDistance = params.autoJumpMinDistance ?? 2;
+
     this.baseBlendTime = params.baseBlendTime ?? 0.1;
     this.idleBlendTime = params.idleBlendTime ?? 0.25;
     this.coyoteTime = params.coyoteTime ?? 0.1;
+
+    this.climbTooFarThreshold = params.climbTooFarThreshold ?? 1;
+  }
+
+  accelerateWithParams(acceleration: number, smoothFactor: number, maxSpeed: number, dt: number)
+  {
+    this.setFacing(-this.dragDx, -this.dragDy);
+    let facing = this.getFacing();
+    let targetVelocity : Vector3;
+    let currentPlanarVelocity = this.getPlanarVelocity();
+
+    let isTurnaround = facing.dot(currentPlanarVelocity) < 0;
+
+    let speedLerp = Math.sqrt(this.dragDx * this.dragDx + this.dragDy * this.dragDy);
+
+    if (speedLerp > 0.99 && !isTurnaround)
+    {
+      // if avatar is moving in the target direction faster than the max speed, allow them to continue moving at that speed and adjust
+      // their velocity toward the target direction
+      let projectedVelocity = currentPlanarVelocity.clone().projectOnVector(facing);
+      let projectedSpeed = projectedVelocity.length();
+      if (projectedSpeed > maxSpeed)
+      {
+        targetVelocity = projectedVelocity;
+      }
+      else
+      {
+        targetVelocity = facing.clone().multiplyScalar(maxSpeed * speedLerp);
+      }
+    }
+    else
+    {
+      if (currentPlanarVelocity.dot(facing) > 0)
+      {
+        currentPlanarVelocity.projectOnVector(facing);
+      }
+      else
+      {
+        currentPlanarVelocity.copy(Helpers.zeroVector);
+      }
+      targetVelocity = facing.clone()
+        .multiplyScalar(maxSpeed * speedLerp * (1 - smoothFactor))
+        .add(currentPlanarVelocity.clone().multiplyScalar(smoothFactor));
+    }
+
+    let delta = targetVelocity.clone().sub(currentPlanarVelocity);
+    
+    if (delta.length() < acceleration * dt)
+    {
+      targetVelocity.y = this.body.body.getVelocity().y;
+      this.body.body.setVelocity(targetVelocity);
+    }
+    else
+    {
+      let accelerationVector = delta.normalize().multiplyScalar(acceleration * dt);
+      this.body.body.setVelocity(this.body.body.getVelocity().add(accelerationVector));
+    }
   }
 
   onInit()
@@ -297,6 +504,9 @@ export class AdventurerAvatar extends AvatarBase
     this.states = {
       idle: new IdleState(this, shape),
       jog: new JogState(this, shape),
+      jump: new JumpState(this, shape),
+      fall: new FallState(this, shape),
+      clamber: new ClamberState(this, shape),
     }
 
     this.switchState("idle");
@@ -319,6 +529,11 @@ export class AdventurerAvatar extends AvatarBase
     }
 
     super.onCollision(info);
+  }
+
+  onUpdate(dt: number): void {
+    super.onUpdate(dt);
+    this.lastOnGround += dt;
   }
 
   setFacing(dx : number, dy: number)

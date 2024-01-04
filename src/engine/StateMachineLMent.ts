@@ -100,7 +100,6 @@ export abstract class AnimatedState extends State
     {
       this.shape.playAnimation(this.animName, this.animBlendTime);
     }
-  
   }
 }
 
