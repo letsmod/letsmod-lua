@@ -29,6 +29,7 @@ export class GuideBody extends LMent implements UpdateHandler {
     mode: string; /*To tell whether to leade the target or follow the target*/
     makeInvisible: boolean; /*To make the body invisible*/
     rotationTolerance: number; /*The tolerance for rotation to be considered "aligned"*/
+    addToTargetGroup: boolean; /*To add the follower to the target's group*/
 
     private leader: BodyHandle | undefined;
     private follower: BodyHandle | undefined;
@@ -57,6 +58,8 @@ export class GuideBody extends LMent implements UpdateHandler {
         this.targetContext = params.targetContext === undefined ? "group" : params.targetContext;
         
         this.rotationTolerance = params.rotationTolerance === undefined ? 0 : params.rotationTolerance;
+
+        this.addToTargetGroup = params.addToTargetGroup === undefined ? false : params.addToTargetGroup;
     }
 
     onInit(): void {
@@ -69,18 +72,41 @@ export class GuideBody extends LMent implements UpdateHandler {
 
     initTargetBody(){
         GameplayScene.instance.dispatcher.queueDelayedFunction(this,()=>{
-        this.targetBody = undefined;
-        if(this.target.toLowerCase() === "player")
-            this.targetBody = GameplayScene.instance.memory.player;
-        else if(this.target.toLowerCase() === "maincamera_lua")
-            this.targetBody = GameplayScene.instance.memory.mainCamera;
-        else {
-            if(this.targetContext.toLowerCase() === "global")
-                this.targetBody = Helpers.findBodyInScene(this.target);
-            else if(this.targetContext.toLowerCase() === "group")
-                this.targetBody = Helpers.findBodyWithinGroup(this.body,this.target);
-            else console.log("Invalid target context: "+this.targetContext);
-        }},Helpers.deltaTime);
+            this.targetBody = undefined;
+            if(this.target.toLowerCase() === "player")
+            {
+                this.targetBody = GameplayScene.instance.memory.player;
+            }
+            else if(this.target.toLowerCase() === "maincamera_lua")
+            {
+                this.targetBody = GameplayScene.instance.memory.mainCamera;
+            }
+            else {
+                if(this.targetContext.toLowerCase() === "global")
+                {
+                    this.targetBody = Helpers.findBodyInScene(this.target);
+                }
+                else if(this.targetContext.toLowerCase() === "group")
+                {
+                    this.targetBody = Helpers.findBodyWithinGroup(this.body,this.target);
+                }
+                else
+                {
+                    console.log("Invalid target context: "+this.targetContext);
+                }
+            }
+
+            if (this.addToTargetGroup && this.targetBody !== undefined)
+            {
+                let index = this.body.bodyGroup.indexOf(this.body);
+                if (index >= 0)
+                {
+                    this.body.bodyGroup.splice(index, 1);
+                }
+                this.targetBody.bodyGroup.push(this.body);
+                this.body.bodyGroup = this.targetBody.bodyGroup;
+            }
+        },Helpers.deltaTime);
     }
 
     getTargetBody()

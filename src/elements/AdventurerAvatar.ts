@@ -5,6 +5,7 @@ import { CollisionInfo } from "engine/MessageHandlers";
 import { Quaternion, Vector3 } from "three";
 import { Helpers } from "engine/Helpers";
 import { GameplayScene } from "engine/GameplayScene";
+import { LMent } from "engine/LMent";
 
 export abstract class AdventurerState extends AnimatedState
 {
@@ -73,6 +74,11 @@ export class IdleState extends StaggerableState
 
 export class JogState extends StaggerableState
 {
+  timeInJog: number = 0;
+  blocked_y_clamber: number = 2;
+  blocked_y_climb: number = 2;
+  blocked_y_jump: number = 2;
+
   constructor(stateMachine: AdventurerAvatar, shapeToAnimate: ShapePointer | undefined)
   {
     super("jog", stateMachine, shapeToAnimate, "jog", stateMachine.baseBlendTime);
@@ -80,6 +86,10 @@ export class JogState extends StaggerableState
 
   onEnterState(previousState: State | undefined): void {
     super.onEnterState(previousState);
+    this.blocked_y_clamber = 2;
+    this.blocked_y_climb = 2;
+    this.blocked_y_jump = 2;
+    this.timeInJog = 0;
   }
 
   onExitState(nextState: State | undefined): void {
@@ -87,7 +97,7 @@ export class JogState extends StaggerableState
   }
 
   onUpdate(dt: number): void {
-    if (this.stateMachine.autoJumpMinDistance > 0 && GameplayScene.instance.clientInterface)
+    if (this.stateMachine.autoJumpMinDistance > 0 && GameplayScene.instance.clientInterface && this.timeInJog > this.stateMachine.coyoteTime)
     {
       let intersection = GameplayScene.instance.clientInterface.raycast(this.stateMachine.body.body.getPosition(), Helpers.downVector, this.stateMachine.body.body.id, true);
       if (intersection.distance > this.stateMachine.autoJumpMinDistance)
@@ -109,31 +119,74 @@ export class JogState extends StaggerableState
     {
       this.stateMachine.accelerateWithParams(this.stateMachine.jogAcceleration, this.stateMachine.jogAccelerationSmoothFactor, this.stateMachine.jogMaxSpeed, dt);
     }
+
+    this.blocked_y_clamber--;
+    this.blocked_y_climb--;
+    this.blocked_y_jump--;
+    this.timeInJog += dt;
   }
 
   onCollision(info: CollisionInfo): void {
     super.onCollision(info);
-
     let deltaV = info.getDeltaVSelf();
     let facing = this.stateMachine.getFacing();
-    if (Math.abs(deltaV.y) < 0.01 && deltaV.normalize().dot(facing) < -0.8)
+    if (Math.abs(deltaV.y) < 0.01 && deltaV.normalize().dot(facing) < this.stateMachine.climbDotProductThreshold)
     {
       let other = GameplayScene.instance.getBodyById(info.getOtherObjectId());
       if (other?.body.isKinematic())
       {
-        this.stateMachine.climbTarget = other;
-        this.stateMachine.climbTargetOffset = this.stateMachine.body.body.getPosition().clone().sub(other.body.getPosition()).applyQuaternion(other.body.getRotation().clone().invert());
-        this.stateMachine.switchState("clamber");
+        if (this.blocked_y_clamber <= 0)
+        {
+          this.stateMachine.climbTarget = other;
+          this.stateMachine.climbTargetOffset = this.stateMachine.body.body.getPosition().clone().sub(other.body.getPosition()).applyQuaternion(other.body.getRotation().clone().invert());
+          this.stateMachine.switchState("clamber");
+          // TODO: adjust starting point of clamber animation based on height difference
+        }
+        else if (this.blocked_y_climb <= 0)
+        {
+          this.stateMachine.climbTarget = other;
+          this.stateMachine.climbTargetOffset = this.stateMachine.body.body.getPosition().clone().sub(other.body.getPosition()).applyQuaternion(other.body.getRotation().clone().invert());
+          this.stateMachine.switchState("climb");
+          // TODO: adjust starting point of climb animation based on height difference
+        }
+        else if (this.blocked_y_jump <= 0)
+        {
+          this.stateMachine.switchState("jump");
+        }
       }  
     }
+  }
+
+  onTrigger(source: LMent, triggerId: string): void {
+    if (triggerId == "blocked_y_clamber")
+    {
+      this.blocked_y_clamber = 2;
+    }
+    else if (triggerId == "blocked_y_climb")
+    {
+      this.blocked_y_climb = 2;
+    }
+    else if (triggerId == "blocked_y_jump")
+    {
+      this.blocked_y_jump= 2;
+    }
+  }
+
+  hasSubtype(subtype: string): boolean {
+    return subtype == "blocked_y_clamber" || subtype == "blocked_y_climb" || subtype == "blocked_y_jump";
   }
 }
 
 export class JumpState extends StaggerableState
 {
+  timeInJump: number;
+  blocked_y_clamber: number = 2;
+  blocked_y_climb: number = 2;
+
   constructor(stateMachine: AdventurerAvatar, shapeToAnimate: ShapePointer | undefined)
   {
     super("jump", stateMachine, shapeToAnimate, "jump", stateMachine.baseBlendTime);
+    this.timeInJump = 0;
   }
 
   onEnterState(previousState: State | undefined): void {
@@ -142,6 +195,8 @@ export class JumpState extends StaggerableState
     velocity.y += this.stateMachine.jumpInitialVelocity;
     this.stateMachine.body.body.setVelocity(velocity);
     this.stateMachine.lastOnGround = Infinity;
+    this.timeInJump = 0;
+    this.blocked_y_climb = 2;
   }
 
   onExitState(nextState: State | undefined): void {
@@ -149,7 +204,8 @@ export class JumpState extends StaggerableState
   }
 
   onUpdate(dt: number): void {
-    if (this.stateMachine.lastOnGround == 0)
+    this.timeInJump += dt;
+    if (this.stateMachine.lastOnGround == 0 && this.timeInJump >= this.stateMachine.coyoteTime)
     {
       if (this.stateMachine.dragDx != 0 || this.stateMachine.dragDy != 0)
       {
@@ -160,7 +216,7 @@ export class JumpState extends StaggerableState
         this.stateMachine.switchState("idle");
       }
     }
-    else if (this.stateMachine.body.body.getVelocity().y < 0)
+    else if (this.stateMachine.body.body.getVelocity().y < this.stateMachine.jumpToFallThreshold)
     {
       this.stateMachine.switchState("fall");
     }
@@ -190,11 +246,69 @@ export class JumpState extends StaggerableState
         body.setVelocity(velocity);
       }
     }
+    this.blocked_y_clamber--;
+    this.blocked_y_climb--;
+  }
+
+  onCollision(info: CollisionInfo): void {
+    super.onCollision(info);
+    let deltaV = info.getDeltaVSelf();
+    let facing = this.stateMachine.getFacing();
+    if (Math.abs(deltaV.y) < 0.01 && deltaV.normalize().dot(facing) < this.stateMachine.climbDotProductThreshold)
+    {
+      let other = GameplayScene.instance.getBodyById(info.getOtherObjectId());
+      if (other?.body.isKinematic())
+      {
+        if (this.blocked_y_clamber <= 0 && this.stateMachine.clamberDetector !== undefined)
+        {
+          let pos = this.stateMachine.clamberDetector.body.getPosition().clone().add(Helpers.upVector.clone().multiplyScalar(this.stateMachine.detectorYOffset));
+          let rcResult = GameplayScene.instance.clientInterface?.raycast(pos, Helpers.downVector, this.stateMachine.clamberDetector.body.id, true);
+          if (rcResult?.body == other && rcResult.distance < 0.2)
+          {
+            this.stateMachine.climbTarget = other;
+            this.stateMachine.climbTargetOffset = this.stateMachine.body.body.getPosition().clone().sub(other.body.getPosition()).applyQuaternion(other.body.getRotation().clone().invert());
+            this.stateMachine.switchState("clamber");
+            // TODO: adjust starting point of clamber animation based on height difference
+            return;
+          }
+        }
+        if (this.blocked_y_climb <= 0 && this.stateMachine.climbDetector !== undefined)
+        {
+          let pos = this.stateMachine.climbDetector.body.getPosition().clone().add(Helpers.upVector.clone().multiplyScalar(this.stateMachine.detectorYOffset));
+          let rcResult = GameplayScene.instance.clientInterface?.raycast(pos, Helpers.downVector, this.stateMachine.climbDetector.body.id, true);
+          if (rcResult?.body == other && rcResult.distance < 0.2)
+          {
+            this.stateMachine.climbTarget = other;
+            this.stateMachine.climbTargetOffset = this.stateMachine.body.body.getPosition().clone().sub(other.body.getPosition()).applyQuaternion(other.body.getRotation().clone().invert());
+            this.stateMachine.switchState("climb");
+            // TODO: adjust starting point of climb animation based on height difference
+            return;
+          }
+        }
+      }  
+    }
+  }
+
+  onTrigger(source: LMent, triggerId: string): void {
+    if (triggerId == "blocked_y_climb")
+    {
+      this.blocked_y_climb = 2;
+    }
+    else if (triggerId == "blocked_y_clamber")
+    {
+      this.blocked_y_clamber = 2;
+    }
+  }
+
+  hasSubtype(subtype: string): boolean {
+    return subtype == "blocked_y_climb" || subtype == "blocked_y_clamber";
   }
 }
 
 export class FallState extends StaggerableState
 {
+  blocked_y_clamber: number = 2;
+  blocked_y_climb: number = 2;
   constructor(stateMachine: AdventurerAvatar, shapeToAnimate: ShapePointer | undefined)
   {
     super("fall", stateMachine, shapeToAnimate, "fall", stateMachine.baseBlendTime);
@@ -203,6 +317,8 @@ export class FallState extends StaggerableState
   onEnterState(previousState: State | undefined): void {
     super.onEnterState(previousState);
     this.stateMachine.lastOnGround = Infinity;
+    this.blocked_y_clamber = 2;
+    this.blocked_y_climb = 2;
   }
 
   onExitState(nextState: State | undefined): void {
@@ -247,6 +363,62 @@ export class FallState extends StaggerableState
         body.setVelocity(velocity);
       }
     }
+    this.blocked_y_clamber--;
+    this.blocked_y_climb--;
+  }
+
+  onCollision(info: CollisionInfo): void {
+    super.onCollision(info);
+    let deltaV = info.getDeltaVSelf();
+    let facing = this.stateMachine.getFacing();
+    if (Math.abs(deltaV.y) < 0.01 && deltaV.normalize().dot(facing) < this.stateMachine.climbDotProductThreshold)
+    {
+      let other = GameplayScene.instance.getBodyById(info.getOtherObjectId());
+      if (other?.body.isKinematic())
+      {
+        if (this.blocked_y_clamber <= 0 && this.stateMachine.clamberDetector !== undefined)
+        {
+          let pos = this.stateMachine.clamberDetector.body.getPosition().clone().add(Helpers.upVector.clone().multiplyScalar(this.stateMachine.detectorYOffset));
+          let rcResult = GameplayScene.instance.clientInterface?.raycast(pos, Helpers.downVector, this.stateMachine.clamberDetector.body.id, true);
+          if (rcResult?.body == other && rcResult.distance < 0.2)
+          {
+            this.stateMachine.climbTarget = other;
+            this.stateMachine.climbTargetOffset = this.stateMachine.body.body.getPosition().clone().sub(other.body.getPosition()).applyQuaternion(other.body.getRotation().clone().invert());
+            this.stateMachine.switchState("clamber");
+            // TODO: adjust starting point of clamber animation based on height difference
+            return;
+          }
+        }
+        if (this.blocked_y_climb <= 0 && this.stateMachine.climbDetector !== undefined)
+        {
+          let pos = this.stateMachine.climbDetector.body.getPosition().clone().add(Helpers.upVector.clone().multiplyScalar(this.stateMachine.detectorYOffset));
+          let rcResult = GameplayScene.instance.clientInterface?.raycast(pos, Helpers.downVector, this.stateMachine.climbDetector.body.id, true);
+          if (rcResult?.body == other && rcResult.distance < 0.2)
+          {
+            this.stateMachine.climbTarget = other;
+            this.stateMachine.climbTargetOffset = this.stateMachine.body.body.getPosition().clone().sub(other.body.getPosition()).applyQuaternion(other.body.getRotation().clone().invert());
+            this.stateMachine.switchState("climb");
+            // TODO: adjust starting point of climb animation based on height difference
+            return;
+          }
+        }
+      }
+    }
+  }
+
+  onTrigger(source: LMent, triggerId: string): void {
+    if (triggerId == "blocked_y_climb")
+    {
+      this.blocked_y_climb = 2;
+    }
+    else if (triggerId == "blocked_y_clamber")
+    {
+      this.blocked_y_clamber = 2;
+    }
+  }
+
+  hasSubtype(subtype: string): boolean {
+    return subtype == "blocked_y_climb" || subtype == "blocked_y_clamber";
   }
 }
 
@@ -294,9 +466,76 @@ export class ClamberState extends StaggerableState
         return;
       }
       
-      if (length > 0)
+      if (length > 0 && dt > 0)
       {
         this.stateMachine.body.body.setVelocity(delta.multiplyScalar(1 / dt));
+      }
+      else
+      {
+        this.stateMachine.body.body.setVelocity(Helpers.zeroVector);
+      }
+
+      this.lastTargetPosition.copy(targetPosition);
+    }
+    if (this.shape?.isAnimationFinished())
+    {
+      this.stateMachine.switchState("idle");
+    }
+  }
+}
+
+
+export class ClimbState extends StaggerableState
+{
+  lastTargetPosition: Vector3;
+
+  constructor(stateMachine: AdventurerAvatar, shapeToAnimate: ShapePointer | undefined)
+  {
+    super("climb", stateMachine, shapeToAnimate, "climb", stateMachine.baseBlendTime);
+    this.lastTargetPosition = Helpers.NewVector3(0, 0, 0);
+  }
+
+  onEnterState(previousState: State | undefined): void {
+    super.onEnterState(previousState);
+    this.stateMachine.body.body.setUseRootMotion(true, this.shape);
+    this.stateMachine.body.body.setVelocity(Helpers.zeroVector);
+    if (this.stateMachine.climbTarget && this.stateMachine.climbTargetOffset)
+    {
+      this.lastTargetPosition.copy(this.stateMachine.climbTargetOffset).applyQuaternion(this.stateMachine.climbTarget.body.getRotation()).add(this.stateMachine.climbTarget.body.getPosition());
+      this.stateMachine.body.body.disableCollisionWith(this.stateMachine.climbTarget.body);
+    }
+  }
+
+  onExitState(nextState: State | undefined): void {
+    this.stateMachine.body.body.setUseRootMotion(false, undefined);
+    if (this.stateMachine.climbTarget)
+    {
+      this.stateMachine.body.body.enableCollisionWith(this.stateMachine.climbTarget.body);
+    }
+  }
+
+  onUpdate(dt: number): void
+  {
+    if (this.stateMachine.climbTarget !== undefined && this.stateMachine.climbTargetOffset !== undefined)
+    {
+      let targetPosition = this.stateMachine.climbTargetOffset.clone().applyQuaternion(this.stateMachine.climbTarget.body.getRotation()).add(this.stateMachine.climbTarget.body.getPosition());
+      let delta = targetPosition.clone().sub(this.lastTargetPosition);
+      let length = delta.length();
+
+      if (length > this.stateMachine.climbTooFarThreshold)
+      {
+        this.stateMachine.switchState("fall");
+        console.log("climb target moved too much; falling");
+        return;
+      }
+      
+      if (length > 0 && dt > 0)
+      {
+        this.stateMachine.body.body.setVelocity(delta.multiplyScalar(1 / dt));
+      }
+      else
+      {
+        this.stateMachine.body.body.setVelocity(Helpers.zeroVector);
       }
 
       this.lastTargetPosition.copy(targetPosition);
@@ -399,18 +638,25 @@ export class AdventurerAvatar extends AvatarBase
 
   jumpInitialVelocity: number;
   autoJumpMinDistance: number;
+  jumpToFallThreshold : number;
 
   baseBlendTime : number;
   idleBlendTime : number;
   coyoteTime : number;
 
   climbTooFarThreshold : number;
+  climbDotProductThreshold : number;
+
+  detectorYOffset : number;
 
   // runtime fields
   lastOnGround : number = Infinity;
 
   climbTarget: BodyHandle | undefined = undefined;
   climbTargetOffset: Vector3 | undefined = undefined;
+  clamberDetector: BodyHandle | undefined = undefined;
+  climbDetector: BodyHandle | undefined = undefined;
+  jumpDetector: BodyHandle | undefined = undefined;
 
   constructor(body: BodyHandle, id: number, params: Partial<AdventurerAvatar> = {})
   {
@@ -431,12 +677,16 @@ export class AdventurerAvatar extends AvatarBase
 
     this.jumpInitialVelocity = params.jumpInitialVelocity ?? 9;
     this.autoJumpMinDistance = params.autoJumpMinDistance ?? 2;
+    this.jumpToFallThreshold = params.jumpToFallThreshold ?? -9.0;
 
     this.baseBlendTime = params.baseBlendTime ?? 0.1;
     this.idleBlendTime = params.idleBlendTime ?? 0.25;
     this.coyoteTime = params.coyoteTime ?? 0.1;
 
     this.climbTooFarThreshold = params.climbTooFarThreshold ?? 1;
+    this.climbDotProductThreshold = params.climbDotProductThreshold ?? -0.6;
+
+    this.detectorYOffset = params.detectorYOffset ?? -0.7349385521597851;
   }
 
   accelerateWithParams(acceleration: number, smoothFactor: number, maxSpeed: number, dt: number)
@@ -507,6 +757,7 @@ export class AdventurerAvatar extends AvatarBase
       jump: new JumpState(this, shape),
       fall: new FallState(this, shape),
       clamber: new ClamberState(this, shape),
+      climb: new ClimbState(this, shape)
     }
 
     this.switchState("idle");
@@ -534,6 +785,38 @@ export class AdventurerAvatar extends AvatarBase
   onUpdate(dt: number): void {
     super.onUpdate(dt);
     this.lastOnGround += dt;
+    if (this.clamberDetector === undefined)
+    {
+      for (let body of this.body.bodyGroup)
+      {
+        if (body.body.name == "ClamberDetector")
+        {
+          this.clamberDetector = body;
+        }
+      }
+    }
+
+    if (this.climbDetector === undefined)
+    {
+      for (let body of this.body.bodyGroup)
+      {
+        if (body.body.name == "ClimbDetector")
+        {
+          this.climbDetector = body;
+        }
+      }
+    }
+
+    if (this.jumpDetector === undefined)
+    {
+      for (let body of this.body.bodyGroup)
+      {
+        if (body.body.name == "JumpDetector")
+        {
+          this.jumpDetector = body;
+        }
+      }
+    }
   }
 
   setFacing(dx : number, dy: number)
