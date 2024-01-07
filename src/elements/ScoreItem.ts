@@ -21,8 +21,6 @@ export class ScoreItem extends Collectible {
             clientInterface.addScore(this.scoreValue);
         const sound = this.body.getElementByTypeName("SfxPlayer") as SfxPlayer;
         if (sound) {
-            let audio = "Coin" + Math.floor(Math.random() * 5 + 1);
-            sound.audio = audio;
             sound.playAudio();
         }
     }

@@ -35,7 +35,7 @@ export class TriggerOnCollision extends LMent implements CollisionHandler {
       if (other !== undefined && i == other)
         inBodyGroup = true;
     }
-    if (!inBodyGroup && other && other.body.getPhysicsBodyType() !== 2) {
+    if (!inBodyGroup && other && other.body.getPhysicsBodyType() !== 2 && other.body.getPhysicsBodyType() !== 1) {
       let collisionDirection = info.getDeltaVOther().normalize();
       let adjustedContactDirection = this.contactDirection.clone().applyQuaternion(this.body.body.getRotation());
 
