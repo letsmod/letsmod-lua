@@ -1,6 +1,6 @@
 import { BodyHandle } from "engine/BodyHandle";
 import { GameplayScene } from "engine/GameplayScene";
-import { Helpers } from "engine/Helpers";
+import { Constants, Helpers } from "engine/Helpers";
 import { LMent } from "engine/LMent";
 import { UpdateHandler } from "engine/MessageHandlers";
 
@@ -67,9 +67,9 @@ export class GuideBody extends LMent implements UpdateHandler {
     initTargetBody(){
         GameplayScene.instance.dispatcher.queueDelayedFunction(this,()=>{
         this.targetBody = undefined;
-        if(this.target.toLowerCase() === "player")
+        if(this.target.toLowerCase() === Constants.Player)
             this.targetBody = GameplayScene.instance.memory.player;
-        else if(this.target.toLowerCase() === "maincamera_lua")
+        else if(this.target === Constants.MainCamera)
             this.targetBody = GameplayScene.instance.memory.mainCamera;
         else {
             if(this.targetContext.toLowerCase() === "global")

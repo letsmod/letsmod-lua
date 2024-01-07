@@ -20,7 +20,7 @@ export class Helpers{
     static get xzVector() {return js_new(global.THREE.Vector3,1,0,1);}
     static get xyVector() {return js_new(global.THREE.Vector3,1,1,0);}
     static get yzVector() {return js_new(global.THREE.Vector3,0,1,1);}
-    static get NA(){return "N/A";}
+    static readonly NA = "N/A";
 
     static get deltaTime() {return 1/GameplayScene.instance.memory.frameRate;}
 
@@ -194,3 +194,33 @@ export class Helpers{
     }
     
 }
+
+
+export const Constants = {
+    /*** Engine Constants ***/
+    AButton: "AButton",
+    BButton: "BButton",
+
+    /*** Common Constants ****/
+    Player: "player",
+    MainCamera: "MainCamera_Lua",
+    RollerballGuide: "RollerCamGuide_Lua",
+    DifficultyHard: "hardcore",
+    
+    /*** Avatar Prefabs ***/
+    WingSuitAvatar: "Wing Suit",
+    SlingshotAvatar: "SlingStone",
+    RollerballAvatar: "Rollerball",
+    BaseAvatar: "Player",
+
+    /*** Equipment ***/
+    BaseEquip: "base",
+    RollerBallEquip: "rollerball",
+    SlingshotEquip: "slingshot",
+    WingSuitEquip: "wingsuit",
+
+    /*** Audio Constants ***/
+    DeathAudio: "Death",
+
+    
+  };

@@ -1,7 +1,7 @@
 import { BodyHandle } from "engine/BodyHandle";
 import { GameplayMemory } from "engine/GameplayMemory";
 import { GameplayScene } from "engine/GameplayScene";
-import { Helpers } from "engine/Helpers";
+import { Constants, Helpers } from "engine/Helpers";
 import { LMent } from "engine/LMent";
 import { ButtonHandler, DragGestureHandler, HitPointChangeHandler, UpdateHandler } from "engine/MessageHandlers";
 
@@ -88,7 +88,7 @@ export class ExamplePlayer extends LMent implements ButtonHandler, DragGestureHa
   }
 
   onButtonPress(button: string): void {
-    if (button == "AButton") {
+    if (button == Constants.AButton) {
       let velocity = this.body.body.getVelocity();
       velocity.y += 10;
       this.body.body.setVelocity(velocity);
@@ -114,6 +114,6 @@ export class ExamplePlayer extends LMent implements ButtonHandler, DragGestureHa
   }
 
   hasSubtype(button: string): boolean {
-    return button == "AButton";
+    return button == Constants.AButton;
   }
 }
