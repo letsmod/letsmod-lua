@@ -1,6 +1,6 @@
 import { BodyHandle } from "engine/BodyHandle";
 import { GameplayScene } from "engine/GameplayScene";
-import { Helpers } from "engine/Helpers";
+import { Constants, Helpers } from "engine/Helpers";
 import { LMent } from "engine/LMent";
 import {
   ActorDestructionHandler,
@@ -46,7 +46,7 @@ export class AvatarBase extends LMent implements UpdateHandler, HitPointChangeHa
     GameplayScene.instance.memory.player = this.body;
     AvatarBase.safeSteps = [];
 
-    this.gameplayIsDifficult = GameplayScene.instance.gamePreferences.defaultPlayDifficulty === "hardcore";
+    this.gameplayIsDifficult = GameplayScene.instance.gamePreferences.defaultPlayDifficulty === Constants.DifficultyHard;
     this.reviveMinDistance = this.gameplayIsDifficult ? 20 : 1;
   }
 
@@ -62,7 +62,7 @@ export class AvatarBase extends LMent implements UpdateHandler, HitPointChangeHa
     AvatarBase.safeSteps.push(this.body.body.getPosition().clone());
     this.addSafeStep();
     this.camTarget = this.body.getElement(CameraTarget);
-    this.camGuide = this.body.getAllElements(GuideBody).find((g) => g.guideName === "MainCamera_Lua");
+    this.camGuide = this.body.getAllElements(GuideBody).find((g) => g.guideName === Constants.MainCamera);
   }
 
   onUpdate(dt?: number): void {

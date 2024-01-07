@@ -4,7 +4,7 @@ import { GameplayScene } from "engine/GameplayScene";
 import { ButtonHandler, CollisionInfo, DragGestureHandler } from "engine/MessageHandlers";
 import { AvatarBase } from "./AvatarBase";
 import { ShapeStateController } from "./ShapeStateController";
-import { Helpers } from "engine/Helpers";
+import { Constants, Helpers } from "engine/Helpers";
 import { Vector3 } from "three";
 import { SfxPlayer } from "./SfxPlayer";
 
@@ -172,7 +172,7 @@ export class PlatformerControls extends AvatarBase implements ButtonHandler {
   }
 
   onButtonPress(button: string): void {
-    if (button == "AButton") {
+    if (button == Constants.AButton) {
       this.jump();
     }
   }
@@ -189,7 +189,7 @@ export class PlatformerControls extends AvatarBase implements ButtonHandler {
   }
 
   hasSubtype(button: string): boolean {
-    return button == "AButton";
+    return button == Constants.AButton;
   }
 
   playTopAnimation(state: string) {

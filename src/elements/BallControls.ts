@@ -2,7 +2,7 @@ import { BodyHandle } from "engine/BodyHandle";
 import { GameplayScene } from "engine/GameplayScene";
 import { ButtonHandler, CollisionInfo, DragGestureHandler } from "engine/MessageHandlers";
 import { AvatarBase } from "./AvatarBase";
-import { Helpers } from "engine/Helpers";
+import { Constants, Helpers } from "engine/Helpers";
 import { DragTurner } from "./DragTurner";
 import { CameraTarget } from "./CameraTarget";
 
@@ -23,7 +23,7 @@ export class BallControls extends AvatarBase {
     }
 
     initBallGuide() {
-        this.ballGuide = GameplayScene.instance.clonePrefab("RollerCamGuide_Lua");
+        this.ballGuide = GameplayScene.instance.clonePrefab(Constants.RollerballGuide);
         if (this.ballGuide === undefined) {
             console.error("No ball guide found in prefabs.");
             return;

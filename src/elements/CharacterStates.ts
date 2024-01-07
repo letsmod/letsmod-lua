@@ -2,7 +2,7 @@ import { LookAt } from "elements/LookAt";
 import { ShapeStateController } from "elements/ShapeStateController";
 import { BodyHandle, BodyPointer } from "engine/BodyHandle";
 import { GameplayScene } from "engine/GameplayScene";
-import { Helpers } from "engine/Helpers";
+import { Constants, Helpers } from "engine/Helpers";
 import { CollisionHandler, CollisionInfo, UpdateHandler } from "engine/MessageHandlers";
 import { State, StateMachineLMent } from "engine/StateMachineLMent";
 import { Quaternion, Vector3 } from "three";
@@ -150,7 +150,7 @@ export abstract class CharacterStateBase extends State implements UpdateHandler 
 
     lookAtPlayer() {
         if (this.lookAt)
-            this.lookAt.changeTargetByBodyName("player");
+            this.lookAt.changeTargetByBodyName(Constants.Player);
     }
 
     protected playStateAnimation(dt: number) {
