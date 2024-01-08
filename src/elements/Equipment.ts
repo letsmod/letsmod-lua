@@ -51,8 +51,19 @@ export class Equipment extends Collectible {
     }
 
     createNewAvatar(prefabName: string) {
+        // Get Player
         let player = GameplayScene.instance.memory.player;
         if (player === undefined) return;
+
+        //Get AvatarBase Element
+        const avatarLMent = player.getElement(AvatarBase);
+        if (avatarLMent === undefined) {
+            console.log("No Avatar LMent is attached to the player");
+            return;
+        }
+        if(avatarLMent.gender === Constants.Female)
+            prefabName += Constants.FemaleAvatarSuffix;
+
         let playerAvatarElement = player.getElement(AvatarBase);
         if (!playerAvatarElement) {
             console.log("No Avatar LMent is attached to the player");
