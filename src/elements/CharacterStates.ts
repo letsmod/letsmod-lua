@@ -2,8 +2,8 @@ import { LookAt } from "elements/LookAt";
 import { ShapeStateController } from "elements/ShapeStateController";
 import { BodyHandle, BodyPointer } from "engine/BodyHandle";
 import { GameplayScene } from "engine/GameplayScene";
-import { Helpers } from "engine/Helpers";
-import { UpdateHandler } from "engine/MessageHandlers";
+import { Constants, Helpers } from "engine/Helpers";
+import { CollisionHandler, CollisionInfo, UpdateHandler } from "engine/MessageHandlers";
 import { State, StateMachineLMent } from "engine/StateMachineLMent";
 import { Quaternion, Vector3 } from "three";
 
@@ -87,8 +87,8 @@ export abstract class CharacterStateBase extends State implements UpdateHandler 
         const planeVector = Helpers.xzVector.applyQuaternion(thisBody.getRotation());
         let currentVelo = thisBody.getVelocity().clone().projectOnVector(planeVector).length();
         const threshold = 1;
-        
-        if (currentVelo > this.movementSpeed+threshold)
+
+        if (currentVelo > this.movementSpeed + threshold)
             return;
 
         let newVelo = Helpers.zeroVector;
@@ -150,7 +150,7 @@ export abstract class CharacterStateBase extends State implements UpdateHandler 
 
     lookAtPlayer() {
         if (this.lookAt)
-            this.lookAt.changeTargetByBodyName("player");
+            this.lookAt.changeTargetByBodyName(Constants.Player);
     }
 
     protected playStateAnimation(dt: number) {
@@ -293,9 +293,10 @@ export class characterInteractState extends CharacterStateBase {
     }
 }
 
-export class characterPatrolState extends CharacterStateBase {
+export class characterPatrolState extends CharacterStateBase implements CollisionHandler {
     points: Vector3[] = [];
     currentPointIndex: number = 0;
+    private blockedRoadCounter: number = 0;
     get activePoint() { return this.points[this.currentPointIndex] };
 
     constructor(stateMachine: CharacterStateMachineLMent, points: Vector3[], patrolSpeed: number, movementForce: number) {
@@ -335,6 +336,24 @@ export class characterPatrolState extends CharacterStateBase {
 
         if (this.alertCondition())
             this.stateMachine.switchState(CharacterStates.alert);
+    }
+
+    onCollision(info: CollisionInfo): void {
+        const myFwd = Helpers.forwardVector.applyQuaternion(this.stateMachine.body.body.getRotation());
+        const myRight = Helpers.rightVector.applyQuaternion(this.stateMachine.body.body.getRotation());
+        const dotVal = info.getDeltaVSelf().normalize().dot(myFwd);
+        let nextPoint = this.points[(this.currentPointIndex + 1) % this.points.length];
+
+        if (dotVal < -.5) {
+            const currentPos = this.stateMachine.body.body.getPosition();
+            this.stateMachine.body.body.setPosition(currentPos.clone().add(myFwd.multiplyScalar(-0.3)));
+            this.points[this.currentPointIndex] = currentPos.clone();
+            console.log("Distance to next point: " + currentPos.distanceTo(nextPoint));
+            if (currentPos.distanceTo(nextPoint) <= 2)
+                this.points[(this.currentPointIndex + 1) % this.points.length] = currentPos.clone().add(myRight.multiplyScalar(Math.random() + 3));
+
+            this.stateMachine.switchState(CharacterStates.idle);
+        }
     }
 }
 
@@ -417,9 +436,11 @@ export class EnemyChaseState extends CharacterStateBase {
         else this.stateMachine.switchState(CharacterStates.alert);
 
     }
+
+    
 }
 
-export class EnemyChargeState extends CharacterStateBase {
+export class EnemyChargeState extends CharacterStateBase implements CollisionHandler {
 
     targetPosition: Vector3 = Helpers.zeroVector;
 
@@ -446,11 +467,18 @@ export class EnemyChargeState extends CharacterStateBase {
         super.onUpdate(dt);
         let distance = this.myPosition.distanceTo(this.targetPosition);
         let dotCheck = Helpers.forwardVector.applyQuaternion(this.stateMachine.characterBody.getRotation()).dot(this.targetPosition.clone().sub(this.myPosition).normalize());
-        if (distance > this.reachDestinationThreshold && dotCheck >0) {
+        if (distance > this.reachDestinationThreshold && dotCheck > 0) {
             this.moveForward();
             this.playStateAnimation(dt);
         }
         else this.stateMachine.switchState(CharacterStates.alert);
 
+    }
+
+    onCollision(info: CollisionInfo): void {
+        const myFwd = Helpers.forwardVector.applyQuaternion(this.stateMachine.body.body.getRotation());
+        const dotVal = info.getDeltaVSelf().normalize().dot(myFwd);
+        if(dotVal < -.5)
+            this.stateMachine.switchState(CharacterStates.alert);
     }
 }

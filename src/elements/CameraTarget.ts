@@ -3,7 +3,7 @@ import { GameplayScene } from "engine/GameplayScene";
 import { LMent } from "engine/LMent";
 import { DragGestureHandler, UpdateHandler } from "engine/MessageHandlers";
 import { GuideBody } from "./GuideBody";
-import { Helpers } from "engine/Helpers";
+import { Constants, Helpers } from "engine/Helpers";
 
 export class CameraTarget extends LMent implements UpdateHandler, DragGestureHandler {
     prefabName: string;
@@ -26,8 +26,8 @@ export class CameraTarget extends LMent implements UpdateHandler, DragGestureHan
         this.maxCamDrag = params.maxCamDrag === undefined ? { x: 0, y: 0, z: 0 } : params.maxCamDrag;
         this.minCamDrag = params.minCamDrag === undefined ? { x: 0, y: 0, z: 0 } : params.minCamDrag;
         this.dragSpeed = params.dragSpeed === undefined ? 0 : params.dragSpeed;
-        this.prefabName = params.prefabName === undefined ? "MainCamera_Lua" : params.prefabName;
-        this.cameraIsMain = this.prefabName === "MainCamera_Lua";
+        this.prefabName = params.prefabName === undefined ? Constants.MainCamera : params.prefabName;
+        this.cameraIsMain = this.prefabName === Constants.MainCamera;
         this.resetDragOnRelease = params.resetDragOnRelease === undefined ? false : params.resetDragOnRelease;
         this.sinkLevel = params.sinkLevel === undefined ? 0 : params.sinkLevel;
     }
@@ -79,7 +79,7 @@ export class CameraTarget extends LMent implements UpdateHandler, DragGestureHan
         let elements = this.body.getAllElements(GuideBody);
         let guideFound = false;
         for (let e of elements) {
-            if (e !== undefined && e.guideName === "MainCamera_Lua") {
+            if (e !== undefined && e.guideName === Constants.MainCamera) {
                 this.cameraLead = e;
                 guideFound = true;
             }
