@@ -1,4 +1,8 @@
 {
+  "scripts": {
+    "build":"./build.sh",
+    "start":"node ./server.js"
+  },
   "dependencies": {
     "@types/three": "^0.156.0",
     "ammojs3": "^0.0.8",
@@ -12,5 +16,5 @@
     "typescript": "^5.2.2",
     "typescript-to-lua": "^1.19.2"
   },
-  "version": "2023.12.4"
+  "version": "2023.12.29"
 }

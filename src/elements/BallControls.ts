@@ -17,26 +17,9 @@ export class BallControls extends AvatarBase {
     constructor(body: BodyHandle, id: number, params: Partial<BallControls> = {}) {
         super(body, id, params);
         this.maxSpeed = params.maxSpeed === undefined ? 5 : params.maxSpeed;
-        this.deceleration = this.acc_dec_init("deceleration",params.deceleration);
-        this.acceleration = this.acc_dec_init("acceleration",params.acceleration);
+        this.deceleration = params.deceleration === undefined?5:params.deceleration;
+        this.acceleration = params.acceleration === undefined?5:params.acceleration;
         this.turningSpeed = params.turningSpeed===undefined?1:params.turningSpeed;
-    }
-
-    acc_dec_init(name:string,param:number|undefined):number
-    {
-        if(param === undefined)
-            return 1;
-        if(param <0)
-        {
-            console.log(name+" should be between 0 and 1, it will automatically set to 0.");
-            return 0;
-        }
-        if(param > 1)
-        {
-            console.log(name+" should be between 0 and 1, it will automatically set to 1.");
-            return 1;
-        }
-        return param;
     }
 
     initBallGuide() {
@@ -110,21 +93,29 @@ export class BallControls extends AvatarBase {
     accelerate()
     {
         if (this.ballGuide === undefined) return;
-        let dragDistance = Math.sqrt(Math.pow(this.dragDx,2)+Math.pow(this.dragDy,2));
+    
+        // Adjusted sensitivity factors for mobile devices
+        const mobileSensitivityFactor = 0.5;
+        let dragDxAdjusted = this.dragDx * mobileSensitivityFactor;
+        let dragDyAdjusted = this.dragDy * mobileSensitivityFactor;
+    
+        let dragDistance = Math.sqrt(Math.pow(dragDxAdjusted, 2) + Math.pow(dragDyAdjusted, 2));
+    
+        let torqueFwd = Helpers.rightVector.applyQuaternion(this.ballGuide.body.getRotation()).multiplyScalar(-dragDyAdjusted * dragDistance);
+        let torqueTurn = Helpers.forwardVector.applyQuaternion(this.ballGuide.body.getRotation()).multiplyScalar(dragDxAdjusted*Math.abs(dragDyAdjusted));
 
-        let torqueFwd = Helpers.rightVector.applyQuaternion(this.ballGuide.body.getRotation()).multiplyScalar(-Math.sign(this.dragDy)*dragDistance);
-        //let dxModified = this.dragDy<0?this.dragDx:-this.dragDx;
-        
-        // if(this.dragDy>0)
-        //     this.ballDragTurner?.invert();
-        // else this.ballDragTurner?.uninvert();
-
-        let torqueTurn = Helpers.forwardVector.applyQuaternion(this.ballGuide.body.getRotation()).multiplyScalar(this.dragDx*this.turningSpeed);
-        
+        console.log("DX, DY: "+dragDxAdjusted+", "+dragDyAdjusted);
+    
         let angularVelo = this.body.body.getAngularVelocity();
         let targetVelo = (torqueFwd.add(torqueTurn)).normalize().multiplyScalar(this.maxSpeed);
-        angularVelo.lerp(targetVelo,this.acceleration);
-        
+    
+        let accelerationFactor = 5 * (1 / GameplayScene.instance.memory.frameRate);
+        angularVelo.lerp(targetVelo, accelerationFactor);
+    
+        if (angularVelo.length() > 100) {
+            angularVelo.normalize().multiplyScalar(100);
+        }
+    
         this.body.body.setAngularVelocity(angularVelo);
     }
 

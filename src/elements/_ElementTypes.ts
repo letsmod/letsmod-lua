@@ -59,5 +59,5 @@ export {Climbable} from "./Climbable";
 export {RotationalWaypoint} from "./RotationalWaypoint";
 export {ScaleLoop} from "./ScaleLoop";
 export {RoamerCharacter} from "./RoamerCharacter";
-
+export {SfxPlayer} from "./SfxPlayer";
 export {StationaryNPC} from "./StationaryNPC";
