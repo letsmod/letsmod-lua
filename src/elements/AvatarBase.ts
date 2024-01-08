@@ -14,7 +14,7 @@ import { HazardZone } from "./HazardZone";
 import { HitPoints } from "./HitPoints";
 import { CameraTarget } from "./CameraTarget";
 import { VisibilityFlicker } from "./VisibilityFlicker";
-import { ScaleLoop } from "./ScaleLoop";
+import { ScaleWaypoint } from "./ScaleWaypoint";
 import { GuideBody } from "./GuideBody";
 import { SfxPlayer } from "./SfxPlayer";
 
@@ -148,12 +148,10 @@ export class AvatarBase
   }
 
   deathAnim(){
-    let scaleanim = this.body.getElement(ScaleLoop);
+    let scaleanim = this.body.getElement(ScaleWaypoint);
     if (scaleanim) {
       scaleanim.enabled = true;
-      if (this.enableDelayedFunc)
-        GameplayScene.instance.dispatcher.removeQueuedFunction(this.enableDelayedFunc);
-      this.enableDelayedFunc = GameplayScene.instance.dispatcher.queueDelayedFunction(this, () => { this.body.body.setVisible(false); }, scaleanim.duration);
+      GameplayScene.instance.dispatcher.queueDelayedFunction(this, () => { this.body.body.setVisible(false); }, scaleanim.points[0].duration + scaleanim.points[0].delay);
     }
   }
 
