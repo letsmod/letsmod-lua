@@ -4,7 +4,7 @@ import { GameplayScene } from "engine/GameplayScene";
 import { ButtonHandler, CollisionInfo, DragGestureHandler } from "engine/MessageHandlers";
 import { AvatarBase } from "./AvatarBase";
 import { ShapeStateController } from "./ShapeStateController";
-import { Helpers } from "engine/Helpers";
+import { Constants, Helpers } from "engine/Helpers";
 import { Vector3 } from "three";
 import { SfxPlayer } from "./SfxPlayer";
 
@@ -39,10 +39,8 @@ export class PlatformerControls extends AvatarBase implements ButtonHandler {
 
     if (info.getDeltaVSelf().normalize().dot(Helpers.upVector) > 0.7) {
       if (!this.isOnGround) {
-        const currentTime = GameplayScene.instance.memory.timeSinceStart;
-        const timeSinceLastGrounded = (currentTime - this.lastGroundedTime);
 
-        if (timeSinceLastGrounded > 0.5) {
+        if (info.getDeltaVRelative().length() > 5) {
           this.PlayLandingSound();
         }
       }
@@ -57,8 +55,6 @@ export class PlatformerControls extends AvatarBase implements ButtonHandler {
   PlayLandingSound(){
     const sound = this.body.getElementByName("LandAudio") as SfxPlayer;
         if (sound) {
-          let audio = "Landing" + Math.floor(Math.random() * 3 + 1);
-          sound.audio = audio;
           sound.playAudio();
         }
   }
@@ -176,7 +172,7 @@ export class PlatformerControls extends AvatarBase implements ButtonHandler {
   }
 
   onButtonPress(button: string): void {
-    if (button == "AButton") {
+    if (button == Constants.AButton) {
       this.jump();
     }
   }
@@ -193,7 +189,7 @@ export class PlatformerControls extends AvatarBase implements ButtonHandler {
   }
 
   hasSubtype(button: string): boolean {
-    return button == "AButton";
+    return button == Constants.AButton;
   }
 
   playTopAnimation(state: string) {

@@ -1,6 +1,6 @@
 import { BodyHandle } from "engine/BodyHandle";
 import { GameplayScene } from "engine/GameplayScene";
-import { Helpers } from "engine/Helpers";
+import { Constants, Helpers } from "engine/Helpers";
 import { LMent } from "engine/LMent";
 import { UpdateHandler } from "engine/MessageHandlers";
 import { Vector3 } from "three";
@@ -88,7 +88,7 @@ export class LookAt extends LMent implements UpdateHandler {
 
     changeTargetByBodyName(newTarget: string) {
 
-        if (newTarget.toLowerCase() === "player")
+        if (newTarget.toLowerCase() === Constants.Player)
             this.targetBody = GameplayScene.instance.memory.player;
         else
             this.targetBody = Helpers.findBodyInScene(newTarget);
