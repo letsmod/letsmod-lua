@@ -14,6 +14,7 @@ import { HazardZone } from "./HazardZone";
 import { HitPoints } from "./HitPoints";
 import { CameraTarget } from "./CameraTarget";
 import { VisibilityFlicker } from "./VisibilityFlicker";
+import { ScaleWaypoint } from "./ScaleWaypoint";
 import { GuideBody } from "./GuideBody";
 import { SfxPlayer } from "./SfxPlayer";
 
@@ -95,11 +96,8 @@ export class AvatarBase extends LMent implements UpdateHandler, HitPointChangeHa
 
   lose() {
     // death effect goes here
-    let visibilityFlicker = this.body.getElement(VisibilityFlicker);
-    if (visibilityFlicker) {
-      visibilityFlicker.enabled = false;
-    }
-    this.body.body.setVisible(false);
+    this.deathAnim();
+    
     this.body.body.setAngularVelocity(Helpers.zeroVector);
     this.body.body.setVelocity(Helpers.zeroVector);
     this.revive();
@@ -123,6 +121,14 @@ export class AvatarBase extends LMent implements UpdateHandler, HitPointChangeHa
     let hp = this.body.getElement(HitPoints);
     if (hp)
       hp.enabled = false;
+  }
+
+  deathAnim(){
+    let scaleanim = this.body.getElement(ScaleWaypoint);
+    if (scaleanim) {
+      scaleanim.enabled = true;
+      GameplayScene.instance.dispatcher.queueDelayedFunction(this, () => { this.body.body.setVisible(false); }, scaleanim.points[0].duration + scaleanim.points[0].delay);
+    }
   }
 
   addSafeStep() {
