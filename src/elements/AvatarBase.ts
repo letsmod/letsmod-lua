@@ -34,9 +34,21 @@ export class AvatarBase extends LMent implements UpdateHandler, HitPointChangeHa
   protected camGuide: GuideBody | undefined;
   private hpDelayedFunc: any | undefined;
   public respawnDelay: number = 1;
+  gender: string;
 
   constructor(body: BodyHandle, id: number, params: Partial<AvatarBase> = {}) {
     super(body, id, params);
+    this.gender = params.gender == undefined ? Constants.Male : params.gender?.toLowerCase();
+    this.validateGender();
+  }
+
+  validateGender(){
+    if(!this.gender)return;
+    if(this.gender !== Constants.Male && this.gender !== Constants.Female)
+    {
+      console.log("Gender can be either Male or Female, male will be used by default.");
+      this.gender = Constants.Male;
+    }
   }
 
   onInit(): void {
@@ -97,7 +109,7 @@ export class AvatarBase extends LMent implements UpdateHandler, HitPointChangeHa
   lose() {
     // death effect goes here
     this.deathAnim();
-    
+
     this.body.body.setAngularVelocity(Helpers.zeroVector);
     this.body.body.setVelocity(Helpers.zeroVector);
     this.revive();
@@ -123,7 +135,7 @@ export class AvatarBase extends LMent implements UpdateHandler, HitPointChangeHa
       hp.enabled = false;
   }
 
-  deathAnim(){
+  deathAnim() {
     let scaleanim = this.body.getElement(ScaleWaypoint);
     if (scaleanim) {
       scaleanim.enabled = true;
