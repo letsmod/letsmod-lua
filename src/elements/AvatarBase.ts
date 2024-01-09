@@ -14,6 +14,7 @@ import { HazardZone } from "./HazardZone";
 import { HitPoints } from "./HitPoints";
 import { CameraTarget } from "./CameraTarget";
 import { VisibilityFlicker } from "./VisibilityFlicker";
+import { ScaleWaypoint } from "./ScaleWaypoint";
 import { GuideBody } from "./GuideBody";
 import { SfxPlayer } from "./SfxPlayer";
 
@@ -33,9 +34,21 @@ export class AvatarBase extends LMent implements UpdateHandler, HitPointChangeHa
   protected camGuide: GuideBody | undefined;
   private hpDelayedFunc: any | undefined;
   public respawnDelay: number = 1;
+  gender: string;
 
   constructor(body: BodyHandle, id: number, params: Partial<AvatarBase> = {}) {
     super(body, id, params);
+    this.gender = params.gender == undefined ? Constants.Male : params.gender?.toLowerCase();
+    this.validateGender();
+  }
+
+  validateGender(){
+    if(!this.gender)return;
+    if(this.gender !== Constants.Male && this.gender !== Constants.Female)
+    {
+      console.log("Gender can be either Male or Female, male will be used by default.");
+      this.gender = Constants.Male;
+    }
   }
 
   onInit(): void {
@@ -95,11 +108,8 @@ export class AvatarBase extends LMent implements UpdateHandler, HitPointChangeHa
 
   lose() {
     // death effect goes here
-    let visibilityFlicker = this.body.getElement(VisibilityFlicker);
-    if (visibilityFlicker) {
-      visibilityFlicker.enabled = false;
-    }
-    this.body.body.setVisible(false);
+    this.deathAnim();
+
     this.body.body.setAngularVelocity(Helpers.zeroVector);
     this.body.body.setVelocity(Helpers.zeroVector);
     this.revive();
@@ -123,6 +133,14 @@ export class AvatarBase extends LMent implements UpdateHandler, HitPointChangeHa
     let hp = this.body.getElement(HitPoints);
     if (hp)
       hp.enabled = false;
+  }
+
+  deathAnim() {
+    let scaleanim = this.body.getElement(ScaleWaypoint);
+    if (scaleanim) {
+      scaleanim.enabled = true;
+      GameplayScene.instance.dispatcher.queueDelayedFunction(this, () => { this.body.body.setVisible(false); }, scaleanim.points[0].duration + scaleanim.points[0].delay);
+    }
   }
 
   addSafeStep() {

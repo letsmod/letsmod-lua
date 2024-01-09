@@ -206,10 +206,13 @@ export const Constants = {
     MainCamera: "MainCamera_Lua",
     RollerballGuide: "RollerCamGuide_Lua",
     DifficultyHard: "hardcore",
+    Male: "male",
+    Female: "female",
+    FemaleAvatarSuffix: " Girl",
     
     /*** Avatar Prefabs ***/
-    WingSuitAvatar: "Wing Suit",
-    SlingshotAvatar: "SlingStone",
+    WingSuitAvatar: "Wingsuit",
+    SlingshotAvatar: "Slingshot",
     RollerballAvatar: "Rollerball",
     BaseAvatar: "Player",
 
