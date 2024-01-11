@@ -32,6 +32,7 @@ export class HitPoints extends LMent {
   }
 
   damage(amount: number, type?: DamageType, teamFlags: number = 0) {
+    if(!this.enabled)return;
     let prevHitpoints = this.hitpoints;
     let multiplier = 1;
 

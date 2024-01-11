@@ -1,6 +1,7 @@
 import { GameplayScene } from "engine/GameplayScene";
 import { Collectible } from "./Collectible";
 import { BodyHandle } from "engine/BodyHandle";
+import { SfxPlayer } from "./SfxPlayer";
 
 export class GoalItem extends Collectible {
     followSpeed: number;
@@ -9,9 +10,15 @@ export class GoalItem extends Collectible {
         super(body, id, params);
         this.followSpeed = params.followSpeed === undefined ? 0.15 : params.followSpeed;
     }
-    
+
     override collect() {
+        if (this.isCollected)
+            return;
         super.collect();
+        const sound = this.body.getElement(SfxPlayer) as SfxPlayer;
+        if (sound) {
+            sound.playAudio();
+        }
         GameplayScene.instance.clientInterface?.winMod();
     }
 

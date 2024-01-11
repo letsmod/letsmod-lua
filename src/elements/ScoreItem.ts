@@ -1,6 +1,7 @@
 import { Collectible } from "./Collectible";
 import { BodyHandle } from "engine/BodyHandle";
 import { GameplayScene } from "engine/GameplayScene";
+import { SfxPlayer } from "./SfxPlayer";
 
 export class ScoreItem extends Collectible {
     scoreValue: number;
@@ -18,6 +19,10 @@ export class ScoreItem extends Collectible {
         let clientInterface = GameplayScene.instance.clientInterface;
         if (clientInterface !== undefined)
             clientInterface.addScore(this.scoreValue);
+        const sound = this.body.getElementByTypeName("SfxPlayer") as SfxPlayer;
+        if (sound) {
+            sound.playAudio();
+        }
     }
 
     checkLerp: boolean = false;
