@@ -140,6 +140,7 @@ export class JogState extends StaggerableState
           this.stateMachine.climbTarget = other;
           this.stateMachine.climbTargetOffset = this.stateMachine.body.body.getPosition().clone().sub(other.body.getPosition()).applyQuaternion(other.body.getRotation().clone().invert());
           this.stateMachine.switchState("clamber");
+          this.stateMachine.faceContactPoint(info.getContactPointOnSelf());
           // TODO: adjust starting point of clamber animation based on height difference
         }
         else if (this.blocked_y_climb <= 0)
@@ -147,6 +148,7 @@ export class JogState extends StaggerableState
           this.stateMachine.climbTarget = other;
           this.stateMachine.climbTargetOffset = this.stateMachine.body.body.getPosition().clone().sub(other.body.getPosition()).applyQuaternion(other.body.getRotation().clone().invert());
           this.stateMachine.switchState("climb");
+          this.stateMachine.faceContactPoint(info.getContactPointOnSelf());
           // TODO: adjust starting point of climb animation based on height difference
         }
         else if (this.blocked_y_jump <= 0)
@@ -268,6 +270,7 @@ export class JumpState extends StaggerableState
             this.stateMachine.climbTarget = other;
             this.stateMachine.climbTargetOffset = this.stateMachine.body.body.getPosition().clone().sub(other.body.getPosition()).applyQuaternion(other.body.getRotation().clone().invert());
             this.stateMachine.switchState("clamber");
+            this.stateMachine.faceContactPoint(info.getContactPointOnSelf());
             // TODO: adjust starting point of clamber animation based on height difference
             return;
           }
@@ -281,6 +284,7 @@ export class JumpState extends StaggerableState
             this.stateMachine.climbTarget = other;
             this.stateMachine.climbTargetOffset = this.stateMachine.body.body.getPosition().clone().sub(other.body.getPosition()).applyQuaternion(other.body.getRotation().clone().invert());
             this.stateMachine.switchState("climb");
+            this.stateMachine.faceContactPoint(info.getContactPointOnSelf());
             // TODO: adjust starting point of climb animation based on height difference
             return;
           }
@@ -385,6 +389,7 @@ export class FallState extends StaggerableState
             this.stateMachine.climbTarget = other;
             this.stateMachine.climbTargetOffset = this.stateMachine.body.body.getPosition().clone().sub(other.body.getPosition()).applyQuaternion(other.body.getRotation().clone().invert());
             this.stateMachine.switchState("clamber");
+            this.stateMachine.faceContactPoint(info.getContactPointOnSelf());
             // TODO: adjust starting point of clamber animation based on height difference
             return;
           }
@@ -398,6 +403,7 @@ export class FallState extends StaggerableState
             this.stateMachine.climbTarget = other;
             this.stateMachine.climbTargetOffset = this.stateMachine.body.body.getPosition().clone().sub(other.body.getPosition()).applyQuaternion(other.body.getRotation().clone().invert());
             this.stateMachine.switchState("climb");
+            this.stateMachine.faceContactPoint(info.getContactPointOnSelf());
             // TODO: adjust starting point of climb animation based on height difference
             return;
           }
@@ -686,7 +692,7 @@ export class AdventurerAvatar extends AvatarBase
     this.coyoteTime = params.coyoteTime ?? 0.1;
 
     this.climbTooFarThreshold = params.climbTooFarThreshold ?? 1;
-    this.climbDotProductThreshold = params.climbDotProductThreshold ?? -0.9;
+    this.climbDotProductThreshold = params.climbDotProductThreshold ?? -0.6;
 
     this.climbDetectorMaxDistance = params.climbDetectorMaxDistance ?? 0.5;
 
@@ -821,6 +827,14 @@ export class AdventurerAvatar extends AvatarBase
         }
       }
     }
+  }
+
+  faceContactPoint(pointOnSelf : Vector3)
+  {
+    let angle = Math.atan2(pointOnSelf.x, pointOnSelf.z);
+    let quat = Helpers.NewQuaternion().setFromAxisAngle(Helpers.upVector, angle);
+    quat.premultiply(this.body.body.getRotation());
+    this.body.body.setRotation(quat);
   }
 
   setFacing(dx : number, dy: number)
