@@ -71,19 +71,36 @@ export class GuideBody extends LMent implements UpdateHandler {
     }
 
     initTargetBody(){
-        GameplayScene.instance.dispatcher.queueDelayedFunction(this,()=>{
-        this.targetBody = undefined;
-        if(this.target.toLowerCase() === Constants.Player)
-            this.targetBody = GameplayScene.instance.memory.player;
-        else if(this.target === Constants.MainCamera)
-            this.targetBody = GameplayScene.instance.memory.mainCamera;
-        else {
-            if(this.targetContext.toLowerCase() === "global")
-                this.targetBody = Helpers.findBodyInScene(this.target);
-            else if(this.targetContext.toLowerCase() === "group")
-                this.targetBody = Helpers.findBodyWithinGroup(this.body,this.target);
-            else console.log("Invalid target context: "+this.targetContext);
-        }},Helpers.deltaTime);
+        GameplayScene.instance.dispatcher.queueDelayedFunction(this,()=>
+        {
+            this.targetBody = undefined;
+            if(this.target.toLowerCase() === Constants.Player)
+            {
+                this.targetBody = GameplayScene.instance.memory.player;
+            }
+            else if(this.target === Constants.MainCamera)
+            {
+                this.targetBody = GameplayScene.instance.memory.mainCamera;
+            }
+            else {
+                if(this.targetContext.toLowerCase() === "global")
+                    this.targetBody = Helpers.findBodyInScene(this.target);
+                else if(this.targetContext.toLowerCase() === "group")
+                    this.targetBody = Helpers.findBodyWithinGroup(this.body,this.target);
+                else console.log("Invalid target context: "+this.targetContext);
+            }
+
+            if (this.addToTargetGroup && this.targetBody !== undefined)
+            {
+                let index = this.body.bodyGroup.indexOf(this.body);
+                if (index >= 0)
+                {
+                    this.body.bodyGroup.splice(index, 1);
+                }
+                this.targetBody.bodyGroup.push(this.body);
+                this.body.bodyGroup = this.targetBody.bodyGroup;
+            }
+        },Helpers.deltaTime);
     }
 
     getTargetBody()

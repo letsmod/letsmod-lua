@@ -263,7 +263,7 @@ export class JumpState extends StaggerableState
         {
           let pos = this.stateMachine.clamberDetector.body.getPosition().clone().add(Helpers.upVector.clone().multiplyScalar(this.stateMachine.detectorYOffset));
           let rcResult = GameplayScene.instance.clientInterface?.raycast(pos, Helpers.downVector, this.stateMachine.clamberDetector.body.id, true);
-          if (rcResult?.body == other && rcResult.distance < 0.2)
+          if (rcResult?.body == other && rcResult.distance < this.stateMachine.climbDetectorMaxDistance)
           {
             this.stateMachine.climbTarget = other;
             this.stateMachine.climbTargetOffset = this.stateMachine.body.body.getPosition().clone().sub(other.body.getPosition()).applyQuaternion(other.body.getRotation().clone().invert());
@@ -276,7 +276,7 @@ export class JumpState extends StaggerableState
         {
           let pos = this.stateMachine.climbDetector.body.getPosition().clone().add(Helpers.upVector.clone().multiplyScalar(this.stateMachine.detectorYOffset));
           let rcResult = GameplayScene.instance.clientInterface?.raycast(pos, Helpers.downVector, this.stateMachine.climbDetector.body.id, true);
-          if (rcResult?.body == other && rcResult.distance < 0.2)
+          if (rcResult?.body == other && rcResult.distance < this.stateMachine.climbDetectorMaxDistance)
           {
             this.stateMachine.climbTarget = other;
             this.stateMachine.climbTargetOffset = this.stateMachine.body.body.getPosition().clone().sub(other.body.getPosition()).applyQuaternion(other.body.getRotation().clone().invert());
@@ -380,7 +380,7 @@ export class FallState extends StaggerableState
         {
           let pos = this.stateMachine.clamberDetector.body.getPosition().clone().add(Helpers.upVector.clone().multiplyScalar(this.stateMachine.detectorYOffset));
           let rcResult = GameplayScene.instance.clientInterface?.raycast(pos, Helpers.downVector, this.stateMachine.clamberDetector.body.id, true);
-          if (rcResult?.body == other && rcResult.distance < 0.2)
+          if (rcResult?.body == other && rcResult.distance < this.stateMachine.climbDetectorMaxDistance)
           {
             this.stateMachine.climbTarget = other;
             this.stateMachine.climbTargetOffset = this.stateMachine.body.body.getPosition().clone().sub(other.body.getPosition()).applyQuaternion(other.body.getRotation().clone().invert());
@@ -393,7 +393,7 @@ export class FallState extends StaggerableState
         {
           let pos = this.stateMachine.climbDetector.body.getPosition().clone().add(Helpers.upVector.clone().multiplyScalar(this.stateMachine.detectorYOffset));
           let rcResult = GameplayScene.instance.clientInterface?.raycast(pos, Helpers.downVector, this.stateMachine.climbDetector.body.id, true);
-          if (rcResult?.body == other && rcResult.distance < 0.2)
+          if (rcResult?.body == other && rcResult.distance < this.stateMachine.climbDetectorMaxDistance)
           {
             this.stateMachine.climbTarget = other;
             this.stateMachine.climbTargetOffset = this.stateMachine.body.body.getPosition().clone().sub(other.body.getPosition()).applyQuaternion(other.body.getRotation().clone().invert());
@@ -647,6 +647,8 @@ export class AdventurerAvatar extends AvatarBase
   climbTooFarThreshold : number;
   climbDotProductThreshold : number;
 
+  climbDetectorMaxDistance : number;
+
   detectorYOffset : number;
 
   // runtime fields
@@ -662,7 +664,7 @@ export class AdventurerAvatar extends AvatarBase
   {
     super(body, id, params);
 
-    this.forceStaggerThreshold = params.forceStaggerThreshold ?? 2;
+    this.forceStaggerThreshold = params.forceStaggerThreshold ?? 10;
 
     this.jogAcceleration = params.jogAcceleration ?? 50;
     this.jogAccelerationSmoothFactor = params.jogAccelerationSmoothFactor ?? 0.25;
@@ -684,7 +686,9 @@ export class AdventurerAvatar extends AvatarBase
     this.coyoteTime = params.coyoteTime ?? 0.1;
 
     this.climbTooFarThreshold = params.climbTooFarThreshold ?? 1;
-    this.climbDotProductThreshold = params.climbDotProductThreshold ?? -0.7;
+    this.climbDotProductThreshold = params.climbDotProductThreshold ?? -0.9;
+
+    this.climbDetectorMaxDistance = params.climbDetectorMaxDistance ?? 0.5;
 
     this.detectorYOffset = params.detectorYOffset ?? -0.7349385521597851;
   }
