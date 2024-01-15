@@ -1,5 +1,6 @@
 import { BodyHandle } from "engine/BodyHandle";
 import { PlatformerControls } from "./PlatformerControls";
+import { Constants } from "engine/Helpers";
 
 export class PlatformerShooter extends PlatformerControls {
     constructor(body: BodyHandle, id: number, params: Partial<PlatformerShooter> = {}) {
@@ -8,7 +9,7 @@ export class PlatformerShooter extends PlatformerControls {
 
     override onButtonPress(button: string): void {
         super.onButtonPress(button);
-        if (button === "BButton")
+        if (button === Constants.BButton)
             this.shoot();
     }
 
@@ -17,6 +18,6 @@ export class PlatformerShooter extends PlatformerControls {
     }
 
     override hasSubtype(button: string): boolean {
-        return button == "AButton" || button == "BButton";
+        return button == Constants.BButton || button == Constants.BButton;
     }
 }

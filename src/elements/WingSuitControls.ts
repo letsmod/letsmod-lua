@@ -3,7 +3,7 @@ import { GameplayScene } from "engine/GameplayScene";
 import { ButtonHandler, CollisionInfo, DragGestureHandler } from "engine/MessageHandlers";
 import { AvatarBase } from "./AvatarBase";
 import { ShapeStateController } from "./ShapeStateController";
-import { Helpers } from "engine/Helpers";
+import { Constants, Helpers } from "engine/Helpers";
 import { GuideBody } from "./GuideBody";
 import { InfoBar } from "./InfoBar";
 import { Vector3 } from "three";
@@ -253,19 +253,19 @@ export class WingSuitControls extends AvatarBase implements ButtonHandler, DragG
   }
 
   onButtonPress(button: string): void {
-    if (button == "AButton") {
+    if (button == Constants.AButton) {
       this.flap();
     }
   }
 
   onButtonHold(button: string): void {
-    if (button == "BButton" && !this.isOnGround) {
+    if (button == Constants.BButton && !this.isOnGround) {
       this.disableGlide();
     }
   }
 
   onButtonRelease(button: string): void {
-    if (button == "BButton" && !this.isOnGround) {
+    if (button == Constants.BButton && !this.isOnGround) {
       this.enableGlide();
     }
   }

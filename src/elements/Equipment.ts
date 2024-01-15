@@ -2,14 +2,15 @@ import { Collectible } from "./Collectible";
 import { BodyHandle } from "engine/BodyHandle";
 import { GameplayScene } from "engine/GameplayScene";
 import { AvatarBase } from "./AvatarBase";
+import { Constants } from "engine/Helpers";
 
-export type AvatarType = "base" | "rollerball" | "slingshot" | "wingsuit";
+
 export class Equipment extends Collectible {
-    equipment: AvatarType;
+    equipment: String;
     followSpeed: number;
     constructor(body: BodyHandle, id: number, params: Partial<Equipment> = {}) {
         super(body, id, params);
-        this.equipment = params.equipment === undefined ? "base" : params.equipment;
+        this.equipment = params.equipment === undefined ? Constants.BaseEquip : params.equipment;
         this.followSpeed = params.followSpeed === undefined ? 0.15 : params.followSpeed;
     }
 
@@ -33,25 +34,36 @@ export class Equipment extends Collectible {
 
     cloneAvatar() {
         switch (this.equipment.toLowerCase()) {
-            case "wingsuit":
-                this.createNewAvatar("Wing Suit");
+            case Constants.WingSuitEquip:
+                this.createNewAvatar(Constants.WingSuitAvatar);
                 break;
-            case "slingshot":
-                this.createNewAvatar("SlingStone");
+            case Constants.SlingshotEquip:
+                this.createNewAvatar(Constants.SlingshotAvatar);
                 break;
-            case "rollerball":
-                this.createNewAvatar("Rollerball");
+            case Constants.RollerBallEquip:
+                this.createNewAvatar(Constants.RollerballAvatar);
                 break;
             default:
                 console.log("equipment '"+this.equipment+"' is not found, will spawn the default player.");
-                this.createNewAvatar("Player");
+                this.createNewAvatar(Constants.BaseAvatar);
                 break;
         }
     }
 
     createNewAvatar(prefabName: string) {
+        // Get Player
         let player = GameplayScene.instance.memory.player;
         if (player === undefined) return;
+
+        //Get AvatarBase Element
+        const avatarLMent = player.getElement(AvatarBase);
+        if (avatarLMent === undefined) {
+            console.log("No Avatar LMent is attached to the player");
+            return;
+        }
+        if(avatarLMent.gender === Constants.Female)
+            prefabName += Constants.FemaleAvatarSuffix;
+
         let playerAvatarElement = player.getElement(AvatarBase);
         if (!playerAvatarElement) {
             console.log("No Avatar LMent is attached to the player");

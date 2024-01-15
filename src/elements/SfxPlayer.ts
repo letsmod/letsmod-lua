@@ -11,6 +11,8 @@ export class SfxPlayer extends LMent implements UpdateHandler, TriggerHandler {
     loop: boolean = true;
     delay: number = 0;
     triggerId: string;
+    randomMax: number | undefined;
+    randomMin: number | undefined;
     receivesTriggersWhenDisabled?: boolean | undefined;
     private loopTimer: number = 0;
 
@@ -23,6 +25,8 @@ export class SfxPlayer extends LMent implements UpdateHandler, TriggerHandler {
         this.enabled = Helpers.ValidateParams(this.audio, this, "audio");
         this.triggerId = params.triggerId === undefined ? Helpers.NA : params.triggerId;
         this.receivesTriggersWhenDisabled = true;
+        this.randomMax = params.randomMax;
+        this.randomMin = params.randomMin;
     }
 
     hasSubtype(trigger: string): boolean {
@@ -48,21 +52,33 @@ export class SfxPlayer extends LMent implements UpdateHandler, TriggerHandler {
 
         if (!this.loop) return;
 
+
+        this.playAudio();
+    }
+
+
+    playAudio() {
         const player = GameplayScene.instance.memory.player;
 
         if (!player) return;
         const playerPos = player.body.getPosition();
         const distance = playerPos.distanceTo(this.body.body.getPosition());
 
-        if (distance < this.playDistance && this.loopTimer <= 0)
-            this.playAudio();
+        if (distance < this.playDistance && this.loopTimer <= 0) {
+            const clientInterface = GameplayScene.instance.clientInterface;
+            if (!clientInterface || this.loopTimer > 0) return;
+            this.randomizeAudio();
+            clientInterface.playAudio(this.audio, this.id.toString());
+            this.loopTimer = this.delay;
+        }
     }
 
-
-    playAudio() {
+    randomizeAudio() {
         const clientInterface = GameplayScene.instance.clientInterface;
-        if (!clientInterface || this.loopTimer > 0) return;
-        clientInterface.playAudio(this.audio, this.id.toString());
-        this.loopTimer = this.delay;
+        if (!clientInterface) return;
+        if (!this.randomMax || !this.randomMin) return;
+        const random = Math.floor(Math.random() * (this.randomMax) + (this.randomMin));
+        console.log(this.audio + random);
+        clientInterface.playAudio(this.audio + random, this.id.toString());
     }
 }

@@ -5,7 +5,6 @@ import { SfxPlayer } from "./SfxPlayer";
 
 export class GoalItem extends Collectible {
     followSpeed: number;
-    soundPlayer: boolean = false;
 
     constructor(body: BodyHandle, id: number, params: Partial<GoalItem> = {}) {
         super(body, id, params);
@@ -13,10 +12,11 @@ export class GoalItem extends Collectible {
     }
 
     override collect() {
+        if (this.isCollected)
+            return;
         super.collect();
-        const sound = this.body.getElementByTypeName("SfxPlayer") as SfxPlayer;
-        if (sound && !this.soundPlayer) {
-            this.soundPlayer = true;
+        const sound = this.body.getElement(SfxPlayer) as SfxPlayer;
+        if (sound !== undefined) {
             sound.playAudio();
         }
         GameplayScene.instance.clientInterface?.winMod();

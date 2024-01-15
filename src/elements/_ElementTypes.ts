@@ -57,9 +57,9 @@ export {GoalItem} from "./GoalItem";
 export {HideShadow} from "./HideShadow";
 export {Climbable} from "./Climbable";
 export {RotationalWaypoint} from "./RotationalWaypoint";
-export {ScaleLoop} from "./ScaleLoop";
 export {RoamerCharacter} from "./RoamerCharacter";
 export {SfxPlayer} from "./SfxPlayer";
-export {AdventurerAvatar} from "./AdventurerAvatar";
-
 export {StationaryNPC} from "./StationaryNPC";
+export {ScaleWaypoint} from "./ScaleWaypoint";
+export {SlowDownEffect} from "./SlowDownEffect";
+export {AdventurerAvatar} from "./AdventurerAvatar";
