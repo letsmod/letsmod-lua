@@ -684,7 +684,7 @@ export class AdventurerAvatar extends AvatarBase
     this.coyoteTime = params.coyoteTime ?? 0.1;
 
     this.climbTooFarThreshold = params.climbTooFarThreshold ?? 1;
-    this.climbDotProductThreshold = params.climbDotProductThreshold ?? -0.6;
+    this.climbDotProductThreshold = params.climbDotProductThreshold ?? -0.7;
 
     this.detectorYOffset = params.detectorYOffset ?? -0.7349385521597851;
   }
