@@ -1,6 +1,7 @@
-import { GenericCondition } from "MODScript/MODscriptCore";
+import { GenericCondition } from "MODScript/MODscriptDefs";
 import { BodyHandle } from "engine/BodyHandle";
 import { GameplayScene } from "engine/GameplayScene";
+import { MODscriptEvent } from "./MODscriptEvent";
 
 export class IsOther implements GenericCondition {
     actorId: number;
@@ -8,14 +9,11 @@ export class IsOther implements GenericCondition {
         this.actorId = args.actorId ?? -1;
     }
 
-    checkConditionOnActor(actor: BodyHandle): boolean {
+    checkConditionOnActor(actor: BodyHandle, parentEvent: MODscriptEvent): boolean {
         
-        const targetActor = GameplayScene.instance.getBodyById(this.actorId);
+        const targetActor = parentEvent.getInvolvedActor(this.actorId);
         if(targetActor)
-        {
             return actor.body.id === targetActor.body.id;
-        }
-
         return false;
     }
 }

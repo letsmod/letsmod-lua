@@ -1,74 +1,81 @@
 import { UpdateHandler } from "engine/MessageHandlers";
-import { MODscriptEvent, EventDefinition } from "./MODscriptCore";
+import { EventDefinition } from "./MODscriptDefs";
+import { MODscriptEvent } from "./MODscriptEvent";
 
 export class EventHandler implements UpdateHandler {
 
-    private static _instance: EventHandler;
+    // private static _instance: EventHandler
+    // public static get Instance(): EventHandler {
+    //     if (!EventHandler._instance)
+    //         EventHandler._instance = new EventHandler();
+    //     return EventHandler._instance;
+    // }
 
     dummyData: string = "";
-    events: MODscriptEvent[];
-    private constructor() {
-        this.dummyData = `[
-            {
-                "actorId": 789,
-                "trigger": {
-                    "triggerType": "Nearby",
-                    "args": {
-                        "condition": {
-                            "conditionType": "IsOther",
-                            "args": {"actorId": 456}
-                        },
-                        "maxDistance": 10
-                    }
-                },
-                "action": {
-                    "actionType": "JumpUp",
-                    "args": {"jumpHeight": 10}
-                },
-                "repeatable": false,
-                "enabled": true
-            },
-            {
-                "actorId": 789,
-                "trigger": {
-                    "triggerType": "CompletedEvent",
-                    "args": {"eventId": 0}
-                },
-                "action": {
-                    "actionType": "NavigateOther",
-                    "args": {"actorId": 123}
-                },
-                "repeatable": false,
-                "enabled": true
-            },
-            {
-                "actorId": 789,
-                "trigger": {
-                    "triggerType": "OtherDestroyed",
-                    "args": {
-                        "condition": {
-                            "conditionType": "IsOther",
-                            "args": {"actorId": 456}
-                        }
-                    }
-                },
-                "action": {
-                    "actionType": "Say",
-                    "args": {"say": "My hero! You saved me!"}
-                },
-                "repeatable": false,
-                "enabled": true
-            }
-        ]`;
-        this.events = JSON.parse(this.dummyData).Map((eventDef: EventDefinition) => new MODscriptEvent(eventDef));
+    events: MODscriptEvent[] = [];
+
+    initialize(): void {
+        //Filling in Dummy Data    
+        this.events = this.createDummyData();
+        for(let event of this.events)
+            event.setCATs();
     }
 
-    public static get instance(): EventHandler { return this._instance; }
+    createDummyData(): MODscriptEvent[] {
+        const event1: EventDefinition = {
+            actorId: 789,
+            trigger: {
+                triggerType: "Nearby",
+                args: {
+                    condition: {
+                        conditionType: "IsOther",
+                        args: { actorId: 456 }
+                    },
+                    maxDistance: 10
+                }
+            },
+            action: {
+                actionType: "JumpUp",
+                args: { jumpHeight: 10 }
+            },
+            repeatable: false,
+            enabled: true
+        };
+        
+        const event2: EventDefinition = {
+            actorId: 789,
+            trigger: {
+                triggerType: "CompletedEvent",
+                args: { eventId: 0 }
+            },
+            action: {
+                actionType: "NavigateOther",
+                args: { actorId: 123 }
+            },
+            repeatable: false,
+            enabled: true
+        };
+        
+        const event3: EventDefinition = {
+            actorId: 789,
+            trigger: {
+                triggerType: "OtherDestroyed",
+                args: {
+                    condition: {
+                        conditionType: "IsOther",
+                        args: { actorId: 456 }
+                    }
+                }
+            },
+            action: {
+                actionType: "Say",
+                args: { say: "My hero! You saved me!" }
+            },
+            repeatable: false,
+            enabled: true
+        };
 
-    public static initialize(): void {
-        if (!this._instance) {
-            this._instance = new EventHandler();
-        }
+        return [new MODscriptEvent(0,event1),new MODscriptEvent(1,event2),new MODscriptEvent(2,event3)];
     }
 
     public getEvent(eventId: number): MODscriptEvent | undefined {
@@ -90,14 +97,12 @@ export class EventHandler implements UpdateHandler {
     }
 
     public EventIsCompleted(eventId: number): boolean {
-        const event = EventHandler.instance.getEvent(eventId);
-        if (event) return event.IsFinished;
-        return false;
+        const event = this.getEvent(eventId);
+        return event !== undefined && event.IsFinished;
     }
 
     public EventIsActive(eventId: number): boolean {
-        const event = EventHandler._instance.getEvent(eventId);
-        if (event) return event.IsActive;
-        return false;
+        const event = this.getEvent(eventId);
+        return event !== undefined && event.IsActive;
     }
 }
