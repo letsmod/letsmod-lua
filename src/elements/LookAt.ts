@@ -91,20 +91,10 @@ export class LookAt extends LMent implements UpdateHandler {
         if (newTarget.toLowerCase() === Constants.Player)
             this.targetBody = GameplayScene.instance.memory.player;
         else
-            this.targetBody = this.findBodyInScene(newTarget);
+            this.targetBody = Helpers.findBodyInScene(newTarget);
 
         if (this.targetBody !== undefined)
             this.targetVector = this.targetBody.body.getPosition();
-    }
-
-    //Redundant in other places, I had to remove this from Helpers.ts because it was causing a circular dependency.
-    findBodyInScene(name: string): BodyHandle | undefined {
-        let body = GameplayScene.instance.bodies.find(b => b.body.name == name);
-        if (body === undefined) {
-            console.log("No body named: " + name + " was found.")
-            return undefined;
-        }
-        return body;
     }
 
     changeTargetByBodyId(targetId: number) {

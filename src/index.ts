@@ -7,7 +7,7 @@ export { BodyHandle } from "engine/BodyHandle";
 
 export const scene = GameplayScene.instance;
 
-export const eventHandler = EventHandler.instance;
+scene.eventHandler = EventHandler.instance;
 
 // export const testArray = [1, 2, 3];
 

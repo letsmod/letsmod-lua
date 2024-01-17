@@ -26,6 +26,7 @@ export class GameplayScene {
   memory: GameplayMemory = new GameplayMemory();
   clientInterface: LuaClientInterface | undefined = undefined;
   currentDt: number = 0;
+  eventHandler: EventHandler | undefined;
   gamePreferences: GamePreferences = {
     defaultPlayDifficulty: "normal",
   };
@@ -48,10 +49,11 @@ export class GameplayScene {
     this.bodies.push(handle);
     this.bodyIdMap.set(bodyNode.id, handle);
 
-    for(let e of EventHandler.instance.events) {
-      if(e.InvolvedActorIDs.includes(handle.body.id))
-        e.addInvolvedActor(handle);
-    }
+    if(this.eventHandler !== undefined)
+      for(let e of this.eventHandler.events) {
+        if(e.InvolvedActorIDs.includes(handle.body.id))
+          e.addInvolvedActor(handle);
+      }
 
     return handle;
   }
@@ -98,7 +100,8 @@ export class GameplayScene {
 
   initializeMemory(memoryOverride: Partial<GameplayMemory>) {
     this.memory = { ...new GameplayMemory(), ...memoryOverride };
-    EventHandler.instance.initialize(this.memory.player);
+    if(this.eventHandler !== undefined)
+    this.eventHandler.initialize();
   }
 
   preUpdate(dt: number) {
@@ -116,7 +119,8 @@ export class GameplayScene {
 
   update() {
     this.dispatcher.onUpdate(this.currentDt);
-    EventHandler.instance.onUpdate(this.currentDt);
+    if(this.eventHandler !== undefined)
+      this.eventHandler.onUpdate(this.currentDt);
   }
 
   cloneBody(body: BodyHandle): BodyHandle | undefined {
@@ -156,10 +160,11 @@ export class GameplayScene {
       body.isInScene = false;
     }
 
-    for(let e of EventHandler.instance.events) {
-      if(e.InvolvedActorIDs.includes(body.body.id))
-        e.removeInvolvedActor(body);
-    }
+    if(this.eventHandler !== undefined)
+      for(let e of this.eventHandler.events) {
+        if(e.InvolvedActorIDs.includes(body.body.id))
+          e.removeInvolvedActor(body);
+      }
   }
 
   testErrorHandler() {
