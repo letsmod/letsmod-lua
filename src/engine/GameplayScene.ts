@@ -2,6 +2,7 @@ import { BodyPointer, BodyHandle } from "./BodyHandle";
 import { MessageDispatcher } from "engine/MessageDispatcher";
 import { GameplayMemory } from "engine/GameplayMemory";
 import { LuaClientInterface } from "./LuaClientInterface";
+import { EventHandler } from "../MODScript/EventHandler";
 
 type GamePreferences = {
   defaultPlayDifficulty: "normal" | "hardcore";
@@ -28,7 +29,11 @@ export class GameplayScene {
   gamePreferences: GamePreferences = {
     defaultPlayDifficulty: "normal",
   };
-  private constructor() {}
+
+  private constructor() {
+
+
+  }
 
   setClientInterface(clientInterface: LuaClientInterface) {
     this.clientInterface = clientInterface;
@@ -98,12 +103,13 @@ export class GameplayScene {
     for (let body of this.bodies) {
       body.startElements();
     }
-
+    EventHandler.initialize();
     this.dispatcher.updateFunctionQueue(dt);
   }
 
   update() {
     this.dispatcher.onUpdate(this.currentDt);
+    EventHandler.instance.onUpdate(this.currentDt);
   }
 
   cloneBody(body: BodyHandle): BodyHandle | undefined {
