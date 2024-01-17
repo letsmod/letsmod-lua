@@ -32,15 +32,14 @@ export class GuideBody extends LMent implements UpdateHandler {
     private leader: BodyHandle | undefined;
     private follower: BodyHandle | undefined;
 
-    constructor(body: BodyHandle, id: number, params: Partial<GuideBody> = {})
-    {
-        super(body, id,params);
-        this.target = params.target === undefined?Helpers.NA:params.target;
-        this.guideName = params.guideName === undefined?Helpers.NA:params.guideName;
-        this.mode = params.mode === undefined?"follow":params.mode;
-        this.offset = params.offset === undefined?{x:0,y:0,z:0}:params.offset;
-        this.offsetVector = Helpers.NewVector3(this.offset.x,this.offset.y,this.offset.z);
-        this.move = params.move === undefined?true:params.move;
+    constructor(body: BodyHandle, id: number, params: Partial<GuideBody> = {}) {
+        super(body, id, params);
+        this.target = params.target === undefined ? Helpers.NA : params.target;
+        this.guideName = params.guideName === undefined ? Helpers.NA : params.guideName;
+        this.mode = params.mode === undefined ? "follow" : params.mode;
+        this.offset = params.offset === undefined ? { x: 0, y: 0, z: 0 } : params.offset;
+        this.offsetVector = Helpers.NewVector3(this.offset.x, this.offset.y, this.offset.z);
+        this.move = params.move === undefined ? true : params.move;
 
         this.rotationOffset = params.rotationOffset === undefined ? { x: 0, y: 0, z: 0 } : params.rotationOffset;
         this.rotationOffsetQuaternion = Helpers.NewQuatFromEuler(Helpers.Rad(this.rotationOffset.x), Helpers.Rad(this.rotationOffset.y), Helpers.Rad(this.rotationOffset.z));
@@ -58,30 +57,39 @@ export class GuideBody extends LMent implements UpdateHandler {
 
     onInit(): void {
         GameplayScene.instance.dispatcher.addListener("update", this);
-        if (this.makeInvisible)
-        {
+        if (this.makeInvisible) {
             this.body.body.setVisible(false);
         }
     }
 
-    initTargetBody(){
-        GameplayScene.instance.dispatcher.queueDelayedFunction(this,()=>{
-        this.targetBody = undefined;
-        if(this.target.toLowerCase() === Constants.Player)
-            this.targetBody = GameplayScene.instance.memory.player;
-        else if(this.target === Constants.MainCamera)
-            this.targetBody = GameplayScene.instance.memory.mainCamera;
-        else {
-            if(this.targetContext.toLowerCase() === "global")
-                this.targetBody = Helpers.findBodyInScene(this.target);
-            else if(this.targetContext.toLowerCase() === "group")
-                this.targetBody = Helpers.findBodyWithinGroup(this.body,this.target);
-            else console.log("Invalid target context: "+this.targetContext);
-        }},Helpers.deltaTime);
+    initTargetBody() {
+        GameplayScene.instance.dispatcher.queueDelayedFunction(this, () => {
+            this.targetBody = undefined;
+            if (this.target.toLowerCase() === Constants.Player)
+                this.targetBody = GameplayScene.instance.memory.player;
+            else if (this.target === Constants.MainCamera)
+                this.targetBody = GameplayScene.instance.memory.mainCamera;
+            else {
+                if (this.targetContext.toLowerCase() === "global")
+                    this.targetBody = this.findBodyInScene(this.target);
+                else if (this.targetContext.toLowerCase() === "group")
+                    this.targetBody = Helpers.findBodyWithinGroup(this.body, this.target);
+                else console.log("Invalid target context: " + this.targetContext);
+            }
+        }, 1 / 30);
     }
 
-    getTargetBody()
-    {
+    //Redundant in other places, I had to remove this from Helpers.ts because it was causing a circular dependency.
+    findBodyInScene(name: string): BodyHandle | undefined {
+        let body = GameplayScene.instance.bodies.find(b => b.body.name == name);
+        if (body === undefined) {
+            console.log("No body named: " + name + " was found.")
+            return undefined;
+        }
+        return body;
+    }
+
+    getTargetBody() {
         return this.targetBody;
     }
 
@@ -100,7 +108,7 @@ export class GuideBody extends LMent implements UpdateHandler {
                 this.leader = this.body;
                 this.follower = this.targetBody;
             }
-        }, 2 * Helpers.deltaTime)
+        }, 2 / 30)
     }
 
     updateOffsetVector(x: number, y: number, z: number, additive: boolean = true) {
@@ -109,7 +117,7 @@ export class GuideBody extends LMent implements UpdateHandler {
         else this.offsetVector.set(x, y, z);
     }
 
-    updateTargetPosition() {
+    updateTargetPosition(dt?: number) {
         if (this.targetBody === undefined || this.leader === undefined || this.follower === undefined)
             return;
 
@@ -118,24 +126,24 @@ export class GuideBody extends LMent implements UpdateHandler {
         if (this.offsetSpace.toLowerCase() === "local")
             offset.copy(this.offsetVector.clone().applyQuaternion(this.leader.body.getRotation()));
         let targetVector = this.leader.body.getPosition().clone().add(offset);
-        this.follower.body.setPosition(this.follower.body.getPosition().clone().lerp(targetVector, this.followSpeed * Helpers.deltaTime));
+        this.follower.body.setPosition(this.follower.body.getPosition().clone().lerp(targetVector, this.followSpeed * (dt ?? 1 / 30)));
     }
 
-    updateTargetOrientation() {
+    updateTargetOrientation(dt?: number) {
         if (this.targetBody === undefined || this.leader === undefined || this.follower === undefined)
             return;
 
         if (this.rotationSpeed == 0)
             this.follower.body.setRotation(this.rotationOffsetQuaternion);
         let targetOrientation = this.leader.body.getRotation().clone().multiply(this.rotationOffsetQuaternion).normalize();
-        this.follower.body.setRotation(this.follower.body.getRotation().clone().slerp(targetOrientation, this.rotationSpeed * Helpers.deltaTime));
+        this.follower.body.setRotation(this.follower.body.getRotation().clone().slerp(targetOrientation, this.rotationSpeed * (dt ?? 1 / 30)));
     }
 
-    onUpdate(): void {
+    onUpdate(dt?: number): void {
         if (this.move)
-            this.updateTargetPosition();
+            this.updateTargetPosition(dt);
 
         if (this.rotate)
-            this.updateTargetOrientation();
+            this.updateTargetOrientation(dt);
     }
 }

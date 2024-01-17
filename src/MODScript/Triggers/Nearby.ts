@@ -15,7 +15,7 @@ export class Nearby extends GenericTrigger {
         this.maxDistance = triggerArgs.maxDistance ?? 0;
         this.condition = triggerArgs.condition;
         if (this.condition)
-             this.conditionInstance = ConditionFactory.Instance.createCondition(this.condition);
+             this.conditionInstance = ConditionFactory.createCondition(this.condition);
     }
 
     checkTrigger(): { didTrigger: boolean, outputActor: BodyHandle | undefined } {

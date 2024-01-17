@@ -64,7 +64,7 @@ export class RotateMotion extends LMent implements PhysicsSubstepHandler {
 
   runRotation() {
     let quat = Helpers.NewQuaternion();
-    quat.setFromAxisAngle(this.rotateAxis, this.speed * Helpers.deltaTime);
+    quat.setFromAxisAngle(this.rotateAxis, this.speed /GameplayScene.instance.memory.frameRate);
     this.body.body.applyRotation(quat);
   }
 }
