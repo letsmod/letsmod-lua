@@ -9,14 +9,14 @@ import { IsOther } from "./Conditions";
 import { ActionDefinition, ConditionDefinition, GenericAction, GenericCondition, GenericTrigger, MODscriptEvent, TriggerDefinition } from "./MODscriptCore";
 import { CompletedEventTrigger } from "./Triggers/CompletedEventTrigger";
 import { HearTrigger } from "./Triggers/HearTrigger";
-import { NearbyTrigger } from "./Triggers/NearbyTrigger";
+import { Nearby } from "./Triggers/Nearby";
 import { TouchedTrigger } from "./Triggers/TouchedTrigger";
 
 export class TriggerFactory {
     static createTrigger(parentEvent: MODscriptEvent, triggerDef: TriggerDefinition): GenericTrigger {
         switch (triggerDef.triggerType) {
             case "Nearby":
-                return new NearbyTrigger(parentEvent, triggerDef.args);
+                return new Nearby(parentEvent, triggerDef.args);
             case "Hear":
                 return new HearTrigger(parentEvent, triggerDef.args);
             case "Touched":
