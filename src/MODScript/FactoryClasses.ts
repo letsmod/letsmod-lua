@@ -1,7 +1,10 @@
+import { DisableEvent } from "./Actions/DisableEvent";
+import { EnableEvent } from "./Actions/EnableEvent";
 import { JumpUpAction } from "./Actions/JumpUpAction";
 import { LookOther } from "./Actions/LookOther";
 import { LookOutput } from "./Actions/LookOutput";
 import { NavigateOther } from "./Actions/NavigateOther";
+import { WaitAction } from "./Actions/WaitAction";
 import { IsOther } from "./Conditions";
 import { ActionDefinition, ConditionDefinition, GenericAction, GenericCondition, GenericTrigger, MODscriptEvent, TriggerDefinition } from "./MODscriptCore";
 import { CompletedEventTrigger } from "./Triggers/CompletedEventTrigger";
@@ -39,6 +42,12 @@ export class ActionFactory {
                 return new NavigateOther(parentEvent, actionDef.args);
             case "NavigateOutput":
                 return new NavigateOther(parentEvent, actionDef.args);
+            case "WaitAction":
+                return new WaitAction(parentEvent, actionDef.args);
+            case "DisableEvent":
+                return new DisableEvent(parentEvent, actionDef.args);
+            case "EnableEvent":
+                return new EnableEvent(parentEvent, actionDef.args);
             default:
                 throw new Error("Unknown action type");
         }
