@@ -44,8 +44,8 @@ export class MODscriptEvent {
 
     setCATs(): void {
         if (this.trigger === undefined || this.action === undefined) return;
-        this.eventTrigger = TriggerFactory.Instance.createTrigger(this, this.trigger);
-        this.eventAction = ActionFactory.Instance.createAction(this, this.action);
+        this.eventTrigger = TriggerFactory.createTrigger(this, this.trigger);
+        this.eventAction = ActionFactory.createAction(this, this.action);
 
         this.debugEvent();
     }
