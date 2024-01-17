@@ -82,10 +82,10 @@ export class PlatformerControls extends AvatarBase implements ButtonHandler {
 
 
   decelDelayFunc: any | undefined;
-  override onUpdate(dt: number): void {
+  override onUpdate(dt?: number): void {
     super.onUpdate();
 
-    this.onGroundReset();
+    this.onGroundReset(dt);
 
     if (!this.isOnGround) {
       this.playTopAnimation("Jump");
@@ -102,14 +102,14 @@ export class PlatformerControls extends AvatarBase implements ButtonHandler {
 
   }
 
-  onGroundReset() {
+  onGroundReset(dt?:number) {
     GameplayScene.instance.dispatcher.queueDelayedFunction(this, () => {
       this.isOnGround = false;
-    }, Helpers.deltaTime);
+    }, dt ?? 1/30);
   }
 
   accelerate() {
-    let accel = this.acceleration * Helpers.deltaTime;
+    let accel = this.acceleration * 1/GameplayScene.instance.memory.frameRate;
     this.handlePlayerOrientation();
     //Don :: For some reason, it gets some angular velocity while walking, I wrote this line to prevent it, thoughts?
     this.body.body.setAngularVelocity(Helpers.zeroVector);
@@ -126,7 +126,7 @@ export class PlatformerControls extends AvatarBase implements ButtonHandler {
   decelerate() {
     if (this.dragDx != 0 || this.dragDy != 0) return;
     console.log("Meh");
-    let accel = this.deceleration * Helpers.deltaTime;
+    let accel = this.deceleration /GameplayScene.instance.memory.frameRate
     if (this.isOnGround) {
       this.playTopAnimation("Idle");
       this.playBottomAnimation("Idle");

@@ -16,7 +16,7 @@ export class JumpUpAction extends GenericAction {
     performAction(triggerOutput?: BodyHandle | undefined): void {
         if(!triggerOutput || !this.parentEvent || !this.parentEvent.EventActor) return;
 
-         this.parentEvent.EventActor.body.applyCentralForce(js_new(global.THREE.Vector3, 0, this.jumpHeight, 0));
+         this.parentEvent.EventActor.body.applyCentralForce(Helpers.NewVector3(0, this.jumpHeight, 0));
          this.actionFinished();
     }
     
