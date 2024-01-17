@@ -1,17 +1,17 @@
 import { BodyHandle } from "engine/BodyHandle";
-import { ConditionDefinition, GenericCondition, MODscriptEvent, Trigger } from "../MODscriptCore";
-import { ConditionFactory } from "MODScript/FactoryClasses";
+import { ConditionDefinition, GenericCondition, GenericTrigger} from "../MODscriptDefs";
 import { CollisionHandler, CollisionInfo } from "engine/MessageHandlers";
-import { GameplayScene } from "engine/GameplayScene";
+import { MODscriptEvent } from "MODScript/MODscriptEvent";
+import { ConditionFactory } from "MODScript/FactoryClasses/ConditionsFactory";
 
-export class TouchedTrigger extends Trigger implements CollisionHandler {
+export class Touched extends GenericTrigger implements CollisionHandler {
 
     condition: ConditionDefinition | undefined;
     conditionInstance: GenericCondition | undefined;
     didTouch: boolean = false;
     collidedActorId: number = -1;
 
-    constructor(parentEvent: MODscriptEvent, triggerArgs: Partial<TouchedTrigger>) {
+    constructor(parentEvent: MODscriptEvent, triggerArgs: Partial<Touched>) {
         super(parentEvent);
         this.condition = triggerArgs.condition;
         if (this.condition)
@@ -21,8 +21,8 @@ export class TouchedTrigger extends Trigger implements CollisionHandler {
     checkTrigger(): { didTrigger: boolean, outputActor: BodyHandle | undefined } {
 
         if (this.conditionInstance) {
-            for (let actor of this.parentEvent.InvolvedActors)
-                if (this.conditionInstance.checkConditionOnActor(actor))
+            for (let actor of this.parentEvent.InvolvedActorBodies)
+                if (this.conditionInstance.checkConditionOnActor(actor,this.parentEvent))
                     if (actor.body.id === this.collidedActorId) {
                         this.collidedActorId = -1;
                         return { didTrigger: true, outputActor: actor };

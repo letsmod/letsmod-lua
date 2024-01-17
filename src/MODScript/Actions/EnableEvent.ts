@@ -1,9 +1,9 @@
 import { EventHandler } from "MODScript/EventHandler";
-import { Action, GenericAction, MODscriptEvent } from "MODScript/MODscriptCore";
+import { GenericAction } from "MODScript/MODscriptDefs";
+import { MODscriptEvent } from "MODScript/MODscriptEvent";
 import { BodyHandle } from "engine/BodyHandle";
-import { Helpers } from "engine/Helpers";
 
-export class EnableEvent extends Action {
+export class EnableEvent extends GenericAction {
     eventId: number;
     constructor(eventId:MODscriptEvent, args:Partial<EnableEvent>) {
         super(eventId);

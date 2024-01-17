@@ -1,9 +1,10 @@
 import { EventHandler } from "MODScript/EventHandler";
-import { Action, ActionDefinition, GenericAction, MODscriptEvent } from "MODScript/MODscriptCore";
+import { GenericAction } from "MODScript/MODscriptDefs";
+import { MODscriptEvent } from "MODScript/MODscriptEvent";
 import { BodyHandle } from "engine/BodyHandle";
 import { GameplayScene } from "engine/GameplayScene";
 
-export class WaitAction extends Action {
+export class WaitAction extends GenericAction {
     timeToWait: number;
     eventId: number;
     constructor(eventId: MODscriptEvent, args: Partial<WaitAction>) {

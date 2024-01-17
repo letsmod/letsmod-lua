@@ -1,9 +1,9 @@
-import { Action, MODscriptEvent } from "MODScript/MODscriptCore";
+import { GenericAction } from "MODScript/MODscriptDefs";
+import { MODscriptEvent } from "MODScript/MODscriptEvent";
 import { LookAt } from "elements/LookAt";
 import { BodyHandle } from "engine/BodyHandle";
-import { GameplayScene } from "engine/GameplayScene";
 
-export class LookOutput extends Action {
+export class LookOutput extends GenericAction {
 
     constructor(eventId:MODscriptEvent, args:Partial<LookOutput>) {
         super(eventId);

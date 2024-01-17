@@ -1,14 +1,15 @@
 import { BodyHandle } from "engine/BodyHandle";
-import { ConditionDefinition, GenericCondition, MODscriptEvent, Trigger } from "../MODscriptCore";
+import { ConditionDefinition, GenericCondition, GenericTrigger } from "../MODscriptDefs";
 import { ConditionFactory } from "MODScript/FactoryClasses";
+import { MODscriptEvent } from "MODScript/MODscriptEvent";
 
-export class HearTrigger extends Trigger {
+export class Hear extends GenericTrigger {
 
     maxDistance: number;
     condition: ConditionDefinition | undefined;
     conditionInstance: GenericCondition | undefined;
 
-    constructor(parentEvent: MODscriptEvent, triggerArgs: Partial<HearTrigger>) {
+    constructor(parentEvent: MODscriptEvent, triggerArgs: Partial<Hear>) {
         super(parentEvent);
         this.maxDistance = triggerArgs.maxDistance ?? 0;
         this.condition = triggerArgs.condition;
@@ -19,9 +20,9 @@ export class HearTrigger extends Trigger {
     checkTrigger(): { didTrigger: boolean, outputActor: BodyHandle | undefined } {
 
         if (this.conditionInstance) {
-            for (let actor of this.parentEvent.InvolvedActors)
-                if (this.conditionInstance.checkConditionOnActor(actor))
-                    if (actor.body.getPosition().distanceTo(this.parentEvent.InvolvedActors[0].body.getPosition()) <= this.maxDistance)
+            for (let actor of this.parentEvent.InvolvedActorBodies)
+                if (this.conditionInstance.checkConditionOnActor(actor, this.parentEvent))
+                    if (actor.body.getPosition().distanceTo(this.parentEvent.InvolvedActorBodies[0].body.getPosition()) <= this.maxDistance)
                         //todo add hearing check
                         return { didTrigger: true, outputActor: actor };
         }

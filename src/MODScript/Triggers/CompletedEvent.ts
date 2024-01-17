@@ -1,13 +1,13 @@
 import { BodyHandle } from "engine/BodyHandle";
-import { ConditionDefinition, GenericCondition, MODscriptEvent, Trigger } from "../MODscriptCore";
-import { ConditionFactory } from "MODScript/FactoryClasses";
+import { GenericTrigger } from "../MODscriptDefs";
 import { EventHandler } from "MODScript/EventHandler";
+import { MODscriptEvent } from "MODScript/MODscriptEvent";
 
-export class CompletedEventTrigger extends Trigger {
+export class CompletedEvent extends GenericTrigger {
 
     eventId: number;
 
-    constructor(parentEvent: MODscriptEvent, triggerArgs: Partial<CompletedEventTrigger>) {
+    constructor(parentEvent: MODscriptEvent, triggerArgs: Partial<CompletedEvent>) {
         super(parentEvent);
         this.eventId = triggerArgs.eventId ?? 0;
     }

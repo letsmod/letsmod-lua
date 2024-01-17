@@ -1,8 +1,9 @@
 import { BodyHandle } from "engine/BodyHandle";
-import { ConditionDefinition, GenericCondition, MODscriptEvent, Trigger } from "../MODscriptCore";
-import { ConditionFactory } from "MODScript/FactoryClasses";
+import { ConditionDefinition, GenericCondition, GenericTrigger,  } from "../MODscriptDefs";
+import { MODscriptEvent } from "MODScript/MODscriptEvent";
+import { ConditionFactory } from "MODScript/FactoryClasses/ConditionsFactory";
 
-export class Nearby extends Trigger {
+export class Nearby extends GenericTrigger {
 
     maxDistance: number;
     condition: ConditionDefinition | undefined;
@@ -17,11 +18,13 @@ export class Nearby extends Trigger {
     }
 
     checkTrigger(): { didTrigger: boolean, outputActor: BodyHandle | undefined } {
+        if (!this.parentEvent || !this.parentEvent.EventActor) return { didTrigger: false, outputActor: undefined };
 
         if (this.conditionInstance) {
-            for (let actor of this.parentEvent.InvolvedActors)
-                if (this.conditionInstance.checkConditionOnActor(actor))
-                    return { didTrigger: true, outputActor: actor };
+            for (let actor of this.parentEvent.InvolvedActorBodies)
+                if (this.conditionInstance.checkConditionOnActor(actor, this.parentEvent))
+                    if (actor.body.getPosition().distanceTo(this.parentEvent.EventActor.body.getPosition()) <= this.maxDistance)
+                        return { didTrigger: true, outputActor: actor };
         }
 
         return { didTrigger: false, outputActor: undefined };
