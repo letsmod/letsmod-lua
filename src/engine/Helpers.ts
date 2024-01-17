@@ -22,6 +22,8 @@ export class Helpers{
     static get yzVector() {return js_new(global.THREE.Vector3,0,1,1);}
     static readonly NA = "N/A";
 
+    //static get deltaTime() {return 1/GameplayScene.instance.memory.frameRate;}
+
     static NumLerp(a:number,b:number,t:number):number
     {
         return a + (b - a) * t;

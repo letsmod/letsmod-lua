@@ -10,7 +10,7 @@ export class EventHandler implements UpdateHandler {
     playerReference: BodyHandle | undefined;
 
     private static _instance: EventHandler
-    public static get Instance(): EventHandler {
+    public static get instance(): EventHandler {
         if (!EventHandler._instance)
             EventHandler._instance = new EventHandler();
         return EventHandler._instance;
