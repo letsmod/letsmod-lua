@@ -12,7 +12,7 @@ export class DisableEvent extends GenericAction {
 
     performAction(triggerOutput?: BodyHandle | undefined): void {
         if(!triggerOutput || !this.parentEvent || !this.parentEvent.EventActor) return;
-        const event = EventHandler.instance.getEvent(this.eventId);
+        const event = EventHandler.Instance.getEvent(this.eventId);
         if(!event) return;
         event.enabled = false;
         
