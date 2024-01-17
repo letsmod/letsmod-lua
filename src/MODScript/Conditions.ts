@@ -1,8 +1,9 @@
-import { ConditionDefinition, GenericCondition } from "MODScript/MODscriptCore";
+import { GenericCondition } from "MODScript/MODscriptDefs";
 import { HitPoints } from "elements/HitPoints";
 import { Tag } from "elements/Tag";
 import { BodyHandle } from "engine/BodyHandle";
 import { GameplayScene } from "engine/GameplayScene";
+import { MODscriptEvent } from "./MODscriptEvent";
 import { Helpers } from "engine/Helpers";
 import { Vector3 } from "three";
 
