@@ -27,7 +27,7 @@ export class ShapeStateController extends LMent {
           this.animStates[0].startState();
           this.activeState = this.animStates[0];
         }
-    }, Helpers.deltaTime);
+    }, 1/GameplayScene.instance.memory.frameRate);
   }
 
   addState(state: ShapeStateAnimator) {

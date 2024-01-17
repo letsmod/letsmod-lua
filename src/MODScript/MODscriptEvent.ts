@@ -1,6 +1,6 @@
 import { BodyHandle } from "engine/BodyHandle";
 import { TriggerDefinition, ActionDefinition, GenericTrigger, GenericAction, EventDefinition, ConditionDefinition, GenericCondition } from "./MODscriptDefs";
-import { ActionFactory} from "./FactoryClasses/ActionsFactory";
+import { ActionFactory } from "./FactoryClasses/ActionsFactory";
 import { TriggerFactory } from "./FactoryClasses/TriggersFactory";
 
 export class MODscriptEvent {
@@ -13,20 +13,20 @@ export class MODscriptEvent {
     repeatable: boolean = false;
     enabled: boolean = true;
 
-     public get IsActive() { return this.enabled && (!this.isFinished || this.isFinished && this.repeatable); }
-     public get IsFinished() { return this.isFinished; }
-     public get EventActor(): BodyHandle | undefined { return this.involvedActorBodies.find(actor => actor.body.id === this.actorId); }
-     public get InvolvedActorIDs(): number[] { return this.involvedActorIDs; }
-     public get InvolvedActorBodies(): BodyHandle[] { return this.involvedActorBodies; }
+    public get IsActive() { return this.enabled && (!this.isFinished || this.isFinished && this.repeatable); }
+    public get IsFinished() { return this.isFinished; }
+    public get EventActor(): BodyHandle | undefined { return this.involvedActorBodies.find(actor => actor.body.id === this.actorId); }
+    public get InvolvedActorIDs(): number[] { return this.involvedActorIDs; }
+    public get InvolvedActorBodies(): BodyHandle[] { return this.involvedActorBodies; }
 
-     private involvedActorBodies: BodyHandle[] = [];
-     private involvedActorIDs: number[] = [];
-     private isFinished: boolean = false;
-     private eventTrigger: GenericTrigger | undefined;
-     private eventAction: GenericAction | undefined;
-     private eventDef: EventDefinition | undefined;
+    private involvedActorBodies: BodyHandle[] = [];
+    private involvedActorIDs: number[] = [];
+    private isFinished: boolean = false;
+    private eventTrigger: GenericTrigger | undefined;
+    private eventAction: GenericAction | undefined;
+    private eventDef: EventDefinition | undefined;
 
-    constructor(id:number,eventDef: EventDefinition) {
+    constructor(id: number, eventDef: EventDefinition) {
         this.eventId = id;
         this.eventDef = eventDef;
 
@@ -43,11 +43,13 @@ export class MODscriptEvent {
     }
 
     setCATs(): void {
-        if(this.trigger === undefined || this.action === undefined) return;
-        this.eventTrigger = TriggerFactory.Instance.createTrigger(this, this.trigger);
-        this.eventAction = ActionFactory.Instance.createAction(this, this.action);
+        if (this.trigger === undefined || this.action === undefined) return;
+        this.eventTrigger = TriggerFactory.createTrigger(this, this.trigger);
+        this.eventAction = ActionFactory.createAction(this, this.action);
+
+        this.debugEvent();
     }
-    
+
     addInvolvedActor(actor: BodyHandle): void {
         this.involvedActorBodies.push(actor);
     }
@@ -62,16 +64,21 @@ export class MODscriptEvent {
     getInvolvedActor(actorId: number): BodyHandle | undefined {
         return this.involvedActorBodies.find(actor => actor.body.id === actorId);
     }
-    
+
     debugEvent(): void {
-        if(this.trigger === undefined || this.action === undefined) return;
+        if (this.trigger === undefined || this.action === undefined) {
+            console.log("Event is undefined");
+            return;
+        }
         console.log("ActorId: " + this.actorId);
         console.log("Repeatable: " + this.repeatable);
         console.log("Enabled: " + this.enabled);
         console.log("TriggerType: " + this.trigger.triggerType);
         console.log("ActionType: " + this.action.actionType);
-        console.log("ConditionType: " + (this.trigger.args.condition as ConditionDefinition).conditionType);
-        console.log("ConditionActorId: " + (this.trigger.args.condition as ConditionDefinition).args.actorId);
+        if (this.trigger.args.condition !== undefined) {
+            console.log("ConditionType: " + (this.trigger.args.condition as ConditionDefinition).conditionType);
+            console.log("ConditionActorId: " + (this.trigger.args.condition as ConditionDefinition).args.actorId);
+        }
         console.log("MaxDistance: " + this.trigger.args.maxDistance);
         console.log("JumpHeight: " + this.action.args.jumpHeight);
     }
