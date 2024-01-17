@@ -98,9 +98,12 @@ export abstract class Trigger implements GenericTrigger {
 
 export abstract class Action implements GenericAction {
 
+    public actionType: string;
+
     parentEvent: MODscriptEvent;
     constructor(parentEvent: MODscriptEvent) {
         this.parentEvent = parentEvent;
+        this.actionType = this.parentEvent.action.actionType;
     }
     abstract performAction(actor?: BodyHandle | undefined): void
     abstract actionFinishedCallback(): void
