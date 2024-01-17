@@ -1,10 +1,11 @@
-import { ConditionDefinition, GenericCondition } from "MODScript/MODscriptCore";
-import { HitPoints } from "elements/HitPoints";
-import { Tag } from "elements/Tag";
+import { GenericCondition } from "MODScript/MODscriptDefs";
 import { BodyHandle } from "engine/BodyHandle";
 import { GameplayScene } from "engine/GameplayScene";
+import { MODscriptEvent } from "./MODscriptEvent";
 import { Helpers } from "engine/Helpers";
 import { Vector3 } from "three";
+import { Tag } from "elements/Tag";
+import { HitPoints } from "elements/HitPoints";
 
 export class Element implements GenericCondition {
     elementId: string; // number or string??
