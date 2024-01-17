@@ -14,7 +14,7 @@ export class CompletedEvent extends GenericTrigger {
 
     checkTrigger(): { didTrigger: boolean, outputActor: BodyHandle | undefined } {
 
-        const event = EventHandler.Instance.getEvent(this.eventId);
+        const event = EventHandler.instance.getEvent(this.eventId);
             if (event && event.IsFinished)
                 return { didTrigger: true, outputActor: undefined };
 
