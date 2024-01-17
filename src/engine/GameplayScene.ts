@@ -25,8 +25,8 @@ export class GameplayScene {
   dispatcher: MessageDispatcher = new MessageDispatcher(this);
   memory: GameplayMemory = new GameplayMemory();
   clientInterface: LuaClientInterface | undefined = undefined;
-  eventHandler: EventHandler | undefined = undefined;
   currentDt: number = 0;
+  eventHandler: EventHandler | undefined;
   gamePreferences: GamePreferences = {
     defaultPlayDifficulty: "normal",
   };
@@ -50,10 +50,10 @@ export class GameplayScene {
     this.bodyIdMap.set(bodyNode.id, handle);
 
     if(this.eventHandler !== undefined)
-    for(let e of this.eventHandler.events) {
-      if(e.InvolvedActorIDs.includes(handle.body.id))
-        e.addInvolvedActor(handle);
-    }
+      for(let e of this.eventHandler.events) {
+        if(e.InvolvedActorIDs.includes(handle.body.id))
+          e.addInvolvedActor(handle);
+      }
 
     return handle;
   }
@@ -100,7 +100,8 @@ export class GameplayScene {
 
   initializeMemory(memoryOverride: Partial<GameplayMemory>) {
     this.memory = { ...new GameplayMemory(), ...memoryOverride };
-    EventHandler.Instance.initialize(this.memory.player);
+    if(this.eventHandler !== undefined)
+    this.eventHandler.initialize();
   }
 
   preUpdate(dt: number) {
@@ -160,10 +161,10 @@ export class GameplayScene {
     }
 
     if(this.eventHandler !== undefined)
-    for(let e of this.eventHandler.events) {
-      if(e.InvolvedActorIDs.includes(body.body.id))
-        e.removeInvolvedActor(body);
-    }
+      for(let e of this.eventHandler.events) {
+        if(e.InvolvedActorIDs.includes(body.body.id))
+          e.removeInvolvedActor(body);
+      }
   }
 
   testErrorHandler() {

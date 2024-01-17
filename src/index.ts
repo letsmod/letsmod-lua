@@ -1,3 +1,4 @@
+import { EventHandler } from "MODScript/EventHandler";
 import { GameplayScene } from "engine/GameplayScene";
 
 export * as Elements from "elements/_ElementTypes";
@@ -5,6 +6,8 @@ export * as Elements from "elements/_ElementTypes";
 export { BodyHandle } from "engine/BodyHandle";
 
 export const scene = GameplayScene.instance;
+
+scene.eventHandler = EventHandler.instance;
 
 // export const testArray = [1, 2, 3];
 

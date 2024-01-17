@@ -22,6 +22,8 @@ export class Helpers{
     static get yzVector() {return js_new(global.THREE.Vector3,0,1,1);}
     static readonly NA = "N/A";
 
+    static get deltaTime() {return 1/GameplayScene.instance.memory.frameRate;}
+
     static NumLerp(a:number,b:number,t:number):number
     {
         return a + (b - a) * t;
@@ -102,6 +104,16 @@ export class Helpers{
     static LogVector(v:Vector3)
     {
         console.log("x: "+v.x+", y:"+v.y+", z:"+v.z);
+    }
+
+    //Not recommended to use this continuously.
+    static findBodyInScene(name: string): BodyHandle | undefined {
+        let body = GameplayScene.instance.bodies.find(b => b.body.name == name);
+        if (body === undefined) {
+            console.log("No body named: " + name + " was found.")
+            return undefined;
+        }
+        return body;
     }
 
     static findBodyWithinGroup(sibling: BodyHandle,name: string): BodyHandle | undefined {
