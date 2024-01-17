@@ -100,8 +100,7 @@ export class GameplayScene {
 
   initializeMemory(memoryOverride: Partial<GameplayMemory>) {
     this.memory = { ...new GameplayMemory(), ...memoryOverride };
-    this.eventHandler = new EventHandler();
-    this.eventHandler.initialize(this.memory.player);
+    EventHandler.Instance.initialize(this.memory.player);
   }
 
   preUpdate(dt: number) {

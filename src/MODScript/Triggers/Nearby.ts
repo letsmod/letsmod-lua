@@ -2,6 +2,7 @@ import { BodyHandle } from "engine/BodyHandle";
 import { ConditionDefinition, GenericCondition, GenericTrigger } from "../MODscriptDefs";
 import { MODscriptEvent } from "MODScript/MODscriptEvent";
 import { ConditionFactory } from "MODScript/FactoryClasses/ConditionsFactory";
+import { GameplayScene } from "engine/GameplayScene";
 
 export class Nearby extends GenericTrigger {
 

@@ -9,6 +9,13 @@ export class EventHandler implements UpdateHandler {
     events: MODscriptEvent[] = [];
     playerReference: BodyHandle | undefined;
 
+    private static _instance: EventHandler
+    public static get Instance(): EventHandler {
+        if (!EventHandler._instance)
+            EventHandler._instance = new EventHandler();
+        return EventHandler._instance;
+    }
+
     initialize(playerReference: BodyHandle | undefined): void {
         //Filling in Dummy Data 
         this.playerReference = playerReference;   
