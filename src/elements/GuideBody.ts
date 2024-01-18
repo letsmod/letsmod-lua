@@ -71,22 +71,12 @@ export class GuideBody extends LMent implements UpdateHandler {
                 this.targetBody = GameplayScene.instance.memory.mainCamera;
             else {
                 if (this.targetContext.toLowerCase() === "global")
-                    this.targetBody = this.findBodyInScene(this.target);
+                    this.targetBody = Helpers.findBodyInScene(this.target);
                 else if (this.targetContext.toLowerCase() === "group")
                     this.targetBody = Helpers.findBodyWithinGroup(this.body, this.target);
                 else console.log("Invalid target context: " + this.targetContext);
             }
         }, 1 / 30);
-    }
-
-    //Redundant in other places, I had to remove this from Helpers.ts because it was causing a circular dependency.
-    findBodyInScene(name: string): BodyHandle | undefined {
-        let body = GameplayScene.instance.bodies.find(b => b.body.name == name);
-        if (body === undefined) {
-            console.log("No body named: " + name + " was found.")
-            return undefined;
-        }
-        return body;
     }
 
     getTargetBody() {

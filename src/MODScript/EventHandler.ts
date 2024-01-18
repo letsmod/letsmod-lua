@@ -2,23 +2,22 @@ import { UpdateHandler } from "engine/MessageHandlers";
 import { EventDefinition } from "./MODscriptDefs";
 import { MODscriptEvent } from "./MODscriptEvent";
 import { BodyHandle } from "engine/BodyHandle";
+import { GameplayScene } from "engine/GameplayScene";
 
 export class EventHandler implements UpdateHandler {
 
     dummyData: string = "";
     events: MODscriptEvent[] = [];
-    playerReference: BodyHandle | undefined;
 
     private static _instance: EventHandler
-    public static get Instance(): EventHandler {
+    public static get instance(): EventHandler {
         if (!EventHandler._instance)
             EventHandler._instance = new EventHandler();
         return EventHandler._instance;
     }
 
-    initialize(playerReference: BodyHandle | undefined): void {
+    initialize(): void {
         //Filling in Dummy Data 
-        this.playerReference = playerReference;   
         this.events = this.createDummyData();
         for(let event of this.events)
             event.setCATs();

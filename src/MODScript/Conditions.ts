@@ -6,6 +6,7 @@ import { Helpers } from "engine/Helpers";
 import { Vector3 } from "three";
 import { Tag } from "elements/Tag";
 import { HitPoints } from "elements/HitPoints";
+import { EventHandler } from "./EventHandler";
 
 export class Element implements GenericCondition {
     elementId: string; // number or string??
