@@ -83,6 +83,7 @@ export const CATs = {
     DisableEvent: "DisableEvent",
     EnableEvent: "EnableEvent",
     DummyJump: "DummyJump",
+    Say: "Say",
 
     /*** Triggers ***/
     Nearby: "Nearby",

@@ -1,7 +1,7 @@
 import { BodyHandle } from "engine/BodyHandle";
 import { ConditionDefinition, GenericCondition, GenericTrigger } from "../MODscriptDefs";
-import { ConditionFactory } from "MODScript/FactoryClasses";
 import { MODscriptEvent } from "MODScript/MODscriptEvent";
+import { ConditionFactory } from "MODScript/FactoryClasses/ConditionsFactory";
 
 export class Hear extends GenericTrigger {
 

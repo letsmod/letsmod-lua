@@ -18,6 +18,7 @@ export class EventHandler implements UpdateHandler {
 
     initialize(): void {
         //Filling in Dummy Data 
+        console.log("Initializing Event Handler");
         this.events = this.createDummyData();
         for(let event of this.events)
             event.setCATs();
@@ -25,48 +26,49 @@ export class EventHandler implements UpdateHandler {
 
     createDummyData(): MODscriptEvent[] {
         const event1: EventDefinition = {
-            actorId: 789,
+            actorId: 24792,
             trigger: {
                 triggerType: "Nearby",
                 args: {
                     condition: {
                         conditionType: "IsOther",
-                        args: { actorId: 456 }
+                        args: { actorId: 24817 }
                     },
-                    maxDistance: 10
+                    maxDistance: 2
                 }
             },
             action: {
-                actionType: "DummyJump",
-                args: { jumpHeight: 10 }
+                actionType: "JumpUp",
+                args: { jumpHeight: 4000 }
             },
             repeatable: false,
             enabled: true
         };
         
         const event2: EventDefinition = {
-            actorId: 789,
+            actorId: 24792,
             trigger: {
                 triggerType: "CompletedEvent",
                 args: { eventId: 0 }
             },
             action: {
                 actionType: "NavigateOther",
-                args: { actorId: 123 }
+                args: { actorId: 24828, speed: -0.3}
             },
             repeatable: false,
             enabled: true
         };
         
         const event3: EventDefinition = {
-            actorId: 789,
+            actorId: 24792,
             trigger: {
-                triggerType: "OtherDestroyed",
+                triggerType: "Nearby",
                 args: {
                     condition: {
                         conditionType: "IsOther",
-                        args: { actorId: 456 }
-                    }
+                        args: { actorId: 24828 }
+                    },
+                    maxDistance: 2
                 }
             },
             action: {

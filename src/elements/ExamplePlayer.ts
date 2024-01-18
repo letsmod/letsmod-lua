@@ -22,16 +22,16 @@ export class ExamplePlayer extends LMent implements ButtonHandler, DragGestureHa
     this.deceleration = params.deceleration === undefined ? this.maxSpeed * 5 : params.deceleration;
     this.arrayTest = this.convertArray(params.arrayTest) || [];
 
-    console.log("is array", Array.isArray(this.arrayTest));
-    console.log("testing array");
-    console.log("length", this.arrayTest.length);
-    for (let i = 0; i < this.arrayTest.length; i++) {
-      console.log(this.arrayTest[i].x, this.arrayTest[i].y, this.arrayTest[i].z);
-    }
-    console.log("test b");
-    this.arrayTest.forEach(v => {
-      console.log(v.x, v.y, v.z);
-    });
+    // console.log("is array", Array.isArray(this.arrayTest));
+    // console.log("testing array");
+    // console.log("length", this.arrayTest.length);
+    // for (let i = 0; i < this.arrayTest.length; i++) {
+    //   console.log(this.arrayTest[i].x, this.arrayTest[i].y, this.arrayTest[i].z);
+    // }
+    // console.log("test b");
+    // this.arrayTest.forEach(v => {
+    //   console.log(v.x, v.y, v.z);
+    // });
   }
 
   onInit(): void {
@@ -41,6 +41,7 @@ export class ExamplePlayer extends LMent implements ButtonHandler, DragGestureHa
     GameplayScene.instance.dispatcher.addListener("hitPointsChanged", this);
     GameplayScene.instance.memory.player = this.body;
     this.body.body.lockRotation(true, false, true);
+    console.log(this.body.body.id)
   }
 
   onStart(): void {

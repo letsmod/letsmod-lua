@@ -16,7 +16,7 @@ export class NavigateOther extends GenericAction {
 
     performAction(triggerOutput?: BodyHandle | undefined): void {
         const actor = GameplayScene.instance.getBodyById(this.actorId);
-        if (!triggerOutput || !this.parentEvent || !this.parentEvent.EventActor || !actor) return;
+        if ( !this.parentEvent || !this.parentEvent.EventActor || !actor) return;
 
         const actorPosition = actor.body.getPosition();
         const thisBody = this.parentEvent.EventActor.body;
@@ -27,7 +27,7 @@ export class NavigateOther extends GenericAction {
 
         thisBody.setVelocity(velocity);
 
-        if (thisBodyPosition.distanceTo(actorPosition) < 0.5)
+        if (thisBodyPosition.distanceTo(actorPosition) < 1.5)
             this.actionFinished();
     }
 

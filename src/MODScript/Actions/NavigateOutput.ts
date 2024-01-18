@@ -4,10 +4,10 @@ import { BodyHandle } from "engine/BodyHandle";
 import { GameplayScene } from "engine/GameplayScene";
 import { Helpers } from "engine/Helpers";
 
-export class NavigateOther extends GenericAction {
+export class NavigateOutput extends GenericAction {
     speed: number;
 
-    constructor(eventId: MODscriptEvent, args: Partial<NavigateOther>) {
+    constructor(eventId: MODscriptEvent, args: Partial<NavigateOutput>) {
         super(eventId);
         this.speed = args.speed ?? 0;
     }
