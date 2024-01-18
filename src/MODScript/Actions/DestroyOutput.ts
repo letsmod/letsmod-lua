@@ -1,9 +1,10 @@
-import { Action, GenericAction, MODscriptEvent } from "MODScript/MODscriptCore";
+import { GenericAction } from "MODScript/MODscriptDefs";
+import { MODscriptEvent } from "MODScript/MODscriptEvent";
+
 import { BodyHandle } from "engine/BodyHandle";
-import { GameplayScene } from "engine/GameplayScene";
 import { Helpers } from "engine/Helpers";
 
-export class DestroyOutput extends Action {
+export class DestroyOutput extends GenericAction {
     actorId: number;
 
     constructor(eventId: MODscriptEvent, args: Partial<DestroyOutput>) {

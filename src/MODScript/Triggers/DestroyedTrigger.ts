@@ -1,9 +1,9 @@
 import { BodyHandle } from "engine/BodyHandle";
-import { ConditionDefinition, GenericCondition, MODscriptEvent, Trigger } from "../MODscriptCore";
-import { ConditionFactory } from "MODScript/FactoryClasses";
+import { ConditionDefinition, GenericCondition, GenericTrigger } from "../MODscriptDefs";
 import { HitPoints } from "elements/HitPoints";
+import { MODscriptEvent } from "MODScript/MODscriptEvent";
 
-export class DestroyedTrigger extends Trigger {
+export class DestroyedTrigger extends GenericTrigger {
 
     constructor(parentEvent: MODscriptEvent, triggerArgs: Partial<DestroyedTrigger>) {
         super(parentEvent);

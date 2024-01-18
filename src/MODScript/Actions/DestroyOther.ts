@@ -1,9 +1,10 @@
-import { Action, GenericAction, MODscriptEvent } from "MODScript/MODscriptCore";
+import { GenericAction } from "MODScript/MODscriptDefs";
+import { MODscriptEvent } from "MODScript/MODscriptEvent";
+
 import { BodyHandle } from "engine/BodyHandle";
-import { GameplayScene } from "engine/GameplayScene";
 import { Helpers } from "engine/Helpers";
 
-export class DestroyOther extends Action {
+export class DestroyOther extends GenericAction {
     actorId: number;
 
     constructor(eventId: MODscriptEvent, args: Partial<DestroyOther>) {
@@ -14,7 +15,7 @@ export class DestroyOther extends Action {
     performAction(triggerOutput?: BodyHandle | undefined): void {
         if (!triggerOutput || !this.parentEvent || !this.parentEvent.EventActor) return;
 
-        const targetActor = GameplayScene.instance.getBodyById(this.actorId);
+        const targetActor = this.parentEvent.getInvolvedActor(this.actorId);
         if (targetActor){
             targetActor.body.destroyBody();
             this.actionFinished();

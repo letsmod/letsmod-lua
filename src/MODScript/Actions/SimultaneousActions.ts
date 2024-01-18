@@ -1,8 +1,10 @@
-import { Action, ActionDefinition, GenericAction, MODscriptEvent } from "MODScript/MODscriptCore";
+import { GenericAction } from "MODScript/MODscriptDefs";
+import { MODscriptEvent } from "MODScript/MODscriptEvent";
+
 import { BodyHandle } from "engine/BodyHandle";
 import { Helpers } from "engine/Helpers";
 
-export class SimultaneousActions extends Action {
+export class SimultaneousActions extends GenericAction {
     action1: GenericAction | undefined;
     action2: GenericAction | undefined;
 
@@ -15,7 +17,7 @@ export class SimultaneousActions extends Action {
     performAction(triggerOutput?: BodyHandle | undefined): void {
         if (!triggerOutput || !this.parentEvent || !this.parentEvent.EventActor) return;
 
-        (this.action1 as Action).actionType == "Say";
+        (this.action1 as GenericAction).actionType == "Say";
         
         
         this.actionFinished();

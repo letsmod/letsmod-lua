@@ -1,9 +1,10 @@
-import { Action, GenericAction, MODscriptEvent } from "MODScript/MODscriptCore";
+import { GenericAction } from "MODScript/MODscriptDefs";
+import { MODscriptEvent } from "MODScript/MODscriptEvent";
+
 import { BodyHandle } from "engine/BodyHandle";
-import { GameplayScene } from "engine/GameplayScene";
 import { Helpers } from "engine/Helpers";
 
-export class ThrowOther extends Action {
+export class ThrowOther extends GenericAction {
     prefabId: number
     actorId: number;
 
@@ -17,7 +18,7 @@ export class ThrowOther extends Action {
         if(!triggerOutput || !this.parentEvent || !this.parentEvent.EventActor) 
             return;
 
-        const targetActor = GameplayScene.instance.getBodyById(this.actorId);
+        const targetActor = this.parentEvent.getInvolvedActor(this.actorId);
         if (!targetActor) 
             return;
 

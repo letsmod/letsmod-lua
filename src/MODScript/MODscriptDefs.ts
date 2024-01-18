@@ -71,12 +71,35 @@ export declare type EventDefinition = {
 
 export const CATs = {
     /*** Conditions ***/
+    Element: "Element",
+    HasTag: "HasTag",
+    IsPlayer: "IsPlayer",
+    IsPhysical: "IsPhysical",
+    IsKinematic: "IsKinematic",
+    IsHologram: "IsHologram",
+    IsOnTeam: "IsOnTeam",
+    MinMass: "MinMass",
+    MaxMass: "MaxMass",
+    MinSize: "MinSize",
+    MaxSize: "MaxSize",
+    AndCond: "AndCond",
+    OrCond: "OrCond",
+    NotCond: "NotCond",
     IsOther: "IsOther",
-
+    SeenOther: "SeenOther",
+    IsTrue: "IsTrue",
+    
     /*** Actions ***/
-    JumpUp: "JumpUp",
+    JumpUpAction: "JumpUpAction",
+    DestroyOther: "DestroyOther",
+    DestroyOutput: "DestroyOutput",
+    InstantiateAction: "InstantiateAction",
+    SimultaneousActions: "SimultaneousActions",
+    ThrowOther: "ThrowOther",
 
     /*** Triggers ***/
     Nearby: "Nearby",
+    DamageTrigger: "DamageTrigger",
+    DestroyedTrigger: "DestroyedTrigger",
        
   };
