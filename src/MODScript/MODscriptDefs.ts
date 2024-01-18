@@ -75,8 +75,19 @@ export const CATs = {
 
     /*** Actions ***/
     JumpUp: "JumpUp",
+    LookOther: "LookOther",
+    LookOutput: "LookOutput",
+    NavigateOther: "NavigateOther",
+    NavigateOutput: "NavigateOutput",
+    WaitAction: "WaitAction",
+    DisableEvent: "DisableEvent",
+    EnableEvent: "EnableEvent",
+    DummyJump: "DummyJump",
 
     /*** Triggers ***/
     Nearby: "Nearby",
+    Hear: "Hear",
+    Touched: "Touched",
+    CompletedEvent: "CompletedEvent",
        
   };

@@ -82,7 +82,7 @@ export class RotationalWaypoint extends LMent implements PhysicsSubstepHandler {
     }
 
     onPhysicsSubstep(dt: number): void {
-        if (!this.enabled || this.points.length === 0)
+        if (this.enabled !== true || this.points.length === 0)
             return;
         this.handleWaypointRotation(dt);
     }

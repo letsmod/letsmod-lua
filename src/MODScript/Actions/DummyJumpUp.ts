@@ -4,10 +4,10 @@ import { MODscriptEvent } from "MODScript/MODscriptEvent";
 import { BodyHandle } from "engine/BodyHandle";
 import { Helpers } from "engine/Helpers";
 
-export class JumpUpAction extends GenericAction {
+export class DummyJumpUpAction extends GenericAction {
     jumpHeight: number;
 
-    constructor(parentEvent:MODscriptEvent, args:Partial<JumpUpAction>) {
+    constructor(parentEvent:MODscriptEvent, args:Partial<DummyJumpUpAction>) {
         super(parentEvent);
         this.jumpHeight = args.jumpHeight ?? 0;
     }
@@ -15,8 +15,8 @@ export class JumpUpAction extends GenericAction {
     performAction(triggerOutput?: BodyHandle | undefined): void {
         if(!triggerOutput || !this.parentEvent || !this.parentEvent.EventActor) return;
 
-         this.parentEvent.EventActor.body.applyCentralForce(Helpers.NewVector3( 0, this.jumpHeight, 0));
-         this.actionFinished();
+         console.log("inside nearby event");
+         //this.actionFinished();
     }
     
     actionFinishedCallback(): void {

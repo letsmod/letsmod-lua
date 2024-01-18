@@ -37,7 +37,7 @@ export class EventHandler implements UpdateHandler {
                 }
             },
             action: {
-                actionType: "JumpUp",
+                actionType: "DummyJump",
                 args: { jumpHeight: 10 }
             },
             repeatable: false,

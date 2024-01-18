@@ -1,6 +1,6 @@
 import { BodyHandle } from "engine/BodyHandle";
 import { StateMachineLMent, State } from "engine/StateMachineLMent";
-import { Helpers } from "engine/Helpers";
+import { Constants, Helpers } from "engine/Helpers";
 import { LookAt } from "./LookAt";
 import { CharacterStateMachineLMent, EnemyAlertState, EnemyChaseState } from "./CharacterStates";
 import { CharacterStates, characterIdleState, characterPatrolState } from "./CharacterStates";
@@ -83,7 +83,7 @@ export class BouncerEnemy extends CharacterStateMachineLMent {
         super.onInit();
         let point1 = this.body.body.getPosition().clone();
         let point2 = point1.clone().add(Helpers.forwardVector.multiplyScalar(this.patrolDistance).applyQuaternion(this.body.body.getRotation()))
-        let sound = this.body.getElementByName("Move") as SfxPlayer
+        let sound = this.body.getElementByName(Constants.MoveAudio) as SfxPlayer
         this.states = {
             [CharacterStates.patrol]: new BouncerPatrol(this, [point1, point2], this.patrolSpeed, this.movementForce, sound),
             [CharacterStates.chase]: new BouncerChase(this, this.chaseSpeed, this.movementForce),
