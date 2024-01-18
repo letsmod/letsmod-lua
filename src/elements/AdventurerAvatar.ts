@@ -6,6 +6,7 @@ import { Quaternion, Vector3 } from "three";
 import { Helpers } from "engine/Helpers";
 import { GameplayScene } from "engine/GameplayScene";
 import { LMent } from "engine/LMent";
+import { Throwable } from "./Throwable";
 
 export abstract class AdventurerState extends AnimatedState
 {
@@ -553,78 +554,404 @@ export class ClimbState extends StaggerableState
   }
 }
 
-/*
-Idle : standing in place
-Idle : loops
+export class LiftState extends StaggerableState
+{
+  liftedItem: BodyHandle | undefined;
+  constructor(stateMachine: AdventurerAvatar, shapeToAnimate: ShapePointer | undefined)
+  {
+    super("lift", stateMachine, shapeToAnimate, "lift", stateMachine.baseBlendTime);
+  }
 
-Stagger : reaction when hit by an attack or strong force
-Stagger : does not loop
-Stagger : duration: 0.5 s
-Note right of Stagger : Can be entered from any state; arrows not shown for readability
+  onEnterState(previousState: State | undefined): void {
+    super.onEnterState(previousState);
+    this.liftedItem = this.stateMachine.liftedItem;
+    if (this.liftedItem)
+    {
+      this.liftedItem.body.setVelocity(this.stateMachine.body.body.getVelocity());
+      this.liftedItem.body.setAngularVelocity(Helpers.zeroVector);
+      this.stateMachine.body.body.addHoldConstraintWith(this.liftedItem.body, "item_node");
+    }
+  }
 
-Jog : jogging
-Jog : loops
-Jog : speed: 5 m/s
+  onExitState(nextState: State | undefined): void {
+    if (this.liftedItem)
+    {
+      this.stateMachine.body.body.removeHoldConstraintWith(this.liftedItem.body);
+    }
+  }
 
-Dash : quick dash / dodge roll
-Dash : does not loop
-Dash : speed: 9 m/s
-Dash : duration: 0.8 s
+  onActorDestroyed(actor: BodyHandle): void {
+    if (actor == this.liftedItem)
+    {
+      console.log("actor broke");
+      this.stateMachine.switchState("idle");
+    }
+  }
 
-Jump : jump upwards and forward, from a jogging start
-Jump : does not loop
-Jump : speed: 5 m/s forward, 5 m/s up
-Jump : duration: 0.5 s
+  onUpdate(dt: number): void
+  {
+    if (this.shape?.isAnimationFinished())
+    {
+      this.stateMachine.switchState("idle_holding");
+    }
+  }
+}
 
-Fall : falling after jumping, walking off a ledge, or being knocked back
-Fall : loops
+export class PlaceState extends StaggerableState
+{
+  liftedItem: BodyHandle | undefined;
+  constructor(stateMachine: AdventurerAvatar, shapeToAnimate: ShapePointer | undefined)
+  {
+    super("place", stateMachine, shapeToAnimate, "place", stateMachine.baseBlendTime);
+  }
 
-Lift : lift object from in front of player to over head, using both hands
-Lift : does not loop
-Lift : duration: 0.75 s
-Lift : assume object is approximately 1m x 1m x 1m
+  onEnterState(previousState: State | undefined): void {
+    super.onEnterState(previousState);
+    this.liftedItem = this.stateMachine.liftedItem;
+    if (this.liftedItem)
+    {
+      this.liftedItem.body.setVelocity(this.stateMachine.body.body.getVelocity());
+      this.liftedItem.body.setAngularVelocity(Helpers.zeroVector);
+      this.stateMachine.body.body.addHoldConstraintWith(this.liftedItem.body, "item_node");
+    }
+  }
 
-Throw : throw object from over head in direction player is facing
-Throw : does not loop
-Throw : duration: 0.25 s
-Throw : object velocity: 9 m/s forward, 3 m/s up
+  onExitState(nextState: State | undefined): void {
+    if (this.liftedItem)
+    {
+      this.stateMachine.body.body.removeHoldConstraintWith(this.liftedItem.body);
+    }
+  }
 
-Place : place object in front of player
-Place : does not loop
-Place : duration: 0.5 s
+  onActorDestroyed(actor: BodyHandle): void {
+    if (actor == this.liftedItem)
+    {
+      console.log("actor broke 2");
+      this.stateMachine.switchState("idle");
+    }
+  }
 
-Idle_Holding : standing in place while holding object over head
-Idle_Holding : loops
+  onUpdate(dt: number): void
+  {
+    if (this.shape?.isAnimationFinished())
+    {
+      this.stateMachine.switchState("idle");
+    }
+  }
+}
 
-Jog_Holding : jogging while holding object over head
-Jog_Holding : loops
-Jog_Holding : speed: 5 m/s
+export class IdleHoldingState extends StaggerableState
+{
+  liftedItem: BodyHandle | undefined;
+  constructor(stateMachine: AdventurerAvatar, shapeToAnimate: ShapePointer | undefined)
+  {
+    super("idle_holding", stateMachine, shapeToAnimate, "idle_holding", stateMachine.idleBlendTime);
+  }
 
-Jump_Holding : jump upwards and forward while holding object
-Jump_Holding : does not loop
-Jump_Holding : speed: 5 m/s forward, 5 m/s up
-Jump_Holding : duration: 0.5 s
+  onEnterState(previousState: State | undefined): void {
+    super.onEnterState(previousState);
+    this.liftedItem = this.stateMachine.liftedItem;
+    if (this.liftedItem)
+    {
+      this.liftedItem.body.setVelocity(this.stateMachine.body.body.getVelocity());
+      this.liftedItem.body.setAngularVelocity(Helpers.zeroVector);
+      this.stateMachine.body.body.addHoldConstraintWith(this.liftedItem.body, "item_node");
+    }
+  }
 
-Fall_Holding : falling after jumping or walking off a ledge while holding object
-Fall_Holding : loops
+  onExitState(nextState: State | undefined): void {
+    if (this.liftedItem)
+    {
+      this.stateMachine.body.body.removeHoldConstraintWith(this.liftedItem.body);
+    }
+  }
 
-Clamber : vault up onto object in front of player at waist height
-Clamber : does not loop
-Clamber : duration: 0.5 s
-Clamber : assume object is a flat ledge about 1m above the ground the player is standing on
+  onUpdate(dt: number): void
+  {
+    if (this.stateMachine.lastOnGround > this.stateMachine.coyoteTime)
+    {
+      this.stateMachine.switchState("fall_holding");
+    }
+    else if (this.stateMachine.dragDx != 0 || this.stateMachine.dragDy != 0)
+    {
+      this.stateMachine.switchState("jog_holding");
+    }
+  }
 
-Grab_Ledge: grab onto ledge in front of player, from a jumping start
-Grab_Ledge: does not loop
-Grab_Ledge: duration: 0.25 s
-Grab_Ledge : assume object is a flat ledge which starts level with the top of the player's head
+  onActorDestroyed(actor: BodyHandle): void {
+    if (actor == this.liftedItem)
+    {
+      console.log("actor broke 3");
+      this.stateMachine.switchState("idle");
+    }
+  }
 
-Hang: hanging from ledge
-Hang: loops
+  onTap()
+  {
+    this.stateMachine.switchState("place");
+  }
+}
 
-Climb : climb up onto ledge, from hanging start
-Climb : does not loop
-Climb : duration: 1 s
-*/
+export class JogHoldingState extends StaggerableState
+{
+  timeInJog: number = 0;
+  blocked_y_clamber: number = 2;
+  liftedItem : BodyHandle | undefined;
+
+  constructor(stateMachine: AdventurerAvatar, shapeToAnimate: ShapePointer | undefined)
+  {
+    super("jog_holding", stateMachine, shapeToAnimate, "jog_holding", stateMachine.baseBlendTime);
+  }
+
+  onEnterState(previousState: State | undefined): void {
+    super.onEnterState(previousState);
+    this.blocked_y_clamber = 2;
+    this.timeInJog = 0;
+    this.liftedItem = this.stateMachine.liftedItem;
+    if (this.liftedItem)
+    {
+      this.liftedItem.body.setVelocity(this.stateMachine.body.body.getVelocity());
+      this.liftedItem.body.setAngularVelocity(Helpers.zeroVector);
+      this.stateMachine.body.body.addHoldConstraintWith(this.liftedItem.body, "item_node");
+    }
+  }
+
+  onExitState(nextState: State | undefined): void {
+    if (this.liftedItem)
+    {
+      this.stateMachine.body.body.removeHoldConstraintWith(this.liftedItem.body);
+    }
+  }
+
+  onUpdate(dt: number): void {
+    if (this.stateMachine.autoJumpMinDistance > 0 && GameplayScene.instance.clientInterface && this.timeInJog > this.stateMachine.coyoteTime)
+    {
+      let intersection = GameplayScene.instance.clientInterface.raycast(this.stateMachine.body.body.getPosition(), Helpers.downVector, this.stateMachine.body.body.id, true);
+      if (intersection.distance > this.stateMachine.autoJumpMinDistance)
+      {
+        this.stateMachine.switchState("jump_holding");
+        return;
+      }
+    }
+
+    if (this.stateMachine.lastOnGround > this.stateMachine.coyoteTime)
+    {
+      this.stateMachine.switchState("fall_holding");
+    }
+    else if (this.stateMachine.dragDx == 0 && this.stateMachine.dragDy == 0)
+    {
+      this.stateMachine.switchState("idle_holding");
+    }
+    else
+    {
+      this.stateMachine.accelerateWithParams(this.stateMachine.jogAcceleration, this.stateMachine.jogAccelerationSmoothFactor, this.stateMachine.jogMaxSpeed, dt);
+    }
+
+    this.blocked_y_clamber--;
+    this.timeInJog += dt;
+  }
+
+  onCollision(info: CollisionInfo): void {
+    super.onCollision(info);
+    let deltaV = info.getDeltaVSelf();
+    let facing = this.stateMachine.getFacing();
+    if (Math.abs(deltaV.y) < 0.01 && deltaV.normalize().dot(facing) < this.stateMachine.climbDotProductThreshold)
+    {
+      let other = GameplayScene.instance.getBodyById(info.getOtherObjectId());
+      if (other?.body.isKinematic())
+      {
+        if (this.blocked_y_clamber <= 0)
+        {
+          this.stateMachine.switchState("jump_holding");
+        }
+      }  
+    }
+  }
+
+  onTrigger(source: LMent, triggerId: string): void {
+    if (triggerId == "blocked_y_clamber")
+    {
+      this.blocked_y_clamber = 2;
+    }
+  }
+
+  hasSubtype(subtype: string): boolean {
+    return subtype == "blocked_y_clamber";
+  }
+
+  onActorDestroyed(actor: BodyHandle): void {
+    if (actor == this.liftedItem)
+    {
+      console.log("actor broke 4");
+      this.stateMachine.switchState("jog");
+    }
+  }
+}
+
+export class JumpHoldingState extends StaggerableState
+{
+  timeInJump: number;
+  liftedItem: BodyHandle | undefined;
+
+  constructor(stateMachine: AdventurerAvatar, shapeToAnimate: ShapePointer | undefined)
+  {
+    super("jump_holding", stateMachine, shapeToAnimate, "jump_holding", stateMachine.baseBlendTime);
+    this.timeInJump = 0;
+  }
+
+  onEnterState(previousState: State | undefined): void {
+    super.onEnterState(previousState);
+    let velocity = this.stateMachine.body.body.getVelocity();
+    velocity.y += this.stateMachine.jumpInitialVelocity;
+    this.stateMachine.body.body.setVelocity(velocity);
+    this.stateMachine.lastOnGround = Infinity;
+    this.timeInJump = 0;
+    this.liftedItem = this.stateMachine.liftedItem;
+    if (this.liftedItem)
+    {
+      this.liftedItem.body.setVelocity(this.stateMachine.body.body.getVelocity());
+      this.liftedItem.body.setAngularVelocity(Helpers.zeroVector);
+      this.stateMachine.body.body.addHoldConstraintWith(this.liftedItem.body, "item_node");
+    }
+  }
+
+  onExitState(nextState: State | undefined): void {
+    if (this.liftedItem)
+    {
+      this.stateMachine.body.body.removeHoldConstraintWith(this.liftedItem.body);
+    }
+  }
+
+  onUpdate(dt: number): void {
+    this.timeInJump += dt;
+    if (this.stateMachine.lastOnGround == 0 && this.timeInJump >= this.stateMachine.coyoteTime)
+    {
+      if (this.stateMachine.dragDx != 0 || this.stateMachine.dragDy != 0)
+      {
+        this.stateMachine.switchState("jog_holding");
+      }
+      else
+      {
+        this.stateMachine.switchState("idle_holding");
+      }
+    }
+    else if (this.stateMachine.body.body.getVelocity().y < this.stateMachine.jumpToFallThreshold)
+    {
+      this.stateMachine.switchState("fall_holding");
+    }
+    else
+    {
+      if (this.stateMachine.dragDx != 0 || this.stateMachine.dragDy != 0)
+      {
+        this.stateMachine.accelerateWithParams(this.stateMachine.midairAcceleration, this.stateMachine.midairAccelerationSmoothFactor, this.stateMachine.midairMaxSpeed, dt);
+      }
+      else
+      {
+        let body = this.stateMachine.body.body;
+        let velocity = body.getVelocity().clone();
+        let origY = velocity.y;
+        velocity.y = 0; // ignore y axis
+        let deceleration = this.stateMachine.midairDeceleration;
+    
+        if (velocity.length() > deceleration * dt)
+        {
+          velocity.add(velocity.clone().normalize().multiplyScalar(-1 * deceleration * dt));
+          velocity.y = origY;
+        }
+        else
+        {
+          velocity.set(0,origY,0);
+        }
+        body.setVelocity(velocity);
+      }
+    }
+  }
+
+  onActorDestroyed(actor: BodyHandle): void {
+    if (actor == this.liftedItem)
+    {
+      console.log("actor broke 5");
+      this.stateMachine.switchState("fall");
+    }
+  }
+}
+
+export class FallHoldingState extends StaggerableState
+{
+  liftedItem: BodyHandle | undefined;
+
+  constructor(stateMachine: AdventurerAvatar, shapeToAnimate: ShapePointer | undefined)
+  {
+    super("fall_holding", stateMachine, shapeToAnimate, "fall_holding", stateMachine.baseBlendTime);
+  }
+
+  onEnterState(previousState: State | undefined): void {
+    super.onEnterState(previousState);
+    this.stateMachine.lastOnGround = Infinity;
+    this.liftedItem = this.stateMachine.liftedItem;
+    if (this.liftedItem)
+    {
+      this.liftedItem.body.setVelocity(this.stateMachine.body.body.getVelocity());
+      this.liftedItem.body.setAngularVelocity(Helpers.zeroVector);
+      this.stateMachine.body.body.addHoldConstraintWith(this.liftedItem.body, "item_node");
+    }
+  }
+
+  onExitState(nextState: State | undefined): void {
+    if (this.liftedItem)
+    {
+      this.stateMachine.body.body.removeHoldConstraintWith(this.liftedItem.body);
+    }
+  }
+
+  onUpdate(dt: number): void {
+    if (this.stateMachine.lastOnGround == 0)
+    {
+      if (this.stateMachine.dragDx != 0 || this.stateMachine.dragDy != 0)
+      {
+        this.stateMachine.switchState("jog_holding");
+      }
+      else
+      {
+        this.stateMachine.switchState("idle_holding");
+      }
+    }
+    else
+    {
+      if (this.stateMachine.dragDx != 0 || this.stateMachine.dragDy != 0)
+      {
+        this.stateMachine.accelerateWithParams(this.stateMachine.midairAcceleration, this.stateMachine.midairAccelerationSmoothFactor, this.stateMachine.midairMaxSpeed, dt);
+      }
+      else
+      {
+        let body = this.stateMachine.body.body;
+        let velocity = body.getVelocity().clone();
+        let origY = velocity.y;
+        velocity.y = 0; // ignore y axis
+        let deceleration = this.stateMachine.midairDeceleration;
+    
+        if (velocity.length() > deceleration * dt)
+        {
+          velocity.add(velocity.clone().normalize().multiplyScalar(-1 * deceleration * dt));
+          velocity.y = origY;
+        }
+        else
+        {
+          velocity.set(0,origY,0);
+        }
+        body.setVelocity(velocity);
+      }
+    }
+  }
+
+  onActorDestroyed(actor: BodyHandle): void {
+    if (actor == this.liftedItem)
+    {
+      console.log("actor broke 6");
+      this.stateMachine.switchState("fall");
+    }
+  }
+}
 
 export class AdventurerAvatar extends AvatarBase
 {
@@ -665,6 +992,7 @@ export class AdventurerAvatar extends AvatarBase
   clamberDetector: BodyHandle | undefined = undefined;
   climbDetector: BodyHandle | undefined = undefined;
   jumpDetector: BodyHandle | undefined = undefined;
+  liftedItem: BodyHandle | undefined = undefined;
 
   constructor(body: BodyHandle, id: number, params: Partial<AdventurerAvatar> = {})
   {
@@ -767,14 +1095,35 @@ export class AdventurerAvatar extends AvatarBase
       jump: new JumpState(this, shape),
       fall: new FallState(this, shape),
       clamber: new ClamberState(this, shape),
-      climb: new ClimbState(this, shape)
+      climb: new ClimbState(this, shape),
+      lift: new LiftState(this, shape),
+      place: new PlaceState(this, shape),
+      idle_holding: new IdleHoldingState(this, shape),
+      jog_holding: new JogHoldingState(this, shape),
+      jump_holding: new JumpHoldingState(this, shape),
+      fall_holding: new FallHoldingState(this, shape),
     }
 
     this.switchState("idle");
   }
 
   onStart(): void {
-    
+    super.onStart();
+  }
+
+  canInteract(): boolean
+  {
+    return this.currentState?.name == "idle" || this.currentState?.name == "jog";
+  }
+
+  pickUpItem(item: Throwable)
+  {
+    if (!this.canInteract())
+    {
+      return;
+    }
+    this.liftedItem = item.body;
+    this.switchState("lift");
   }
 
   onCollision(info: CollisionInfo): void {
@@ -786,6 +1135,7 @@ export class AdventurerAvatar extends AvatarBase
       if (direction.dot(Helpers.upVector) > 0.7)
       {
         this.lastOnGround = 0;
+        this.isOnGround = true;
       }
     }
 
@@ -795,6 +1145,10 @@ export class AdventurerAvatar extends AvatarBase
   onUpdate(dt: number): void {
     super.onUpdate(dt);
     this.lastOnGround += dt;
+    if (this.lastOnGround > dt)
+    {
+      this.isOnGround = false;
+    }
     if (this.clamberDetector === undefined)
     {
       for (let body of this.body.bodyGroup)
@@ -864,5 +1218,24 @@ export class AdventurerAvatar extends AvatarBase
   getPlanarVelocity() : Vector3
   {
     return this.body.body.getVelocity().clone().projectOnPlane(Helpers.upVector);
+  }
+
+  postReviveCallback() {
+    super.postReviveCallback();
+    let fallState = this.getState("fall") as FallState;
+    let oldBlendTime = fallState.animBlendTime;
+    fallState.animBlendTime = 0;
+    this.switchState("fall");
+    fallState.animBlendTime = oldBlendTime;
+  }
+
+  lose()
+  {
+    super.lose();
+    if (this.liftedItem)
+    {
+      // item isn't necessarily destroyed, but behave as though it was in order to destroy constraint and drop it
+      this.onActorDestroyed(this.liftedItem);
+    }
   }
 }

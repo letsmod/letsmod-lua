@@ -9,7 +9,7 @@ import {
   HitPointChangeHandler,
   UpdateHandler,
 } from "engine/MessageHandlers";
-import { Vector3 } from "three";
+import { Vector3, Quaternion } from "three";
 import { HazardZone } from "./HazardZone";
 import { HitPoints } from "./HitPoints";
 import { CameraTarget } from "./CameraTarget";
@@ -20,13 +20,13 @@ import { GuideBody } from "./GuideBody";
 import { SfxPlayer } from "./SfxPlayer";
 
 export class AvatarBase extends StateMachineLMent implements UpdateHandler, HitPointChangeHandler, CollisionHandler {
-  public static safeSteps: Vector3[] = [];
+  public static safeSteps: {pos: Vector3, rotation: Quaternion} [] = [];
   private maxSafeSteps: number = 500;
   private reviveMinDistance: number = 0;
   private reviveCounter: number = 3;
   private gameplayIsDifficult: boolean = true;
   public isOnGround = false;
-  private revivingCooldown: number = 0.5;
+  public revivingCooldown: number = 0.5;
   private safeStepDelay: number = 1;
   public dragDx = 0;
   public dragDy = 0;
@@ -41,6 +41,8 @@ export class AvatarBase extends StateMachineLMent implements UpdateHandler, HitP
     super(body, id, params);
     this.gender = params.gender == undefined ? Constants.Male : params.gender?.toLowerCase();
     this.validateGender();
+    this.revivingCooldown = params.revivingCooldown === undefined ? 0.5 : params.revivingCooldown;
+    this.respawnDelay = params.respawnDelay === undefined ? 1 : params.respawnDelay;
   }
 
   validateGender(){
@@ -61,6 +63,7 @@ export class AvatarBase extends StateMachineLMent implements UpdateHandler, HitP
     GameplayScene.instance.dispatcher.addListener("update", this);
     GameplayScene.instance.dispatcher.addListener("hitPointsChanged", this);
     GameplayScene.instance.dispatcher.addListener("collision", this);
+    GameplayScene.instance.dispatcher.addListener("actorDestroyed", this);
     GameplayScene.instance.dispatcher.addListener("drag", this);
     GameplayScene.instance.memory.player = this.body;
     AvatarBase.safeSteps = [];
@@ -78,10 +81,13 @@ export class AvatarBase extends StateMachineLMent implements UpdateHandler, HitP
   onStart(): void {
     this.initRotation();
     this.body.body.setAngularVelocity(Helpers.zeroVector);
-    AvatarBase.safeSteps.push(this.body.body.getPosition().clone());
+    AvatarBase.safeSteps.push({pos: this.body.body.getPosition().clone(), rotation: this.body.body.getRotation().clone()});
     this.addSafeStep();
-    this.camTarget = this.body.getElement(CameraTarget);
-    this.camGuide = this.body.getAllElements(GuideBody).find((g) => g.guideName === Constants.MainCamera);
+    this.camGuide = GameplayScene.instance.findAllElements(GuideBody).find((g) => g.guideName === Constants.MainCamera);
+    if (this.camGuide)
+    {
+      this.camTarget = this.camGuide.body.getElement(CameraTarget);
+    }
   }
 
   onUpdate(dt: number): void {
@@ -146,7 +152,9 @@ export class AvatarBase extends StateMachineLMent implements UpdateHandler, HitP
 
     //Disable camera guide element to stop the camera from following the player.
     if (this.camGuide)
+    {
       this.camGuide.enabled = false;
+    }
 
     let hp = this.body.getElement(HitPoints);
     if (hp)
@@ -173,21 +181,27 @@ export class AvatarBase extends StateMachineLMent implements UpdateHandler, HitP
   }
 
   checkSafeStep() {
-    if (!this.isOnGround) return;
+    if (!this.isOnGround) {
+      return;
+    }
 
     for (let h of HazardZone.AllZones)
+    {
       if (this.body.body.getPosition().distanceTo(h.body.body.getPosition()) < h.radius)
+      {
         return;
+      }
+    }
 
     if (AvatarBase.safeSteps.length > this.maxSafeSteps)
       AvatarBase.safeSteps.splice(1, 1);
-    AvatarBase.safeSteps.push(this.body.body.getPosition().clone());
+    AvatarBase.safeSteps.push({pos: this.body.body.getPosition().clone(), rotation: this.body.body.getRotation().clone()});
   }
 
   revive() {
     let stepPickedUp = false;
     for (let i = AvatarBase.safeSteps.length - 1; i >= 0; i--) {
-      let step = AvatarBase.safeSteps[i];
+      let step = AvatarBase.safeSteps[i].pos;
 
       for (let h of HazardZone.AllZones) {
         if (step.distanceTo(h.body.body.getPosition()) < h.radius) break;
@@ -208,14 +222,15 @@ export class AvatarBase extends StateMachineLMent implements UpdateHandler, HitP
 
   postReviveCallback() {
     if (this.camTarget)
+    {
       this.camTarget.enabled = true;
+    }
 
     //Enable movement again.
     this.enabled = true;
   }
 
   respawnAtIndex(index: number) {
-    this.body.body.setRotation(Helpers.NewQuatFromEuler(0, 0, 0));
     this.body.body.setVisible(true);
 
     let visibilityFlicker = this.body.getElement(VisibilityFlicker);
@@ -225,7 +240,10 @@ export class AvatarBase extends StateMachineLMent implements UpdateHandler, HitP
 
       //Enabling HP when flickering is done
       if (this.hpDelayedFunc)
+      {
         GameplayScene.instance.dispatcher.removeQueuedFunction(this.hpDelayedFunc);
+      }
+      
       this.hpDelayedFunc = GameplayScene.instance.dispatcher.queueDelayedFunction(this, () => {
         let hp = this.body.getElement(HitPoints);
         if (hp) {
@@ -236,7 +254,13 @@ export class AvatarBase extends StateMachineLMent implements UpdateHandler, HitP
     }
 
     //Enable the camera guide to follow the player again.
-    if (this.camGuide) this.camGuide.enabled = true;
+    if (this.camGuide) 
+    {
+      this.camGuide.enabled = true;
+      this.camGuide.body.getAllElements(GuideBody).forEach((g) => {
+        g.shouldSnap = true;
+      });
+    }
 
     //enable the player movement after the cooldown is done.
     GameplayScene.instance.dispatcher.queueDelayedFunction(this, () => { this.postReviveCallback(); }, this.revivingCooldown);
@@ -246,22 +270,25 @@ export class AvatarBase extends StateMachineLMent implements UpdateHandler, HitP
     this.body.body.setVelocity(Helpers.zeroVector);
 
     //Set the player's position to the safe step.
-    let pos = AvatarBase.safeSteps[index];
+    let step = AvatarBase.safeSteps[index];
     if (this.gameplayIsDifficult) {
       this.reviveCounter--;
       if (this.reviveCounter < 1) {
         this.reviveCounter = 3;
-        pos = AvatarBase.safeSteps[0];
+        step = AvatarBase.safeSteps[0];
         index = 0;
       }
       /* TODO[Ahmad]: UPDATE UI for the hearts here */
     }
 
-    this.body.body.setPosition(pos.clone().add(Helpers.NewVector3(0, 0.5, 0)));
+    this.body.body.setPosition(step.pos.clone().add(Helpers.NewVector3(0, 0.5, 0)));
+    this.body.body.setRotation(step.rotation.clone());
 
     //Remove all safe steps after the current one.
     if (AvatarBase.safeSteps.length > 1)
+    {
       AvatarBase.safeSteps.splice(index, AvatarBase.safeSteps.length - index);
+    }
   }
 
   UnequipAvatar() {

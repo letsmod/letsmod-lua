@@ -34,6 +34,8 @@ export class GuideBody extends LMent implements UpdateHandler {
     private leader: BodyHandle | undefined;
     private follower: BodyHandle | undefined;
 
+    public shouldSnap : boolean;
+
     constructor(body: BodyHandle, id: number, params: Partial<GuideBody> = {})
     {
         super(body, id,params);
@@ -60,6 +62,7 @@ export class GuideBody extends LMent implements UpdateHandler {
         this.rotationTolerance = params.rotationTolerance === undefined ? 0 : params.rotationTolerance;
 
         this.addToTargetGroup = params.addToTargetGroup === undefined ? false : params.addToTargetGroup;
+        this.shouldSnap = true;
     }
 
     onInit(): void {
@@ -134,14 +137,23 @@ export class GuideBody extends LMent implements UpdateHandler {
 
     updateTargetPosition() {
         if (this.targetBody === undefined || this.leader === undefined || this.follower === undefined)
+        {
             return;
+        }
 
         let offset = this.offsetVector.clone();
 
         if (this.offsetSpace.toLowerCase() === "local")
             offset.copy(this.offsetVector.clone().applyQuaternion(this.leader.body.getRotation()));
         let targetVector = this.leader.body.getPosition().clone().add(offset);
-        this.follower.body.setPosition(this.follower.body.getPosition().clone().lerp(targetVector, this.followSpeed * Helpers.deltaTime));
+        if (this.shouldSnap)
+        {
+            this.follower.body.setPosition(targetVector);
+        }
+        else
+        {
+            this.follower.body.setPosition(this.follower.body.getPosition().clone().lerp(targetVector, this.followSpeed * Helpers.deltaTime));
+        }
     }
 
     updateTargetOrientation() {
@@ -151,14 +163,31 @@ export class GuideBody extends LMent implements UpdateHandler {
         if (this.rotationSpeed == 0)
             this.follower.body.setRotation(this.rotationOffsetQuaternion);
         let targetOrientation = this.leader.body.getRotation().clone().multiply(this.rotationOffsetQuaternion).normalize();
-        this.follower.body.setRotation(this.follower.body.getRotation().clone().slerp(targetOrientation, this.rotationSpeed * Helpers.deltaTime));
+        if (this.shouldSnap)
+        {
+            this.follower.body.setRotation(targetOrientation);
+        }
+        else
+        {
+            this.follower.body.setRotation(this.follower.body.getRotation().clone().slerp(targetOrientation, this.rotationSpeed * Helpers.deltaTime));
+        }
     }
 
     onUpdate(): void {
         if (this.move)
+        {
             this.updateTargetPosition();
+        }
 
         if (this.rotate)
+        {
             this.updateTargetOrientation();
+        }
+
+
+        if (this.targetBody !== undefined && this.leader !== undefined && this.follower !== undefined)
+        {
+            this.shouldSnap = false;
+        }
     }
 }

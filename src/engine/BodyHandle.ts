@@ -98,6 +98,10 @@ export interface BodyPointer
   
   enableCollisionWith(other: BodyPointer) : void;
 
+  addHoldConstraintWith(other: BodyPointer, nodeToTrack : string) : void;
+
+  removeHoldConstraintWith(other: BodyPointer) : void;
+
   // internal use; use gameplayScene.destroyBody / cloneBody instead
   destroyBody() : void;
   cloneBody() : BodyHandle;
