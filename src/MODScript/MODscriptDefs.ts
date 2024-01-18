@@ -82,6 +82,7 @@ export const CATs = {
     WaitAction: "WaitAction",
     DisableEvent: "DisableEvent",
     EnableEvent: "EnableEvent",
+    DummyJump: "DummyJump",
 
     /*** Triggers ***/
     Nearby: "Nearby",
