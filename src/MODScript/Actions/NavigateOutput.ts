@@ -12,7 +12,9 @@ export class NavigateOutput extends GenericAction {
     performAction(triggerOutput?: BodyHandle | undefined): void {
         if (!triggerOutput || !this.parentEvent || !this.parentEvent.stateMachine ) return;
 
-        this.parentEvent.stateMachine.startState(this.parentEvent.EventId, MODscriptStates.Navigate, triggerOutput.body.getPosition(), triggerOutput.body.getPosition());
+        this.parentEvent.stateMachine.startState(this.ActionId, MODscriptStates.Navigate, triggerOutput.body.getPosition(), triggerOutput.body.getPosition());
+        if(this.parentEvent.stateMachine.stateIsComplete(this.ActionId))
+            this.actionFinished();
     }
 
     actionFinishedCallback(): void {

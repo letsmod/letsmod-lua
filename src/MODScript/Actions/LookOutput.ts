@@ -6,15 +6,15 @@ import { BodyHandle } from "engine/BodyHandle";
 
 export class LookOutput extends GenericAction {
 
-    constructor(eventId:MODscriptEvent, args:Partial<LookOutput>) {
-        super(eventId);
+    constructor(parentEvent:MODscriptEvent, args:Partial<LookOutput>) {
+        super(parentEvent);
     }
 
     //Actor here is the trigger output
     performAction(triggerOutput?: BodyHandle | undefined): void {
         if(!triggerOutput || !this.parentEvent || !this.parentEvent.stateMachine) return;
 
-        this.parentEvent.stateMachine.startState(this.parentEvent.EventId, MODscriptStates.Navigate, triggerOutput.body.getPosition(), triggerOutput.body.getPosition());
+        ///////
 
     }
     

@@ -6,8 +6,8 @@ import { MODscriptStateMachineLMent, MODscriptStates } from "elements/MODScript 
 
 export class MODscriptEvent {
 
-    private trigger: TriggerDefinition | undefined;
-    private action: ActionDefinition | undefined;
+    trigger: TriggerDefinition | undefined;
+    action: ActionDefinition | undefined;
 
     private actorId: number = -1;
     private eventId: number = 0;

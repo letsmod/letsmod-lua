@@ -8,8 +8,8 @@ export class NavigateOther extends GenericAction {
     speed: number;
     actorId: number;
 
-    constructor(eventId: MODscriptEvent, args: Partial<NavigateOther>) {
-        super(eventId);
+    constructor(parentEvent: MODscriptEvent, args: Partial<NavigateOther>) {
+        super(parentEvent);
         this.actorId = args.actorId ?? 0;
         this.speed = args.speed ?? 0;
     }

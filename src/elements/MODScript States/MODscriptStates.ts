@@ -24,8 +24,8 @@ export class MODscriptStateMachineLMent extends StateMachineLMent {
     characterHead: BodyPointer;
     navTarget: Vector3 = Helpers.zeroVector;
     lookAtTarget: Vector3 = Helpers.zeroVector;
-    EventStatusMap: Map<number, boolean> = new Map();
-    activeEventId: number = -1;
+    FinishedActionsMap: Map<string, boolean> = new Map();
+    activeActionId: string = "";
 
     constructor(body: BodyHandle, id: number, params: Partial<MODscriptStateMachineLMent> = {}) {
         super(body, id, params);
@@ -46,24 +46,28 @@ export class MODscriptStateMachineLMent extends StateMachineLMent {
 
 
     //Call this whenever an action wants to change a state
-    startState(eventId:number, state:MODscriptStates, navTarget: Vector3|undefined, lookAtTarget: Vector3|undefined): void {
+    startState(actionId:string, state:MODscriptStates, navTarget: Vector3|undefined, lookAtTarget: Vector3|undefined): void {
         if(navTarget !== undefined)
             this.navTarget = navTarget;
 
         if(lookAtTarget !== undefined)
             this.lookAtTarget = lookAtTarget;
 
-        this.activeEventId = eventId;
-        this.EventStatusMap.set(eventId, false);
+        this.activeActionId = actionId;
+        this.FinishedActionsMap.set(actionId, false);
         this.switchState(state);
     }
 
-    markComplete(eventId: number) {
-        this.EventStatusMap.set(eventId, true);
+    markComplete(actionId: string) {
+        this.FinishedActionsMap.set(actionId, true);
     }
 
-    stateIsComplete(eventId: number): boolean {
-        return this.EventStatusMap.has(eventId) && this.EventStatusMap.get(eventId) === true;
+    stateIsComplete(actionId: string): boolean {
+        return this.FinishedActionsMap.has(actionId) && this.FinishedActionsMap.get(actionId) === true;
+    }
+
+    stateIsFailed(actionId: string): boolean {
+        return this.FinishedActionsMap.has(actionId) && this.FinishedActionsMap.get(actionId) === false;
     }
     
 }
