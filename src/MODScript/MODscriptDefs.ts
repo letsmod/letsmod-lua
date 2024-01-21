@@ -84,11 +84,14 @@ export const CATs = {
     EnableEvent: "EnableEvent",
     DummyJump: "DummyJump",
     Say: "Say",
+    SimultaneousActions: "SimultaneousActions",
+    DestroyOutput: "DestroyOutput",
 
     /*** Triggers ***/
     Nearby: "Nearby",
     Hear: "Hear",
     Touched: "Touched",
     CompletedEvent: "CompletedEvent",
+    OtherDestroyed: "OtherDestroyed",
        
   };

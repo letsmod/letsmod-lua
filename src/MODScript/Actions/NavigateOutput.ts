@@ -1,36 +1,22 @@
 import { GenericAction } from "MODScript/MODscriptDefs";
 import { MODscriptEvent } from "MODScript/MODscriptEvent";
+import { MODscriptStates } from "elements/MODScript States/MODscriptStates";
 import { BodyHandle } from "engine/BodyHandle";
-import { GameplayScene } from "engine/GameplayScene";
-import { Helpers } from "engine/Helpers";
 
 export class NavigateOutput extends GenericAction {
-    speed: number;
-
     constructor(eventId: MODscriptEvent, args: Partial<NavigateOutput>) {
         super(eventId);
-        this.speed = args.speed ?? 0;
     }
 
+    //Actor here is the trigger output
     performAction(triggerOutput?: BodyHandle | undefined): void {
-        if (!triggerOutput || !this.parentEvent || !this.parentEvent.EventActor ) return;
+        if (!triggerOutput || !this.parentEvent || !this.parentEvent.stateMachine ) return;
 
-        const actorPosition = triggerOutput.body.getPosition();
-        const thisBody = this.parentEvent.EventActor.body;
-
-        const thisBodyPosition = thisBody.getPosition();
-        const direction = Helpers.NewVector3(0,0,0).subVectors(thisBodyPosition, actorPosition);
-        const velocity = direction.multiplyScalar(this.speed);
-
-        thisBody.setVelocity(velocity);
-
-        if(thisBodyPosition.distanceTo(actorPosition) < 0.5)
-            this.actionFinished();
+        this.parentEvent.stateMachine.startState(this.parentEvent.EventId, MODscriptStates.Navigate, triggerOutput.body.getPosition(), triggerOutput.body.getPosition());
     }
 
     actionFinishedCallback(): void {
-        if(this.parentEvent.EventActor)
-            this.parentEvent.EventActor.body.setVelocity(Helpers.zeroVector);
+
     }
 
     actionFailedCallback(): void {

@@ -19,7 +19,7 @@ export class WaitAction extends GenericAction {
         const event = eventHandler.getEvent(this.eventId);
         if (!triggerOutput || !this.parentEvent || !this.parentEvent.EventActor || !event) return;
         
-        GameplayScene.instance.dispatcher.queueDelayedFunction(undefined, () => { event.enabled = true }, this.timeToWait);
+        GameplayScene.instance.dispatcher.queueDelayedFunction(undefined, () => { event.completeEvent() }, this.timeToWait);
         this.actionFinished();
     }
 

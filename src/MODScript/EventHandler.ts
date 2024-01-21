@@ -1,8 +1,9 @@
 import { UpdateHandler } from "engine/MessageHandlers";
-import { EventDefinition } from "./MODscriptDefs";
+import { CATs, EventDefinition } from "./MODscriptDefs";
 import { MODscriptEvent } from "./MODscriptEvent";
 import { BodyHandle } from "engine/BodyHandle";
 import { GameplayScene } from "engine/GameplayScene";
+import { Helpers } from "engine/Helpers";
 
 export class EventHandler implements UpdateHandler {
 
@@ -18,61 +19,82 @@ export class EventHandler implements UpdateHandler {
 
     initialize(): void {
         //Filling in Dummy Data 
-        console.log("Initializing Event Handler");
         this.events = this.createDummyData();
         for(let event of this.events)
             event.setCATs();
     }
 
     createDummyData(): MODscriptEvent[] {
+        
+        const lady = Helpers.findBodyInScene("Lady");
+        const hero = Helpers.findBodyInScene("Hero");
+        const wolf = Helpers.findBodyInScene("Wolf");
+
+        if(lady === undefined || hero === undefined || wolf === undefined){
+            
+            console.log("Lady, Hero or Wolf not found");
+            console.log("Lady: " + lady);
+            console.log("Hero: " + hero);
+            console.log("Wolf: " + wolf);
+
+            return [];
+        } 
+
         const event1: EventDefinition = {
-            actorId: 24792,
+            actorId: lady.body.id,
             trigger: {
-                triggerType: "Nearby",
+                triggerType: CATs.Nearby,
                 args: {
                     condition: {
-                        conditionType: "IsOther",
-                        args: { actorId: 24817 }
+                        conditionType: CATs.IsOther,
+                        args: { actorId: wolf.body.id }
                     },
                     maxDistance: 2
                 }
             },
             action: {
-                actionType: "JumpUp",
-                args: { jumpHeight: 4000 }
+                //Anas: We need simultaneousActions(Say,SimultaneousActions(Jump,Wait))
+                actionType: CATs.Say,
+                args: { say: "HELP! A Wolf!" }
             },
-            repeatable: false,
+            repeatable: true,
             enabled: true
         };
         
         const event2: EventDefinition = {
-            actorId: 24792,
+            actorId: hero.body.id,
             trigger: {
-                triggerType: "CompletedEvent",
-                args: { eventId: 0 }
+                triggerType: CATs.Nearby,
+                args: {
+                    condition: {
+                        conditionType: CATs.IsOther,
+                        args: { actorId: wolf.body.id }
+                    },
+                    maxDistance: 1
+                }
             },
             action: {
-                actionType: "NavigateOther",
-                args: { actorId: 24828, speed: -0.3}
+                actionType: CATs.DestroyOutput,
+                args: {  }
             },
             repeatable: false,
             enabled: true
         };
-        
+
         const event3: EventDefinition = {
-            actorId: 24792,
+            actorId: lady.body.id,
             trigger: {
-                triggerType: "Nearby",
+                triggerType: CATs.OtherDestroyed,
                 args: {
                     condition: {
-                        conditionType: "IsOther",
-                        args: { actorId: 24828 }
+                        conditionType: CATs.IsOther,
+                        args: { actorId: wolf.body.id }
                     },
                     maxDistance: 2
                 }
             },
             action: {
-                actionType: "Say",
+                actionType: CATs.Say,
                 args: { say: "My hero! You saved me!" }
             },
             repeatable: false,
@@ -83,7 +105,7 @@ export class EventHandler implements UpdateHandler {
     }
 
     public getEvent(eventId: number): MODscriptEvent | undefined {
-        return this.events.find(event => event.eventId === eventId);
+        return this.events.find(event => event.EventId === eventId);
     }
 
     public onUpdate(dt: number): void {

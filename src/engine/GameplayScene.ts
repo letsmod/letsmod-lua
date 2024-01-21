@@ -32,7 +32,7 @@ export class GameplayScene {
   };
 
   private constructor() {
-    
+
   }
 
   setClientInterface(clientInterface: LuaClientInterface) {
@@ -49,9 +49,9 @@ export class GameplayScene {
     this.bodies.push(handle);
     this.bodyIdMap.set(bodyNode.id, handle);
 
-    if(this.eventHandler !== undefined)
-      for(let e of this.eventHandler.events) {
-        if(e.InvolvedActorIDs.includes(handle.body.id))
+    if (this.eventHandler !== undefined)
+      for (let e of this.eventHandler.events) {
+        if (e.InvolvedActorIDs.includes(handle.body.id))
           e.addInvolvedActor(handle);
       }
 
@@ -100,8 +100,8 @@ export class GameplayScene {
 
   initializeMemory(memoryOverride: Partial<GameplayMemory>) {
     this.memory = { ...new GameplayMemory(), ...memoryOverride };
-    if(this.eventHandler !== undefined)
-    this.eventHandler.initialize();
+    if (this.eventHandler !== undefined)
+      this.eventHandler.initialize();
   }
 
   preUpdate(dt: number) {
@@ -119,7 +119,7 @@ export class GameplayScene {
 
   update() {
     this.dispatcher.onUpdate(this.currentDt);
-    if(this.eventHandler !== undefined)
+    if (this.eventHandler !== undefined)
       this.eventHandler.onUpdate(this.currentDt);
   }
 
@@ -160,9 +160,9 @@ export class GameplayScene {
       body.isInScene = false;
     }
 
-    if(this.eventHandler !== undefined)
-      for(let e of this.eventHandler.events) {
-        if(e.InvolvedActorIDs.includes(body.body.id))
+    if (this.eventHandler !== undefined)
+      for (let e of this.eventHandler.events) {
+        if (e.InvolvedActorIDs.includes(body.body.id))
           e.removeInvolvedActor(body);
       }
   }

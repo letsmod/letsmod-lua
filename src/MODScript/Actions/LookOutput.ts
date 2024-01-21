@@ -1,6 +1,7 @@
 import { GenericAction } from "MODScript/MODscriptDefs";
 import { MODscriptEvent } from "MODScript/MODscriptEvent";
 import { LookAt } from "elements/LookAt";
+import { MODscriptStates } from "elements/MODScript States/MODscriptStates";
 import { BodyHandle } from "engine/BodyHandle";
 
 export class LookOutput extends GenericAction {
@@ -9,17 +10,12 @@ export class LookOutput extends GenericAction {
         super(eventId);
     }
 
+    //Actor here is the trigger output
     performAction(triggerOutput?: BodyHandle | undefined): void {
-        if(!triggerOutput || !this.parentEvent || !this.parentEvent.EventActor) return;
+        if(!triggerOutput || !this.parentEvent || !this.parentEvent.stateMachine) return;
 
-        const lookAtElement = this.parentEvent.EventActor.getElement(LookAt);
-        if(!lookAtElement) {
-            console.log("LookOutput: actor does not have a LookAt element")
-            return;
-        }
+        this.parentEvent.stateMachine.startState(this.parentEvent.EventId, MODscriptStates.Navigate, triggerOutput.body.getPosition(), triggerOutput.body.getPosition());
 
-        lookAtElement.changeTargetByBodyId(triggerOutput.body.id);
-        this.actionFinished();
     }
     
     actionFinishedCallback(): void {
