@@ -17,8 +17,24 @@ export class SimultaneousActions extends GenericAction {
     performAction(triggerOutput?: BodyHandle | undefined): void {
         if (!triggerOutput || !this.parentEvent || !this.parentEvent.EventActor) return;
 
-        (this.action1 as GenericAction).actionType == "Say";
+        const actor = this.parentEvent.EventActor;
+
+        // Example of determining action types and execution logic
+        //(this.action1 as GenericAction).actionType == "Say";
         
+        if ((this.action1 as GenericAction).actionType == "SpeakingAction" && (this.action2 as GenericAction).actionType == "NonSpeakingAction") {
+            // Queue speaking action and execute non-speaking action
+            //actor.queueAction(this.action1);
+            //actor.executeAction(this.action2);
+        } else if ((this.action1 as GenericAction).actionType == "NonSpeakingAction" && (this.action2 as GenericAction).actionType == "NonSpeakingAction") {
+            // Interrupt first action with second
+            //actor.interruptAction(this.action1, this.action2);
+        } else {
+            // Default behavior, execute both actions
+            //actor.executeAction(this.action1);
+            //actor.executeAction(this.action2);
+        }
+    
         
         this.actionFinished();
     }
