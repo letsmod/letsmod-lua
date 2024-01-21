@@ -2,29 +2,53 @@ import { BodyHandle } from "engine/BodyHandle";
 import { TriggerDefinition, ActionDefinition, GenericTrigger, GenericAction, EventDefinition, ConditionDefinition, GenericCondition } from "./MODscriptDefs";
 import { ActionFactory } from "./FactoryClasses/ActionsFactory";
 import { TriggerFactory } from "./FactoryClasses/TriggersFactory";
+import { MODscriptStateMachineLMent, MODscriptStates } from "elements/MODScript States/MODscriptStates";
 
 export class MODscriptEvent {
 
-    //Arguments
-    eventId: number = 0;
-    actorId: number = -1;
     trigger: TriggerDefinition | undefined;
     action: ActionDefinition | undefined;
-    repeatable: boolean = false;
-    enabled: boolean = true;
 
+    private actorId: number = -1;
+    private eventId: number = 0;
+    private repeatable: boolean = false;
+    private enabled: boolean = true;
+
+    //Getters
+    public get EventActorID() { return this.actorId; }
+    public get EventId() { return this.eventId; }
+    public get Repeatable() { return this.repeatable; }
     public get IsActive() { return this.enabled && (!this.isFinished || this.isFinished && this.repeatable); }
     public get IsFinished() { return this.isFinished; }
-    public get EventActor(): BodyHandle | undefined { return this.involvedActorBodies.find(actor => actor.body.id === this.actorId); }
+
+    public get EventActor(): BodyHandle | undefined {
+        if (this._eventActor === undefined)
+            this._eventActor = this.involvedActorBodies.find(actor => actor.body.id === this.actorId);
+        return this._eventActor;
+    }
+
     public get InvolvedActorIDs(): number[] { return this.involvedActorIDs; }
     public get InvolvedActorBodies(): BodyHandle[] { return this.involvedActorBodies; }
 
+    public get stateMachine(): MODscriptStateMachineLMent | undefined {
+        if (this._stateMachine === undefined && this.EventActor !== undefined) {
+            this._stateMachine = this.EventActor.getElement(MODscriptStateMachineLMent);
+            if (this._stateMachine === undefined)
+                console.log("Cannot find MODscript State Machine on actor: " + this.actorId);
+        }
+        return this._stateMachine ?? undefined;
+    }
+
+    private eventTrigger: GenericTrigger | undefined;
+    private eventAction: GenericAction | undefined;
     private involvedActorBodies: BodyHandle[] = [];
     private involvedActorIDs: number[] = [];
     private isFinished: boolean = false;
-    private eventTrigger: GenericTrigger | undefined;
-    private eventAction: GenericAction | undefined;
     private eventDef: EventDefinition | undefined;
+
+    //Do not call these properties directly, use the getter instead because it may not be initialized.
+    private _stateMachine: MODscriptStateMachineLMent | undefined;
+    private _eventActor: BodyHandle | undefined;
 
     constructor(id: number, eventDef: EventDefinition) {
         this.eventId = id;
@@ -46,10 +70,13 @@ export class MODscriptEvent {
         if (this.trigger === undefined || this.action === undefined) return;
         this.eventTrigger = TriggerFactory.createTrigger(this, this.trigger);
         this.eventAction = ActionFactory.createAction(this, this.action);
-
-        this.debugEvent();
     }
 
+    setStateMachine(sm: MODscriptStateMachineLMent) {
+        this._stateMachine = sm;
+    }
+
+    //Filled in GameplayScene
     addInvolvedActor(actor: BodyHandle): void {
         this.involvedActorBodies.push(actor);
     }
@@ -108,12 +135,28 @@ export class MODscriptEvent {
 
     completeEvent(): void {
         this.isFinished = true;
-        if (!this.repeatable)
+        if (!this.repeatable) {
             this.enabled = false;
+            if (this.stateMachine !== undefined)
+                this.stateMachine.switchState(MODscriptStates.idle);
+        }
+        if (this.stateMachine !== undefined)
+            this.stateMachine.switchState(MODscriptStates.idle);
     }
 
     cancelEvent(): void {
         this.isFinished = false;
         this.enabled = false;
+        if (this.stateMachine !== undefined)
+            this.stateMachine.switchState(MODscriptStates.idle);
+    }
+
+    enableEvent(): void {
+        this.enabled = true;
+    }
+
+    disableEvent(): void {
+        this.enabled = false;
+        //disable state machine and set it as idle and failed.
     }
 }

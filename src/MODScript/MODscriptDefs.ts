@@ -15,10 +15,17 @@ export abstract class GenericTrigger {
 export abstract class GenericAction{
 
     parentEvent: MODscriptEvent;
-    public actionType: string;
-    constructor(parentEvent: any) {
+    public actionType: string = "";
+    public get ActionId() { return this._actionId; }
+    private _actionId: string = "";
+    private static actionIdCounter: number = 0;
+    constructor(parentEvent: MODscriptEvent) {
         this.parentEvent = parentEvent;
-        this.actionType = parentEvent.action.actionType;
+        if(parentEvent.action)
+        {
+            this.actionType = parentEvent.action.actionType;
+            this._actionId = this.parentEvent.EventId+"_"+(++GenericAction.actionIdCounter);
+        }
     }
     abstract performAction(actor?: BodyHandle | undefined): void
     abstract actionFinishedCallback(): void
@@ -96,9 +103,21 @@ export const CATs = {
     InstantiateAction: "InstantiateAction",
     SimultaneousActions: "SimultaneousActions",
     ThrowOther: "ThrowOther",
+    LookOther: "LookOther",
+    LookOutput: "LookOutput",
+    NavigateOther: "NavigateOther",
+    NavigateOutput: "NavigateOutput",
+    WaitAction: "WaitAction",
+    DisableEvent: "DisableEvent",
+    EnableEvent: "EnableEvent",
+    Say: "Say",
 
     /*** Triggers ***/
     Nearby: "Nearby",
+    Hear: "Hear",
+    Touched: "Touched",
+    CompletedEvent: "CompletedEvent",
+    OtherDestroyed: "OtherDestroyed",
     DamageTrigger: "DamageTrigger",
     DestroyedTrigger: "DestroyedTrigger",
        

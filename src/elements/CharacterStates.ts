@@ -37,6 +37,7 @@ export class CharacterStateMachineLMent extends StateMachineLMent {
     }
 
     onInit(): void {
+        //The body/head thing is because current NPCs are not rigged, so the head is a separate body
         const characterBodyHandle = Helpers.findBodyWithinGroup(this.body, this.characterBodyName);
         if (characterBodyHandle === undefined)
             console.log("No character body is found, setting the main body as the character body.")
