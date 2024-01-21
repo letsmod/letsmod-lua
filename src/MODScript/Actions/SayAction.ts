@@ -6,8 +6,8 @@ import { GameplayScene } from "engine/GameplayScene";
 
 export class SayAction extends GenericAction {
     say: string;
-    constructor(eventId: MODscriptEvent, args: Partial<SayAction>) {
-        super(eventId);
+    constructor(parentEvent: MODscriptEvent, args: Partial<SayAction>) {
+        super(parentEvent);
         this.say = args.say ?? "";
     }
 

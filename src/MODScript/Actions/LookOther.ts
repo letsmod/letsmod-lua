@@ -7,8 +7,8 @@ import { GameplayScene } from "engine/GameplayScene";
 export class LookOther extends GenericAction {
     actorId: number;
 
-    constructor(eventId:MODscriptEvent, args:Partial<LookOther>) {
-        super(eventId);
+    constructor(parentEvent:MODscriptEvent, args:Partial<LookOther>) {
+        super(parentEvent);
         this.actorId = args.actorId ?? 0;
     }
 //todo AHMAD: this needs tobecome a state instead of accessing the element

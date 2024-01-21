@@ -10,7 +10,7 @@ import { Vector, Vector3 } from "three";
 export enum MODscriptStates {
     idle = "idle",
     lookAt = "lookAt",
-    Navigate = "navigate",
+    navigate = "navigate",
 }
 
 export class MODscriptStateMachineLMent extends StateMachineLMent {
@@ -50,16 +50,16 @@ export class MODscriptStateMachineLMent extends StateMachineLMent {
         if(navTarget !== undefined)
             this.navTarget = navTarget;
 
+        //TODO: Ahmad Fix This
         if(lookAtTarget !== undefined)
             this.lookAtTarget = lookAtTarget;
 
         this.activeActionId = actionId;
-        this.FinishedActionsMap.set(actionId, false);
         this.switchState(state);
     }
 
-    markComplete(actionId: string) {
-        this.FinishedActionsMap.set(actionId, true);
+    markComplete() {
+        this.FinishedActionsMap.set(this.activeActionId, true);
     }
 
     stateIsComplete(actionId: string): boolean {
@@ -190,10 +190,11 @@ export class MODscriptIdleState extends MODscriptStateBase {
 export class MODscriptNavigateState extends MODscriptStateBase implements CollisionHandler {
 
     constructor(stateMachine: MODscriptStateMachineLMent) {
-        super(MODscriptStates.Navigate, stateMachine);
+        super(MODscriptStates.navigate, stateMachine);
     }
 
     onEnterState(previousState: State | undefined) {
+        //TODO: Ahmad Update This to include the lookat target
         this.enableLookAt();
     }
 
@@ -208,7 +209,7 @@ export class MODscriptNavigateState extends MODscriptStateBase implements Collis
             distance = this.stateMachine.body.body.getPosition().distanceTo(this.stateMachine.navTarget);
 
         if (distance <= this.reachDestinationThreshold)
-            this.stateMachine.switchState(MODscriptStates.idle);
+                this.stateMachine.markComplete();
         else {
             if (this.lookAtElement && this.lookAtElement.lookAtComplete(0.1)) {
                 this.moveForward();
@@ -230,13 +231,18 @@ export class MODscriptLookAtState extends MODscriptStateBase {
 
     onEnterState(previousState: State | undefined): void {
         this.stopMoving();
-    }
-
-    onExitState(nextState: State | undefined): void {
         this.enableLookAt();
     }
 
+    onExitState(nextState: State | undefined): void {
+        this.disableLookAt();
+    }
+
     onUpdate(dt: number): void {
-        console.log("I'm looking at target");
+        super.onUpdate(dt);
+        if(this.lookAtElement && this.lookAtElement.lookAtComplete(0.1))
+            this.stateMachine.markComplete();
+        else
+            this.playStateAnimation(dt);
     }
 }

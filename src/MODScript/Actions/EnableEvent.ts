@@ -5,20 +5,19 @@ import { BodyHandle } from "engine/BodyHandle";
 import { GameplayScene } from "engine/GameplayScene";
 
 export class EnableEvent extends GenericAction {
-    eventId: number;
-    constructor(eventId: MODscriptEvent, args: Partial<EnableEvent>) {
-        super(eventId);
-        this.eventId = args.eventId ?? 0;
+    eventIdToEnable: number;
+    constructor(parentEvent: MODscriptEvent, args: Partial<EnableEvent>) {
+        super(parentEvent);
+        this.eventIdToEnable = args.eventIdToEnable ?? 0;
     }
 
     performAction(triggerOutput?: BodyHandle | undefined): void {
         const eventHandler = GameplayScene.instance.eventHandler;
         if (!triggerOutput || !this.parentEvent || !this.parentEvent.EventActor || !eventHandler) return;
-        const event = eventHandler.getEvent(this.eventId);
-        if (!event) return;
-        event.enabled = true;
-
+        //check if event handler has the event, enable it and mark as complete.
+        eventHandler.EnableEvent(this.eventIdToEnable);
         this.actionFinished();
+        //else mark the action as failed.
     }
 
     actionFinishedCallback(): void {

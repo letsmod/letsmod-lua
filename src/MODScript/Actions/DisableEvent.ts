@@ -6,8 +6,8 @@ import { GameplayScene } from "engine/GameplayScene";
 
 export class DisableEvent extends GenericAction {
     eventId: number;
-    constructor(eventId: MODscriptEvent, args: Partial<DisableEvent>) {
-        super(eventId);
+    constructor(parentEvent: MODscriptEvent, args: Partial<DisableEvent>) {
+        super(parentEvent);
         this.eventId = args.eventId ?? 0;
     }
 
@@ -16,7 +16,6 @@ export class DisableEvent extends GenericAction {
         if (!triggerOutput || !this.parentEvent || !this.parentEvent.EventActor || !eventHandler) return;
         const event = eventHandler.getEvent(this.eventId);
         if (!event) return;
-        event.enabled = false;
 
         this.actionFinished();
     }

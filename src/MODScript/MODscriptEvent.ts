@@ -135,8 +135,11 @@ export class MODscriptEvent {
 
     completeEvent(): void {
         this.isFinished = true;
-        if (!this.repeatable)
+        if (!this.repeatable) {
             this.enabled = false;
+            if (this.stateMachine !== undefined)
+                this.stateMachine.switchState(MODscriptStates.idle);
+        }
         if (this.stateMachine !== undefined)
             this.stateMachine.switchState(MODscriptStates.idle);
     }
@@ -146,5 +149,14 @@ export class MODscriptEvent {
         this.enabled = false;
         if (this.stateMachine !== undefined)
             this.stateMachine.switchState(MODscriptStates.idle);
+    }
+
+    enableEvent(): void {
+        this.enabled = true;
+    }
+
+    disableEvent(): void {
+        this.enabled = false;
+        //disable state machine and set it as idle and failed.
     }
 }

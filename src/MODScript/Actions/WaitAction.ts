@@ -7,8 +7,8 @@ import { GameplayScene } from "engine/GameplayScene";
 export class WaitAction extends GenericAction {
     timeToWait: number;
     eventId: number;
-    constructor(eventId: MODscriptEvent, args: Partial<WaitAction>) {
-        super(eventId);
+    constructor(parentEvent: MODscriptEvent, args: Partial<WaitAction>) {
+        super(parentEvent);
         this.timeToWait = args.timeToWait ?? 0;
         this.eventId = args.eventId ?? 0;
     }

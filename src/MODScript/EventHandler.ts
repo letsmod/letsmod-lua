@@ -131,4 +131,20 @@ export class EventHandler implements UpdateHandler {
         const event = this.getEvent(eventId);
         return event !== undefined && event.IsActive;
     }
+
+    public EnableEvent(eventId: number): void {
+        const event = this.getEvent(eventId);
+        if (event !== undefined)
+            event.enableEvent();
+    }
+
+    public DisableEvent(eventId: number): void {
+        const event = this.getEvent(eventId);
+        if (event !== undefined)
+            event.disableEvent();
+    }
+
+    public HasEvent(eventId: number): boolean {
+        return this.getEvent(eventId) !== undefined;
+    }
 }

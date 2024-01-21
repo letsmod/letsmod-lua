@@ -7,7 +7,6 @@ import { EnableEvent } from "MODScript/Actions/EnableEvent";
 import { NavigateOther } from "MODScript/Actions/NavigateOther";
 import { NavigateOutput } from "MODScript/Actions/NavigateOutput";
 import { WaitAction } from "MODScript/Actions/WaitAction";
-import { DummyJumpUpAction } from "MODScript/Actions/DummyJumpUp";
 import { SayAction } from "MODScript/Actions/SayAction";
 
 export class ActionFactory {
@@ -30,8 +29,6 @@ export class ActionFactory {
                 return new NavigateOutput(parentEvent, actionDef.args);
             case CATs.WaitAction:
                 return new WaitAction(parentEvent, actionDef.args);
-            case CATs.DummyJump:
-                return new DummyJumpUpAction(parentEvent, actionDef.args);
             case CATs.Say:
                 return new SayAction(parentEvent, actionDef.args);
             default:

@@ -89,7 +89,6 @@ export const CATs = {
     WaitAction: "WaitAction",
     DisableEvent: "DisableEvent",
     EnableEvent: "EnableEvent",
-    DummyJump: "DummyJump",
     Say: "Say",
     SimultaneousActions: "SimultaneousActions",
     DestroyOutput: "DestroyOutput",

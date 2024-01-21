@@ -4,17 +4,19 @@ import { MODscriptStates } from "elements/MODScript States/MODscriptStates";
 import { BodyHandle } from "engine/BodyHandle";
 
 export class NavigateOutput extends GenericAction {
-    constructor(eventId: MODscriptEvent, args: Partial<NavigateOutput>) {
-        super(eventId);
+    constructor(parentEvent: MODscriptEvent, args: Partial<NavigateOutput>) {
+        super(parentEvent);
     }
 
     //Actor here is the trigger output
     performAction(triggerOutput?: BodyHandle | undefined): void {
         if (!triggerOutput || !this.parentEvent || !this.parentEvent.stateMachine ) return;
 
-        this.parentEvent.stateMachine.startState(this.ActionId, MODscriptStates.Navigate, triggerOutput.body.getPosition(), triggerOutput.body.getPosition());
+        this.parentEvent.stateMachine.startState(this.ActionId, MODscriptStates.navigate, triggerOutput.body.getPosition(), triggerOutput.body.getPosition());
         if(this.parentEvent.stateMachine.stateIsComplete(this.ActionId))
             this.actionFinished();
+        else if(this.parentEvent.stateMachine.stateIsFailed(this.ActionId))
+            this.actionFailed();
     }
 
     actionFinishedCallback(): void {

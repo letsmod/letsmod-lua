@@ -39,7 +39,7 @@ export class MSzombie extends MODscriptStateMachineLMent{
         super.onInit();
         
         this.states = {
-            [MODscriptStates.Navigate]: new MS_ZombieNavigate(this),
+            [MODscriptStates.navigate]: new MS_ZombieNavigate(this),
             [MODscriptStates.idle]: new MS_ZombieIdle(this),
             [MODscriptStates.lookAt]: new MS_ZombieLookAt(this)
         }
