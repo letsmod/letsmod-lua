@@ -1,6 +1,6 @@
 import { GenericAction } from "MODScript/MODscriptDefs";
 import { MODscriptEvent } from "MODScript/MODscriptEvent";
-import { LookAt } from "elements/LookAt";
+import { MODscriptStates } from "elements/MODScript States/MODscriptStates";
 import { BodyHandle } from "engine/BodyHandle";
 import { GameplayScene } from "engine/GameplayScene";
 
@@ -14,16 +14,13 @@ export class LookOther extends GenericAction {
 //todo AHMAD: this needs tobecome a state instead of accessing the element
     performAction(triggerOutput?: BodyHandle | undefined): void {
         const actor = GameplayScene.instance.getBodyById(this.actorId);
-        if(!triggerOutput || !this.parentEvent || !this.parentEvent.EventActor||!actor) return;
+        if(!triggerOutput || !this.parentEvent || !this.parentEvent.stateMachine||!actor) return;
 
-        const lookAtElement = this.parentEvent.EventActor.getElement(LookAt);
-        if(!lookAtElement) {
-            console.log("LookOther: actor does not have a LookAt element")
-            return;
-        }
-
-        lookAtElement.changeTargetByBodyId(this.actorId);
-        this.actionFinished();
+        this.parentEvent.stateMachine.startState(this.ActionId, MODscriptStates.lookAt, undefined, actor.body.getPosition());
+        if(this.parentEvent.stateMachine.stateIsComplete(this.ActionId))
+            this.actionFinished();
+        else if(this.parentEvent.stateMachine.stateIsFailed(this.ActionId))
+            this.actionFailed();
     }
     
     actionFinishedCallback(): void {
