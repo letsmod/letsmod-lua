@@ -31,6 +31,8 @@ export class ActionFactory {
                 return new WaitAction(parentEvent, actionDef.args);
             case CATs.Say:
                 return new SayAction(parentEvent, actionDef.args);
+            case CATs.SimultaneousActions:
+                return undefined;
             default:
                 return undefined
         }

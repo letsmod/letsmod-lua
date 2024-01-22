@@ -13,6 +13,7 @@ export class MODscriptEvent {
     private eventId: number = 0;
     private repeatable: boolean = false;
     private enabled: boolean = true;
+    private allEventActions: GenericAction[] = [];
 
     //Getters
     public get EventActorID() { return this.actorId; }
@@ -20,6 +21,7 @@ export class MODscriptEvent {
     public get Repeatable() { return this.repeatable; }
     public get IsActive() { return this.enabled && (!this.isFinished || this.isFinished && this.repeatable); }
     public get IsFinished() { return this.isFinished; }
+    public get AllEventActions(): GenericAction[]  { return this.allEventActions;}
 
     public get EventActor(): BodyHandle | undefined {
         if (this._eventActor === undefined)
@@ -29,6 +31,7 @@ export class MODscriptEvent {
 
     public get InvolvedActorIDs(): number[] { return this.involvedActorIDs; }
     public get InvolvedActorBodies(): BodyHandle[] { return this.involvedActorBodies; }
+
 
     public get stateMachine(): MODscriptStateMachineLMent | undefined {
         if (this._stateMachine === undefined && this.EventActor !== undefined) {
@@ -40,7 +43,7 @@ export class MODscriptEvent {
     }
 
     private eventTrigger: GenericTrigger | undefined;
-    private eventAction: GenericAction | undefined;
+    private mainAction: GenericAction | undefined;
     private involvedActorBodies: BodyHandle[] = [];
     private involvedActorIDs: number[] = [];
     private isFinished: boolean = false;
@@ -69,11 +72,7 @@ export class MODscriptEvent {
     setCATs(): void {
         if (this.trigger === undefined || this.action === undefined) return;
         this.eventTrigger = TriggerFactory.createTrigger(this, this.trigger);
-        this.eventAction = ActionFactory.createAction(this, this.action);
-    }
-
-    setStateMachine(sm: MODscriptStateMachineLMent) {
-        this._stateMachine = sm;
+        this.mainAction = ActionFactory.createAction(this, this.action);
     }
 
     //Filled in GameplayScene
@@ -86,6 +85,19 @@ export class MODscriptEvent {
         if (index > -1) {
             this.involvedActorBodies.splice(index, 1);
         }
+    }
+
+    addAction(action: GenericAction): void {
+        this.allEventActions.push(action);
+    }
+
+    checkActionsStatus(): void {
+        if(this.allActionsAreFinished())
+            this.completeEvent();
+    }
+
+    allActionsAreFinished():boolean{
+        return this.allEventActions.every(action => action.ActionIsFinished);
     }
 
     getInvolvedActor(actorId: number): BodyHandle | undefined {
@@ -126,21 +138,16 @@ export class MODscriptEvent {
 
     checkEvent(): void {
 
-        if (!this.eventTrigger || !this.eventAction || !this.enabled || this.isFinished && !this.repeatable) return;
+        if (!this.eventTrigger || !this.mainAction || !this.enabled || this.isFinished && !this.repeatable) return;
 
         const result = this.eventTrigger.checkTrigger();
         if (result.didTrigger)
-            this.eventAction.performAction(result.outputActor);
+            this.mainAction.performAction(result.outputActor);
     }
 
     completeEvent(): void {
         this.isFinished = true;
-        if (!this.repeatable) {
-            this.enabled = false;
-            if (this.stateMachine !== undefined)
-                this.stateMachine.switchState(MODscriptStates.idle);
-        }
-        if (this.stateMachine !== undefined)
+        if (!this.repeatable && this.stateMachine !== undefined)
             this.stateMachine.switchState(MODscriptStates.idle);
     }
 
