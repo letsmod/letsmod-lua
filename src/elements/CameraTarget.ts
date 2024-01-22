@@ -78,8 +78,11 @@ export class CameraTarget extends LMent implements UpdateHandler, DragGestureHan
     initBodyGuides() {
         let elements = this.body.getAllElements(GuideBody);
         let guideFound = false;
+
         for (let e of elements) {
+            
             if (e !== undefined && e.guideName === Constants.MainCamera) {
+                
                 this.cameraLead = e;
                 guideFound = true;
             }

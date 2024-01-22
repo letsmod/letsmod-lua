@@ -62,3 +62,7 @@ export {SfxPlayer} from "./SfxPlayer";
 export {StationaryNPC} from "./StationaryNPC";
 export {ScaleWaypoint} from "./ScaleWaypoint";
 export {SlowDownEffect} from "./SlowDownEffect";
+
+export {StormJumper} from "./StormJumper";
+export {StormCollision} from "./StormCollision";
+export {ParticlesDeath} from "./ParticlesDeath";

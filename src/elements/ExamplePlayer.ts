@@ -77,6 +77,7 @@ export class ExamplePlayer extends LMent implements ButtonHandler, DragGestureHa
 
     this.dragDx = 0;
     this.dragDy = 0;
+
   }
 
   handlePlayerOrientation() {
