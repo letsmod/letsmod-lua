@@ -21,13 +21,13 @@ export class Nearby extends GenericTrigger {
     checkTrigger(): { didTrigger: boolean, outputActor: BodyHandle | undefined } {
         if (!this.parentEvent || !this.parentEvent.EventActor) return { didTrigger: false, outputActor: undefined };
 
-        console.log("checking nearby trigger");
-
         if (this.conditionInstance) {
             for (let actor of this.parentEvent.InvolvedActorBodies)
-                if (this.conditionInstance.checkConditionOnActor(actor, this.parentEvent))
+                if (this.conditionInstance.checkConditionOnActor(actor, this.parentEvent)){
+                    console.log(actor.body.getPosition().distanceTo(this.parentEvent.EventActor.body.getPosition()));
                     if (actor.body.getPosition().distanceTo(this.parentEvent.EventActor.body.getPosition()) <= this.maxDistance)
-                        return { didTrigger: true, outputActor: actor };
+                    return { didTrigger: true, outputActor: actor };
+                }
         }
 
         return { didTrigger: false, outputActor: undefined };

@@ -38,27 +38,8 @@ export class EventHandler implements UpdateHandler {
 
             return [];
         }
-        const event1: EventDefinition = {
-            actorId: this.wolf.body.id,
-            trigger: {
-                triggerType: CATs.Nearby,
-                args: {
-                    condition: {
-                        conditionType: CATs.IsOther,
-                        args: { actorId: this.wolf.body.id }
-                    },
-                    maxDistance: 0
-                }
-            },
-            action: {
-                actionType: CATs.NavigateOther,
-                args: {actorid: this.lady.body.id}
-            },
-            repeatable: false,
-            enabled: true
-        }
 
-        const event2: EventDefinition = {
+        const event1: EventDefinition = {
             actorId: this.lady.body.id,
             trigger: {
                 triggerType: CATs.Nearby,
@@ -75,11 +56,11 @@ export class EventHandler implements UpdateHandler {
                 actionType: CATs.Say,
                 args: { say: "HELP! A Wolf!" }
             },
-            repeatable: true,
+            repeatable: false,
             enabled: true
         };
 
-        const event3: EventDefinition = {
+        const event2: EventDefinition = {
             actorId: this.hero.body.id,
             trigger: {
                 triggerType: CATs.CompletedEvent,
@@ -94,7 +75,7 @@ export class EventHandler implements UpdateHandler {
         };
         
 
-        const event4: EventDefinition = {
+        const event3: EventDefinition = {
             actorId: this.hero.body.id,
             trigger: {
                 triggerType: CATs.Nearby,
@@ -114,7 +95,7 @@ export class EventHandler implements UpdateHandler {
             enabled: true
         };
 
-        const event5: EventDefinition = {
+        const event4: EventDefinition = {
             actorId: this.lady.body.id,
             trigger: {
                 triggerType: CATs.OtherDestroyed,
@@ -133,7 +114,7 @@ export class EventHandler implements UpdateHandler {
             enabled: true
         };
 
-        return [new MODscriptEvent(0, event1), new MODscriptEvent(1, event2), new MODscriptEvent(2, event3), new MODscriptEvent(3, event4), new MODscriptEvent(4, event5)];
+        return [new MODscriptEvent(0, event1), new MODscriptEvent(1, event2), new MODscriptEvent(2, event3), new MODscriptEvent(3, event4)];
     }
 
     public getEvent(eventId: number): MODscriptEvent | undefined {
