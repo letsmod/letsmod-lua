@@ -14,10 +14,13 @@ export class EnableEvent extends GenericAction {
     performAction(triggerOutput?: BodyHandle | undefined): void {
         const eventHandler = GameplayScene.instance.eventHandler;
         if (!triggerOutput || !this.parentEvent || !this.parentEvent.EventActor || !eventHandler) return;
-        //check if event handler has the event, enable it and mark as complete.
-        eventHandler.EnableEvent(this.eventIdToEnable);
-        this.actionFinished();
-        //else mark the action as failed.
+        if(eventHandler.HasEvent(this.eventIdToEnable))
+        {
+            eventHandler.EnableEvent(this.eventIdToEnable);
+            this.actionFinished();
+        }
+        else
+            this.actionFailed();
     }
 
     actionFinishedCallback(): void {
