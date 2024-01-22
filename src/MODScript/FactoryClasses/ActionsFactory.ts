@@ -1,4 +1,5 @@
 import { LookOther } from "MODScript/Actions/LookOther";
+import { DestroyOther } from "MODScript/Actions/DestroyOther";
 import { JumpUpAction } from "../Actions/JumpUpAction";
 import { ActionDefinition, CATs, ConditionDefinition, GenericAction, GenericCondition, GenericTrigger, TriggerDefinition } from "../MODscriptDefs";
 import { LookOutput } from "MODScript/Actions/LookOutput";
@@ -8,12 +9,15 @@ import { NavigateOther } from "MODScript/Actions/NavigateOther";
 import { NavigateOutput } from "MODScript/Actions/NavigateOutput";
 import { WaitAction } from "MODScript/Actions/WaitAction";
 import { SayAction } from "MODScript/Actions/SayAction";
+import { ThrowOther } from "MODScript/Actions/ThrowOther";
+import { DestroyOutput } from "MODScript/Actions/DestroyOutput";
+import { ThrowOutput } from "MODScript/Actions/ThrowOutput";
 
 export class ActionFactory {
     
     public static createAction(parentEvent: any, actionDef: ActionDefinition): GenericAction | undefined {
         switch (actionDef.actionType) {
-            case CATs.JumpUp:
+            case CATs.JumpUpAction:
                 return new JumpUpAction(parentEvent, actionDef.args);
             case CATs.LookOther:
                 return new LookOther(parentEvent, actionDef.args);
@@ -31,6 +35,14 @@ export class ActionFactory {
                 return new WaitAction(parentEvent, actionDef.args);
             case CATs.Say:
                 return new SayAction(parentEvent, actionDef.args);
+            case CATs.DestroyOther:
+                return new DestroyOther(parentEvent, actionDef.args);
+            case CATs.DestroyOutput:
+                return new DestroyOutput(parentEvent, actionDef.args);
+            case CATs.ThrowOther:
+                return new ThrowOther(parentEvent, actionDef.args);
+            case CATs.ThrowOutput:
+                return new ThrowOutput(parentEvent, actionDef.args);
             case CATs.SimultaneousActions:
                 return undefined;
             default:

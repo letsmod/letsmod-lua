@@ -163,6 +163,7 @@ export class MODscriptEvent {
 
     disableEvent(): void {
         this.enabled = false;
-        //disable state machine and set it as idle and failed.
+        if (this.stateMachine !== undefined)
+            this.stateMachine.switchState(MODscriptStates.idle);
     }
 }

@@ -1,4 +1,5 @@
 import { LookAt } from "elements/LookAt";
+import { PrefabSpawner } from "elements/PrefabSpawner";
 import { ShapeStateController } from "elements/ShapeStateController";
 import { BodyHandle, BodyPointer } from "engine/BodyHandle";
 import { GameplayScene } from "engine/GameplayScene";
@@ -28,14 +29,18 @@ export class MODscriptStateMachineLMent extends StateMachineLMent {
 
     navTarget: Vector3 = Helpers.zeroVector;
     lookAtTarget: Vector3 = Helpers.zeroVector;
+    movementForce: number = 0;
+    maxSpeed: number = 0;
     FinishedActionsMap: Map<string, boolean> = new Map();
     activeActionId: string = "";
-
+    
     constructor(body: BodyHandle, id: number, params: Partial<MODscriptStateMachineLMent> = {}) {
         super(body, id, params);
         this.characterBodyName = params.characterBodyName === undefined ? "CharacterBody" : params.characterBodyName;
         this.navTarget = params.navTarget === undefined ? Helpers.zeroVector : params.navTarget;
         this.lookAtTarget = params.lookAtTarget === undefined ? Helpers.oneVector.applyQuaternion(this.body.body.getRotation()) : params.lookAtTarget;
+        this.movementForce = params.movementForce === undefined ? 30 : params.movementForce;
+        this.maxSpeed = params.maxSpeed === undefined ? 5 : params.maxSpeed;
         this.characterHead = this.body.body;
         this.characterBody = this.characterHead;
     }
@@ -63,6 +68,11 @@ export class MODscriptStateMachineLMent extends StateMachineLMent {
 
     markComplete() {
         this.FinishedActionsMap.set(this.activeActionId, true);
+        this.switchState(MODscriptStates.idle);
+    }
+
+    markFailed() {
+        this.FinishedActionsMap.set(this.activeActionId, false);
     }
 
     stateIsComplete(actionId: string): boolean {
@@ -77,7 +87,7 @@ export class MODscriptStateMachineLMent extends StateMachineLMent {
 
 export abstract class MODscriptStateBase extends State implements UpdateHandler {
 
-    protected reachDestinationThreshold: number = 0.5;
+    protected reachDestinationThreshold: number = 3;
     protected movementSpeed: number = 0;
     protected anim: ShapeStateController | undefined;
     protected lookAtElement: LookAt | undefined;
@@ -97,6 +107,10 @@ export abstract class MODscriptStateBase extends State implements UpdateHandler 
         this.anim = this.stateMachine.body.getElement(ShapeStateController);
         if (!this.anim)
             console.warn("ShapeStateController component not found on Character");
+
+        this.moveForce = this.stateMachine.movementForce;
+        this.movementSpeed = this.stateMachine.maxSpeed;
+
     }
 
     stopMoving() {
@@ -122,7 +136,7 @@ export abstract class MODscriptStateBase extends State implements UpdateHandler 
         let thisBody = this.stateMachine.body.body;
         let forwardDirection = Helpers.forwardVector.applyQuaternion(thisBody.getRotation());
         let currentVelo = thisBody.getVelocity().clone().projectOnVector(forwardDirection);
-
+        console.log("Current force: "+this.moveForce);
         if (currentVelo.length() < this.movementSpeed) {
             let force = forwardDirection.multiplyScalar(this.moveForce);
             thisBody.applyCentralForce(force)
@@ -168,8 +182,6 @@ export class MODscriptIdleState extends MODscriptStateBase {
 
     onEnterState(previousState: State | undefined): void {
         this.stopMoving();
-        console.log("I'm idling");
-
     }
 
     onExitState(nextState: State | undefined): void {
@@ -243,23 +255,31 @@ export class MODscriptLookAtState extends MODscriptStateBase {
 export class MODscriptThrowState extends MODscriptStateBase {
 
     constructor(stateMachine: MODscriptStateMachineLMent) {
-        super(MODscriptStates.idle, stateMachine);
+        super(MODscriptStates.throw, stateMachine);
     }
 
     onEnterState(previousState: State | undefined): void {
         this.stopMoving();
         this.enableLookAt();
+        this.preformThrow();       
     }
-
+    
     onExitState(nextState: State | undefined): void {
         this.disableLookAt();
     }
-
+    
     onUpdate(dt: number): void {
         super.onUpdate(dt);
-        if (this.lookAtElement && this.lookAtElement.lookAtComplete(0.1))
-            this.stateMachine.markComplete();
-        else
-            this.playStateAnimation(dt);
     }
+    
+    preformThrow() {
+        const PS = this.stateMachine.body.getElement(PrefabSpawner);
+        if (!PS){
+            this.stateMachine.markFailed();
+            return;
+        }
+            PS.spawn();
+            this.stateMachine.markComplete();
+    }
+
 }
