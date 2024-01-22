@@ -13,14 +13,16 @@ export class DestroyOutput extends GenericAction {
     }
 
     performAction(triggerOutput?: BodyHandle | undefined): void {
-        if (!triggerOutput || !this.parentEvent || !this.parentEvent.EventActor) return;
+        if (!triggerOutput || !this.parentEvent || !this.parentEvent.EventActor)
+            return;
 
-        const targetActor = triggerOutput;
-        if (targetActor)
-            targetActor.body.destroyBody();
+        
+        if (triggerOutput){
+            triggerOutput.body.destroyBody();
+            this.actionFinished();
+        }
         else console.log('Cannot find triggerOutput in scene');
 
-        this.actionFinished();
     }
 
     actionFinishedCallback(): void {
