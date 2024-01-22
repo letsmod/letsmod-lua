@@ -12,6 +12,7 @@ import { SayAction } from "MODScript/Actions/SayAction";
 import { SimultaneousActions } from "MODScript/Actions/SimultaneousActions";
 import { ThrowOther } from "MODScript/Actions/ThrowOther";
 import { DestroyOutput } from "MODScript/Actions/DestroyOutput";
+import { ThrowOutput } from "MODScript/Actions/ThrowOutput";
 
 export class ActionFactory {
     
@@ -43,8 +44,10 @@ export class ActionFactory {
                 return new SimultaneousActions(parentEvent, actionDef.args);
             case CATs.ThrowOther:
                 return new ThrowOther(parentEvent, actionDef.args);
-            //case CATs.InstantiateAction:
-                //return new InstantiateAction(parentEvent, actionDef.args);
+            case CATs.ThrowOutput:
+                return new ThrowOutput(parentEvent, actionDef.args);
+            case CATs.SimultaneousActions:
+                return undefined;
             default:
                 return undefined
         }

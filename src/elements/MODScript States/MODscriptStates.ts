@@ -1,4 +1,5 @@
 import { LookAt } from "elements/LookAt";
+import { PrefabSpawner } from "elements/PrefabSpawner";
 import { ShapeStateController } from "elements/ShapeStateController";
 import { BodyHandle, BodyPointer } from "engine/BodyHandle";
 import { GameplayScene } from "engine/GameplayScene";
@@ -11,17 +12,21 @@ export enum MODscriptStates {
     idle = "idle",
     lookAt = "lookAt",
     navigate = "navigate",
+    throw = "throw",
 }
 
 export class MODscriptStateMachineLMent extends StateMachineLMent {
-    
+
     onStart(): void {
-        
+
     }
 
+    /***These are temporary until the animation engine is ready ****/
     characterBodyName: string;
     characterBody: BodyPointer;
     characterHead: BodyPointer;
+
+
     navTarget: Vector3 = Helpers.zeroVector;
     lookAtTarget: Vector3 = Helpers.zeroVector;
     FinishedActionsMap: Map<string, boolean> = new Map();
@@ -46,12 +51,11 @@ export class MODscriptStateMachineLMent extends StateMachineLMent {
 
 
     //Call this whenever an action wants to change a state
-    startState(actionId:string, state:MODscriptStates, navTarget: Vector3|undefined, lookAtTarget: Vector3|undefined): void {
-        if(navTarget !== undefined)
+    startState(actionId: string, state: MODscriptStates, navTarget: Vector3 | undefined, lookAtTarget: Vector3 | undefined): void {
+        if (navTarget !== undefined)
             this.navTarget = navTarget;
 
-        //TODO: Ahmad Fix This
-        if(lookAtTarget !== undefined)
+        if (lookAtTarget !== undefined)
             this.lookAtTarget = lookAtTarget;
 
         this.activeActionId = actionId;
@@ -62,6 +66,10 @@ export class MODscriptStateMachineLMent extends StateMachineLMent {
         this.FinishedActionsMap.set(this.activeActionId, true);
     }
 
+    markFailed() {
+        this.FinishedActionsMap.set(this.activeActionId, false);
+    }
+
     stateIsComplete(actionId: string): boolean {
         return this.FinishedActionsMap.has(actionId) && this.FinishedActionsMap.get(actionId) === true;
     }
@@ -69,7 +77,7 @@ export class MODscriptStateMachineLMent extends StateMachineLMent {
     stateIsFailed(actionId: string): boolean {
         return this.FinishedActionsMap.has(actionId) && this.FinishedActionsMap.get(actionId) === false;
     }
-    
+
 }
 
 export abstract class MODscriptStateBase extends State implements UpdateHandler {
@@ -133,18 +141,9 @@ export abstract class MODscriptStateBase extends State implements UpdateHandler 
     }
 
     enableLookAt() {
-        if (this.lookAtElement)
-            this.lookAtElement.enabled = true;
-    }
-
-    setLookAtTarget(target: Vector3) {
-        this.stateMachine.lookAtTarget = target;
-        if (this.lookAtElement)
-            this.lookAtElement.changeTargetByVector(this.stateMachine.lookAtTarget);
-    }
-
-    setNavTarget(target: Vector3) {
-        this.stateMachine.navTarget = target;
+        if (!this.lookAtElement) return;
+        this.lookAtElement.changeTargetByVector(this.stateMachine.lookAtTarget);
+        this.lookAtElement.enabled = true;
     }
 
     protected playStateAnimation(dt: number) {
@@ -163,6 +162,7 @@ export abstract class MODscriptStateBase extends State implements UpdateHandler 
     onEnterState(previousState: State | undefined): void { }
 
     onExitState(nextState: State | undefined): void { }
+
 }
 
 export class MODscriptIdleState extends MODscriptStateBase {
@@ -178,7 +178,6 @@ export class MODscriptIdleState extends MODscriptStateBase {
     }
 
     onExitState(nextState: State | undefined): void {
-        this.enableLookAt();
     }
 
     onUpdate(dt: number): void {
@@ -194,7 +193,6 @@ export class MODscriptNavigateState extends MODscriptStateBase implements Collis
     }
 
     onEnterState(previousState: State | undefined) {
-        //TODO: Ahmad Update This to include the lookat target
         this.enableLookAt();
     }
 
@@ -209,7 +207,7 @@ export class MODscriptNavigateState extends MODscriptStateBase implements Collis
             distance = this.stateMachine.body.body.getPosition().distanceTo(this.stateMachine.navTarget);
 
         if (distance <= this.reachDestinationThreshold)
-                this.stateMachine.markComplete();
+            this.stateMachine.markComplete();
         else {
             if (this.lookAtElement && this.lookAtElement.lookAtComplete(0.1)) {
                 this.moveForward();
@@ -240,9 +238,41 @@ export class MODscriptLookAtState extends MODscriptStateBase {
 
     onUpdate(dt: number): void {
         super.onUpdate(dt);
-        if(this.lookAtElement && this.lookAtElement.lookAtComplete(0.1))
+        if (this.lookAtElement && this.lookAtElement.lookAtComplete(0.1))
             this.stateMachine.markComplete();
         else
             this.playStateAnimation(dt);
     }
+}
+
+export class MODscriptThrowState extends MODscriptStateBase {
+
+    constructor(stateMachine: MODscriptStateMachineLMent) {
+        super(MODscriptStates.throw, stateMachine);
+    }
+
+    onEnterState(previousState: State | undefined): void {
+        this.stopMoving();
+        this.enableLookAt();
+        this.preformThrow();       
+    }
+    
+    onExitState(nextState: State | undefined): void {
+        this.disableLookAt();
+    }
+    
+    onUpdate(dt: number): void {
+        super.onUpdate(dt);
+    }
+    
+    preformThrow() {
+        const PS = this.stateMachine.body.getElement(PrefabSpawner);
+        if (!PS){
+            this.stateMachine.markFailed();
+            return;
+        }
+            PS.spawn();
+            this.stateMachine.markComplete();
+    }
+
 }

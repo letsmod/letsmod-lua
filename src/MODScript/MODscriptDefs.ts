@@ -17,22 +17,27 @@ export abstract class GenericAction{
     parentEvent: MODscriptEvent;
     public actionType: string = "";
     public get ActionId() { return this._actionId; }
+    public get ActionIsFinished() { return this.actionIsFinished; }
     private _actionId: string = "";
     private static actionIdCounter: number = 0;
+    protected actionIsFinished: boolean = false;
+
     constructor(parentEvent: MODscriptEvent) {
         this.parentEvent = parentEvent;
         if(parentEvent.action)
         {
             this.actionType = parentEvent.action.actionType;
             this._actionId = this.parentEvent.EventId+"_"+(++GenericAction.actionIdCounter);
+            this.parentEvent.addAction(this);
         }
     }
-    abstract performAction(actor?: BodyHandle | undefined): void
+    abstract performAction(triggerOutput?: BodyHandle | undefined): void
     abstract actionFinishedCallback(): void
     abstract actionFailedCallback(): void
     
     actionFinished(): void{
-        this.parentEvent.completeEvent();
+        this.parentEvent.checkActionsStatus();
+        this.actionIsFinished = true;
         this.actionFinishedCallback();
     }
 
@@ -41,7 +46,6 @@ export abstract class GenericAction{
         this.actionFailedCallback();
     }
 }
-
 
 export interface GenericCondition {
     checkConditionOnActor(actor: BodyHandle, parentEvent: MODscriptEvent): boolean;
@@ -100,9 +104,9 @@ export const CATs = {
     JumpUpAction: "JumpUpAction",
     DestroyOther: "DestroyOther",
     DestroyOutput: "DestroyOutput",
-    InstantiateAction: "InstantiateAction",
     SimultaneousActions: "SimultaneousActions",
     ThrowOther: "ThrowOther",
+    ThrowOutput: "throwOutput",
     LookOther: "LookOther",
     LookOutput: "LookOutput",
     NavigateOther: "NavigateOther",
