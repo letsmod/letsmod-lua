@@ -3,9 +3,9 @@ import { ConditionDefinition, GenericCondition, GenericTrigger } from "../MODscr
 import { HitPoints } from "elements/HitPoints";
 import { MODscriptEvent } from "MODScript/MODscriptEvent";
 
-export class DamagedTrigger extends GenericTrigger {
+export class Damaged extends GenericTrigger {
 
-    constructor(parentEvent: MODscriptEvent, triggerArgs: Partial<DamagedTrigger>)  {
+    constructor(parentEvent: MODscriptEvent, triggerArgs: Partial<Damaged>)  {
         super(parentEvent);
     }
 
