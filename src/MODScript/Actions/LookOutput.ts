@@ -1,6 +1,5 @@
 import { GenericAction } from "MODScript/MODscriptDefs";
 import { MODscriptEvent } from "MODScript/MODscriptEvent";
-import { LookAt } from "elements/LookAt";
 import { MODscriptStates } from "elements/MODScript States/MODscriptStates";
 import { BodyHandle } from "engine/BodyHandle";
 
@@ -14,7 +13,7 @@ export class LookOutput extends GenericAction {
     performAction(triggerOutput?: BodyHandle | undefined): void {
         if(!triggerOutput || !this.parentEvent || !this.parentEvent.stateMachine) return;
 
-        ///////
+        this.parentEvent.stateMachine.startState(this.ActionId, MODscriptStates.lookAt, undefined, triggerOutput.body.getPosition());
 
     }
     
