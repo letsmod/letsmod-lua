@@ -1,4 +1,5 @@
 import { LookAt } from "elements/LookAt";
+import { PrefabSpawner } from "elements/PrefabSpawner";
 import { ShapeStateController } from "elements/ShapeStateController";
 import { BodyHandle, BodyPointer } from "engine/BodyHandle";
 import { GameplayScene } from "engine/GameplayScene";
@@ -63,6 +64,10 @@ export class MODscriptStateMachineLMent extends StateMachineLMent {
 
     markComplete() {
         this.FinishedActionsMap.set(this.activeActionId, true);
+    }
+
+    markFailed() {
+        this.FinishedActionsMap.set(this.activeActionId, false);
     }
 
     stateIsComplete(actionId: string): boolean {
@@ -243,23 +248,31 @@ export class MODscriptLookAtState extends MODscriptStateBase {
 export class MODscriptThrowState extends MODscriptStateBase {
 
     constructor(stateMachine: MODscriptStateMachineLMent) {
-        super(MODscriptStates.idle, stateMachine);
+        super(MODscriptStates.throw, stateMachine);
     }
 
     onEnterState(previousState: State | undefined): void {
         this.stopMoving();
         this.enableLookAt();
+        this.preformThrow();       
     }
-
+    
     onExitState(nextState: State | undefined): void {
         this.disableLookAt();
     }
-
+    
     onUpdate(dt: number): void {
         super.onUpdate(dt);
-        if (this.lookAtElement && this.lookAtElement.lookAtComplete(0.1))
-            this.stateMachine.markComplete();
-        else
-            this.playStateAnimation(dt);
     }
+    
+    preformThrow() {
+        const PS = this.stateMachine.body.getElement(PrefabSpawner);
+        if (!PS){
+            this.stateMachine.markFailed();
+            return;
+        }
+            PS.spawn();
+            this.stateMachine.markComplete();
+    }
+
 }
