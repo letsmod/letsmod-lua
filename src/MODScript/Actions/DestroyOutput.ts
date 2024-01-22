@@ -21,7 +21,10 @@ export class DestroyOutput extends GenericAction {
             triggerOutput.body.destroyBody();
             this.actionFinished();
         }
-        else console.log('Cannot find triggerOutput in scene');
+        else {
+            console.log('Cannot find triggerOutput in scene');
+            this.actionFailed();
+        }
 
     }
 

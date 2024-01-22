@@ -9,7 +9,6 @@ import { NavigateOther } from "MODScript/Actions/NavigateOther";
 import { NavigateOutput } from "MODScript/Actions/NavigateOutput";
 import { WaitAction } from "MODScript/Actions/WaitAction";
 import { SayAction } from "MODScript/Actions/SayAction";
-import { SimultaneousActions } from "MODScript/Actions/SimultaneousActions";
 import { ThrowOther } from "MODScript/Actions/ThrowOther";
 import { DestroyOutput } from "MODScript/Actions/DestroyOutput";
 import { ThrowOutput } from "MODScript/Actions/ThrowOutput";
@@ -40,8 +39,6 @@ export class ActionFactory {
                 return new DestroyOther(parentEvent, actionDef.args);
             case CATs.DestroyOutput:
                 return new DestroyOutput(parentEvent, actionDef.args);
-            case CATs.SimultaneousActions:
-                return new SimultaneousActions(parentEvent, actionDef.args);
             case CATs.ThrowOther:
                 return new ThrowOther(parentEvent, actionDef.args);
             case CATs.ThrowOutput:

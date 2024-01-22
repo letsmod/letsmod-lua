@@ -4,11 +4,11 @@ import { HitPoints } from "elements/HitPoints";
 import { MODscriptEvent } from "MODScript/MODscriptEvent";
 import { ConditionFactory } from "MODScript/FactoryClasses/ConditionsFactory";
 
-export class OtherDestroyedTrigger extends GenericTrigger {
+export class OtherDestroyed extends GenericTrigger {
     maxDistance: number;
     condition: ConditionDefinition | undefined;
     conditionInstance: GenericCondition | undefined;
-    constructor(parentEvent: MODscriptEvent, triggerArgs: Partial<OtherDestroyedTrigger>) {
+    constructor(parentEvent: MODscriptEvent, triggerArgs: Partial<OtherDestroyed>) {
         super(parentEvent);
         this.maxDistance = triggerArgs.maxDistance ?? 0;
         if (this.condition)

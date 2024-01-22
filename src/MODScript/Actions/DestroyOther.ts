@@ -20,7 +20,10 @@ export class DestroyOther extends GenericAction {
             targetActor.body.destroyBody();
             this.actionFinished();
         }
-        else console.log('Cannot find actor with id ' + this.actorId + ' in scene');
+        else{
+            console.log('Cannot find actor with id ' + this.actorId + ' in scene');
+            this.actionFailed();
+        }
 
     }
 
