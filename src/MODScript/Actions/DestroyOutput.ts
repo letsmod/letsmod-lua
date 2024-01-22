@@ -2,6 +2,7 @@ import { GenericAction } from "MODScript/MODscriptDefs";
 import { MODscriptEvent } from "MODScript/MODscriptEvent";
 
 import { BodyHandle } from "engine/BodyHandle";
+import { GameplayScene } from "engine/GameplayScene";
 import { Helpers } from "engine/Helpers";
 
 export class DestroyOutput extends GenericAction {
@@ -18,7 +19,7 @@ export class DestroyOutput extends GenericAction {
 
         
         if (triggerOutput){
-            triggerOutput.body.destroyBody();
+            GameplayScene.instance.destroyBody(triggerOutput);
             this.actionFinished();
         }
         else {

@@ -27,7 +27,7 @@ export class JumpUpAction extends GenericAction implements CollisionHandler {
     }
 
     onCollision(info: CollisionInfo): void {
-
+        console.log("Collision")
         if (info.getDeltaVSelf().normalize().dot(Helpers.upVector) > 0.7) {
 
             this.isOnGround = true;
@@ -36,10 +36,10 @@ export class JumpUpAction extends GenericAction implements CollisionHandler {
         this.parentEvent.EventActor.body.setAngularVelocity(Helpers.zeroVector);
     }
 
-    onGroundReset(dt?: number) {
+    onGroundReset() {
         GameplayScene.instance.dispatcher.queueDelayedFunction(undefined, () => {
             this.isOnGround = false;
-        }, dt ?? 1 / 30);
+        }, 1 / GameplayScene.instance.memory.frameRate);
     }
 
     actionFinishedCallback(): void {

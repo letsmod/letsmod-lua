@@ -11,6 +11,7 @@ export class OtherDamaged extends GenericTrigger {
     constructor(parentEvent: MODscriptEvent, triggerArgs: Partial<OtherDamaged>) {
         super(parentEvent);
         this.maxDistance = triggerArgs.maxDistance ?? 0;
+        this.condition = triggerArgs.condition;
         if (this.condition)
             this.conditionInstance = ConditionFactory.createCondition(this.condition);
     }

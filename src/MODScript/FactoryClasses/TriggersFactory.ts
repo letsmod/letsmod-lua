@@ -1,11 +1,15 @@
 import { TriggerDefinition, GenericTrigger, CATs } from "MODScript/MODscriptDefs";
 import { CompletedEvent } from "MODScript/Triggers/CompletedEvent";
+import { Damaged } from "MODScript/Triggers/Damaged";
+import { Destroyed } from "MODScript/Triggers/Destroyed";
 import { Hear } from "MODScript/Triggers/Hear";
 import { Nearby } from "MODScript/Triggers/Nearby";
+import { OtherDamaged } from "MODScript/Triggers/OtherDamaged";
+import { OtherDestroyed } from "MODScript/Triggers/OtherDestroyed";
 import { Touched } from "MODScript/Triggers/Touched";
 
 export class TriggerFactory {
-    
+
     public static createTrigger(parentEvent: any, triggerDef: TriggerDefinition): GenericTrigger | undefined {
         switch (triggerDef.triggerType) {
             case CATs.Nearby:
@@ -16,6 +20,15 @@ export class TriggerFactory {
                 return new Hear(parentEvent, triggerDef.args);
             case CATs.Touched:
                 return new Touched(parentEvent, triggerDef.args);
+            case CATs.OtherDestroyed:
+                return new OtherDestroyed(parentEvent, triggerDef.args);
+            case CATs.OtherDamaged:
+                return new OtherDamaged(parentEvent, triggerDef.args);
+            case CATs.Damaged:
+                return new Damaged(parentEvent, triggerDef.args);
+            case CATs.Destroyed:
+                return new Destroyed(parentEvent, triggerDef.args);
+
             default:
                 return undefined
         }

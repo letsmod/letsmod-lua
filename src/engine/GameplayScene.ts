@@ -119,8 +119,14 @@ export class GameplayScene {
 
   update() {
     this.dispatcher.onUpdate(this.currentDt);
-    if (this.eventHandler !== undefined)
-      this.eventHandler.onUpdate(this.currentDt);
+    if (!this.eventHandler)return;
+
+    this.eventHandler.onUpdate(this.currentDt);
+    // console.log("Event Handler: " + this.eventHandler.events.length);
+    // for (let e of this.eventHandler.events) {
+    //   console.log("Event Involved IDs: " + e.InvolvedActorIDs.length);
+    //   console.log("Event Involved Bodies: " + e.InvolvedActorBodies.length);
+    // }
   }
 
   cloneBody(body: BodyHandle): BodyHandle | undefined {
@@ -160,11 +166,12 @@ export class GameplayScene {
       body.isInScene = false;
     }
 
-    if (this.eventHandler !== undefined)
-      for (let e of this.eventHandler.events) {
-        if (e.InvolvedActorIDs.includes(body.body.id))
-          e.removeInvolvedActor(body);
-      }
+    //ASK DON: This should still be in the involvedActors to know when it gets destroyed, otherwise the OtherDestroyed trigger won't work.
+    // if (this.eventHandler !== undefined)
+    //   for (let e of this.eventHandler.events) {
+    //     if (e.InvolvedActorIDs.includes(body.body.id))
+    //       e.removeInvolvedActor(body);
+    //   }
   }
 
   testErrorHandler() {

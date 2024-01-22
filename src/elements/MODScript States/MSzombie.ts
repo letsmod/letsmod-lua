@@ -28,11 +28,8 @@ class MS_ZombieLookAt extends MODscriptLookAtState{
 
 export class MSzombie extends MODscriptStateMachineLMent{
 
-    movementForce:number;
-
     constructor(body: BodyHandle, id: number, params: Partial<MSzombie> = {}) {
         super(body, id, params);
-        this.movementForce = params.movementForce === undefined ? 100 : params.movementForce;
     }
 
     onInit() {
