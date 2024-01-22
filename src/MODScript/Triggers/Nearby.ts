@@ -21,6 +21,8 @@ export class Nearby extends GenericTrigger {
     checkTrigger(): { didTrigger: boolean, outputActor: BodyHandle | undefined } {
         if (!this.parentEvent || !this.parentEvent.EventActor) return { didTrigger: false, outputActor: undefined };
 
+        console.log("checking nearby trigger");
+
         if (this.conditionInstance) {
             for (let actor of this.parentEvent.InvolvedActorBodies)
                 if (this.conditionInstance.checkConditionOnActor(actor, this.parentEvent))

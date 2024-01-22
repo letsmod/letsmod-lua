@@ -18,36 +18,54 @@ export class EventHandler implements UpdateHandler {
     }
 
     initialize(): void {
-        //Filling in Dummy Data 
-        this.events = this.createDummyData();
-        for(let event of this.events)
-            event.setCATs();
+
     }
 
-    createDummyData(): MODscriptEvent[] {
-        
-        const lady = Helpers.findBodyInScene("Lady");
-        const hero = Helpers.findBodyInScene("Hero");
-        const wolf = Helpers.findBodyInScene("Wolf");
+    //Dummy Data
+    lady: BodyHandle | undefined;
+    hero: BodyHandle | undefined;
+    wolf: BodyHandle | undefined;
+    initializedDummyData: boolean = false;
 
-        if(lady === undefined || hero === undefined || wolf === undefined){
-            
+    createDummyData(): MODscriptEvent[] {
+
+        if (this.lady === undefined || this.hero === undefined || this.wolf === undefined) {
+
             console.log("Lady, Hero or Wolf not found");
-            console.log("Lady: " + lady);
-            console.log("Hero: " + hero);
-            console.log("Wolf: " + wolf);
+            console.log("Lady: " + this.lady);
+            console.log("Hero: " + this.hero);
+            console.log("Wolf: " + this.wolf);
 
             return [];
-        } 
-
+        }
         const event1: EventDefinition = {
-            actorId: lady.body.id,
+            actorId: this.wolf.body.id,
             trigger: {
                 triggerType: CATs.Nearby,
                 args: {
                     condition: {
                         conditionType: CATs.IsOther,
-                        args: { actorId: wolf.body.id }
+                        args: { actorId: this.wolf.body.id }
+                    },
+                    maxDistance: 0
+                }
+            },
+            action: {
+                actionType: CATs.NavigateOther,
+                args: {actorid: this.lady.body.id}
+            },
+            repeatable: false,
+            enabled: true
+        }
+
+        const event2: EventDefinition = {
+            actorId: this.lady.body.id,
+            trigger: {
+                triggerType: CATs.Nearby,
+                args: {
+                    condition: {
+                        conditionType: CATs.IsOther,
+                        args: { actorId: this.wolf.body.id }
                     },
                     maxDistance: 2
                 }
@@ -60,37 +78,51 @@ export class EventHandler implements UpdateHandler {
             repeatable: true,
             enabled: true
         };
+
+        const event3: EventDefinition = {
+            actorId: this.hero.body.id,
+            trigger: {
+                triggerType: CATs.CompletedEvent,
+                args: { eventId: 1 }
+            },
+            action: {
+                actionType: CATs.NavigateOther,
+                args: {actorid: this.wolf.body.id}
+            },
+            repeatable: false,
+            enabled: true
+        };
         
-        const event2: EventDefinition = {
-            actorId: hero.body.id,
+
+        const event4: EventDefinition = {
+            actorId: this.hero.body.id,
             trigger: {
                 triggerType: CATs.Nearby,
                 args: {
                     condition: {
                         conditionType: CATs.IsOther,
-                        args: { actorId: wolf.body.id }
+                        args: { actorId: this.wolf.body.id }
                     },
                     maxDistance: 1
                 }
             },
             action: {
                 actionType: CATs.DestroyOutput,
-                args: {  }
+                args: {}
             },
             repeatable: false,
             enabled: true
         };
 
-        const event3: EventDefinition = {
-            actorId: lady.body.id,
+        const event5: EventDefinition = {
+            actorId: this.lady.body.id,
             trigger: {
                 triggerType: CATs.OtherDestroyed,
                 args: {
                     condition: {
                         conditionType: CATs.IsOther,
-                        args: { actorId: wolf.body.id }
-                    },
-                    maxDistance: 2
+                        args: { actorId: this.wolf.body.id }
+                    }
                 }
             },
             action: {
@@ -101,7 +133,7 @@ export class EventHandler implements UpdateHandler {
             enabled: true
         };
 
-        return [new MODscriptEvent(0,event1),new MODscriptEvent(1,event2),new MODscriptEvent(2,event3)];
+        return [new MODscriptEvent(0, event1), new MODscriptEvent(1, event2), new MODscriptEvent(2, event3), new MODscriptEvent(3, event4), new MODscriptEvent(4, event5)];
     }
 
     public getEvent(eventId: number): MODscriptEvent | undefined {
@@ -109,9 +141,29 @@ export class EventHandler implements UpdateHandler {
     }
 
     public onUpdate(dt: number): void {
-        for (let event of this.events) {
+        //for dummy data delete later(only for testing puroses)
+        this.lady = Helpers.findBodyInScene("Lady");
+        this.hero = Helpers.findBodyInScene("Hero");
+        this.wolf = Helpers.findBodyInScene("Wolf");
+        //Filling in Dummy Data 
+        if (!this.wolf&& !this.hero && !this.lady) {
+            console.log("Lady, Hero or Wolf not found");
+            console.log("Lady: " + this.lady);
+            console.log("Hero: " + this.hero);
+            console.log("Wolf: " + this.wolf);
+            return;
+        }
+            if (!this.initializedDummyData) {
+                this.events = this.createDummyData();
+                for (let event of this.events){
+                    event.setCATs();
+                }
+                this.initializedDummyData = true;
+            }
+            for (let event of this.events) {
             event.checkEvent();
         }
+
     }
 
     public GetActiveEvents(): MODscriptEvent[] {
