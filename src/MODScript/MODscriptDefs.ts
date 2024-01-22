@@ -122,7 +122,8 @@ export const CATs = {
     Touched: "Touched",
     CompletedEvent: "CompletedEvent",
     OtherDestroyed: "OtherDestroyed",
-    DamageTrigger: "DamageTrigger",
-    DestroyedTrigger: "DestroyedTrigger",
+    OtherDamaged: "OtherDamaged",
+    Damaged: "Damaged",
+    Destroyed: "Destroyed",
        
   };

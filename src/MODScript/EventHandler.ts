@@ -26,71 +26,83 @@ export class EventHandler implements UpdateHandler {
 
     createDummyData(): MODscriptEvent[] {
         
-        const lady = Helpers.findBodyInScene("Lady");
-        const hero = Helpers.findBodyInScene("Hero");
-        const wolf = Helpers.findBodyInScene("Wolf");
+        const ladyId = 28604;
+        const heroId = 28643;
+        const wolfId = 28685;
 
-        if(lady === undefined || hero === undefined || wolf === undefined){
-            
-            console.log("Lady, Hero or Wolf not found");
-            console.log("Lady: " + lady);
-            console.log("Hero: " + hero);
-            console.log("Wolf: " + wolf);
-
-            return [];
-        } 
-
+        //Lady will scream: HELP.
         const event1: EventDefinition = {
-            actorId: lady.body.id,
+            actorId: ladyId,
             trigger: {
                 triggerType: CATs.Nearby,
                 args: {
                     condition: {
                         conditionType: CATs.IsOther,
-                        args: { actorId: wolf.body.id }
+                        args: { actorId: heroId }
                     },
-                    maxDistance: 2
+                    maxDistance: 3
                 }
             },
             action: {
-                //Anas: We need simultaneousActions(Say,SimultaneousActions(Jump,Wait))
                 actionType: CATs.Say,
                 args: { say: "HELP! A Wolf!" }
-            },
-            repeatable: true,
-            enabled: true
-        };
-        
-        const event2: EventDefinition = {
-            actorId: hero.body.id,
-            trigger: {
-                triggerType: CATs.Nearby,
-                args: {
-                    condition: {
-                        conditionType: CATs.IsOther,
-                        args: { actorId: wolf.body.id }
-                    },
-                    maxDistance: 1
-                }
-            },
-            action: {
-                actionType: CATs.DestroyOutput,
-                args: {  }
             },
             repeatable: false,
             enabled: true
         };
 
+        //Lady will run to the hero.
+        const event2: EventDefinition = {
+            actorId: ladyId,
+            trigger: {
+                triggerType: CATs.Nearby,
+                args: {
+                    condition: {
+                        conditionType: CATs.IsOther,
+                        args: { actorId: wolfId }
+                    },
+                    maxDistance: 3
+                }
+            },
+            action: {
+                actionType: CATs.NavigateOther,
+                args: { actorId: heroId }
+            },
+            repeatable: false,
+            enabled: true
+        };
+        
+        //Destroying wolf when hero is close by.
         const event3: EventDefinition = {
-            actorId: lady.body.id,
+            actorId: wolfId,
+            trigger: {
+                triggerType: CATs.Nearby,
+                args: {
+                    condition: {
+                        conditionType: CATs.IsOther,
+                        args: { actorId: heroId }
+                    },
+                    maxDistance: 3
+                }
+            },
+            action: {
+                actionType: CATs.DestroyOther,
+                args: { actorId:wolfId }
+            },
+            repeatable: false,
+            enabled: true
+        };
+
+        //Lady will thank the hero when the wolf is destroyed.
+        const event4: EventDefinition = {
+            actorId: ladyId,
             trigger: {
                 triggerType: CATs.OtherDestroyed,
                 args: {
                     condition: {
                         conditionType: CATs.IsOther,
-                        args: { actorId: wolf.body.id }
+                        args: { actorId: wolfId }
                     },
-                    maxDistance: 2
                 }
             },
             action: {
@@ -101,7 +113,7 @@ export class EventHandler implements UpdateHandler {
             enabled: true
         };
 
-        return [new MODscriptEvent(0,event1),new MODscriptEvent(1,event2),new MODscriptEvent(2,event3)];
+        return [new MODscriptEvent(0,event1),new MODscriptEvent(1,event2),new MODscriptEvent(2,event3),new MODscriptEvent(2,event4)];
     }
 
     public getEvent(eventId: number): MODscriptEvent | undefined {
