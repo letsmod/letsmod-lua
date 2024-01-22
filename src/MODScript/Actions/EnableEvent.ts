@@ -21,7 +21,6 @@ export class EnableEvent extends GenericAction {
         }
         else
             this.actionFailed();
-        //else mark the action as failed.
     }
 
     actionFinishedCallback(): void {

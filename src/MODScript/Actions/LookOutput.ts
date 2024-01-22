@@ -14,6 +14,10 @@ export class LookOutput extends GenericAction {
         if(!triggerOutput || !this.parentEvent || !this.parentEvent.stateMachine) return;
 
         this.parentEvent.stateMachine.startState(this.ActionId, MODscriptStates.lookAt, undefined, triggerOutput.body.getPosition());
+        if(this.parentEvent.stateMachine.stateIsComplete(this.ActionId))
+            this.actionFinished();
+        else if(this.parentEvent.stateMachine.stateIsFailed(this.ActionId))
+            this.actionFailed();
 
     }
     
