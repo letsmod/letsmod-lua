@@ -21,19 +21,14 @@ export class ThrowOther extends GenericAction {
         if (!otherBody)
             return;
         this.parentEvent.stateMachine.startState(this.ActionId, MODscriptStates.throw, undefined, otherBody.body.getPosition());
-        if (this.parentEvent.stateMachine.stateIsComplete(this.ActionId))
+        
+    }
+    
+    trackActionProgress(): void {
+        if (!this.parentEvent || !this.parentEvent.stateMachine ) return;
+        if(this.parentEvent.stateMachine.stateIsComplete(this.ActionId))
             this.actionFinished();
         else if (this.parentEvent.stateMachine.stateIsFailed(this.ActionId))
             this.actionFailed();
-    }
-
-    //note we should pass prefabId to the state machine to element PrefabSpawner
-
-    actionFinishedCallback(): void {
-
-    }
-
-    actionFailedCallback(): void {
-
     }
 }

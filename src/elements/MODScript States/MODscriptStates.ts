@@ -136,7 +136,6 @@ export abstract class MODscriptStateBase extends State implements UpdateHandler 
         let thisBody = this.stateMachine.body.body;
         let forwardDirection = Helpers.forwardVector.applyQuaternion(thisBody.getRotation());
         let currentVelo = thisBody.getVelocity().clone().projectOnVector(forwardDirection);
-        console.log("Current force: "+this.moveForce);
         if (currentVelo.length() < this.movementSpeed) {
             let force = forwardDirection.multiplyScalar(this.moveForce);
             thisBody.applyCentralForce(force)

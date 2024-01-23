@@ -18,6 +18,7 @@ export class CompletedEvent extends GenericTrigger {
         const eventHandler = GameplayScene.instance.eventHandler;
         if(eventHandler){
             const event = eventHandler.getEvent(this.eventId);
+            console.log(event?.IsFinished);
             if (event && event.IsFinished)
                 return { didTrigger: true, outputActor: undefined };
         }

@@ -21,6 +21,7 @@ export abstract class GenericAction{
     private _actionId: string = "";
     private static actionIdCounter: number = 0;
     protected actionIsFinished: boolean = false;
+    private actionStarted: boolean = false;
 
     constructor(parentEvent: MODscriptEvent) {
         this.parentEvent = parentEvent;
@@ -32,18 +33,28 @@ export abstract class GenericAction{
         }
     }
     abstract performAction(triggerOutput?: BodyHandle | undefined): void
-    abstract actionFinishedCallback(): void
-    abstract actionFailedCallback(): void
+    abstract trackActionProgress():void
     
+    actionUpdate(): void{
+        if(this.actionStarted)
+            this.trackActionProgress();
+    }
+
+    startAction(triggerOutput?: BodyHandle | undefined): void{
+        if(this.actionStarted) return;
+        this.actionStarted = true;
+        this.performAction(triggerOutput);
+    }
+
     actionFinished(): void{
-        this.parentEvent.checkActionsStatus();
         this.actionIsFinished = true;
-        this.actionFinishedCallback();
+        this.actionStarted = false;
+        this.parentEvent.checkActionsStatus();
     }
 
     actionFailed(): void{
         this.parentEvent.cancelEvent();
-        this.actionFailedCallback();
+        this.actionStarted = false;
     }
 }
 
