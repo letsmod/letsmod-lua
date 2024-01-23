@@ -18,11 +18,14 @@ export class EventHandler implements UpdateHandler {
     }
 
     initialize(): void {
-        //Filling in Dummy Data 
-        this.events = this.createDummyData();
-        for(let event of this.events)
-            event.setCATs();
+
     }
+
+    //Dummy Data
+    lady: BodyHandle | undefined;
+    hero: BodyHandle | undefined;
+    wolf: BodyHandle | undefined;
+    initializedDummyData: boolean = false;
 
     createDummyData(): MODscriptEvent[] {
         
@@ -121,9 +124,29 @@ export class EventHandler implements UpdateHandler {
     }
 
     public onUpdate(dt: number): void {
-        for (let event of this.events) {
+        //for dummy data delete later(only for testing puroses)
+        this.lady = Helpers.findBodyInScene("Lady");
+        this.hero = Helpers.findBodyInScene("Hero");
+        this.wolf = Helpers.findBodyInScene("Wolf");
+        //Filling in Dummy Data 
+        if (!this.wolf&& !this.hero && !this.lady) {
+            console.log("Lady, Hero or Wolf not found");
+            console.log("Lady: " + this.lady);
+            console.log("Hero: " + this.hero);
+            console.log("Wolf: " + this.wolf);
+            return;
+        }
+            if (!this.initializedDummyData) {
+                this.events = this.createDummyData();
+                for (let event of this.events){
+                    event.setCATs();
+                }
+                this.initializedDummyData = true;
+            }
+            for (let event of this.events) {
             event.checkEvent();
         }
+
     }
 
     public GetActiveEvents(): MODscriptEvent[] {
