@@ -18,17 +18,13 @@ export class ThrowOutput extends GenericAction {
             return;
 
         this.parentEvent.stateMachine.startState(this.ActionId, MODscriptStates.throw, undefined, triggerOutput.body.getPosition());
+    }
+    
+    trackActionProgress(): void {
+        if (!this.parentEvent || !this.parentEvent.stateMachine ) return;
         if(this.parentEvent.stateMachine.stateIsComplete(this.ActionId))
             this.actionFinished();
         else if(this.parentEvent.stateMachine.stateIsFailed(this.ActionId))
             this.actionFailed();
-    }
-    
-    actionFinishedCallback(): void {
-        
-    }
-
-    actionFailedCallback(): void {
-        
     }
 }

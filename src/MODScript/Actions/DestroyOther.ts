@@ -5,7 +5,7 @@ import { GameplayScene } from "engine/GameplayScene";
 
 export class DestroyOther extends GenericAction {
     actorId: number;
-    
+
     constructor(eventId: MODscriptEvent, args: Partial<DestroyOther>) {
         super(eventId);
         this.actorId = args.actorId ?? -1;
@@ -15,22 +15,17 @@ export class DestroyOther extends GenericAction {
         if (!triggerOutput || !this.parentEvent || !this.parentEvent.EventActor) return;
 
         const targetActor = this.parentEvent.getInvolvedActor(this.actorId);
-        if (targetActor){
+        if (targetActor) {
             GameplayScene.instance.destroyBody(targetActor);
             this.actionFinished();
         }
-        else{
+        else {
             console.log('Cannot find actor with id ' + this.actorId + ' in scene');
             this.actionFailed();
         }
 
     }
-
-    actionFinishedCallback(): void {
-
-    }
-
-    actionFailedCallback(): void {
+    trackActionProgress(): void {
 
     }
 }

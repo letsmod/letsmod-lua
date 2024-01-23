@@ -16,11 +16,7 @@ export class SayAction extends GenericAction {
         this.actionFinished();
     }
 
-    actionFinishedCallback(): void {
-
-    }
-
-    actionFailedCallback(): void {
-
+    trackActionProgress(): void {
+        
     }
 }

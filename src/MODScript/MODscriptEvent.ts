@@ -21,7 +21,7 @@ export class MODscriptEvent {
     public get Repeatable() { return this.repeatable; }
     public get IsActive() { return this.enabled && (!this.isFinished || this.isFinished && this.repeatable); }
     public get IsFinished() { return this.isFinished; }
-    public get AllEventActions(): GenericAction[]  { return this.allEventActions;}
+    public get AllEventActions(): GenericAction[] { return this.allEventActions; }
 
     public get EventActor(): BodyHandle | undefined {
         if (this._eventActor === undefined)
@@ -92,11 +92,11 @@ export class MODscriptEvent {
     }
 
     checkActionsStatus(): void {
-        if(this.allActionsAreFinished())
+        if (this.allActionsAreFinished())
             this.completeEvent();
     }
 
-    allActionsAreFinished():boolean{
+    allActionsAreFinished(): boolean {      
         return this.allEventActions.every(action => action.ActionIsFinished);
     }
 
@@ -137,11 +137,13 @@ export class MODscriptEvent {
     }
 
     checkEvent(): void {
-
         if (!this.eventTrigger || !this.mainAction || !this.enabled || this.isFinished && !this.repeatable) return;
         const result = this.eventTrigger.checkTrigger();
         if (result.didTrigger)
             this.mainAction.startAction(result.outputActor);
+        for(let x of this.allEventActions){
+            x.trackActionProgress();
+        }
     }
 
     completeEvent(): void {
@@ -152,7 +154,6 @@ export class MODscriptEvent {
 
     cancelEvent(): void {
         this.isFinished = false;
-        this.enabled = false;
         if (this.stateMachine !== undefined)
             this.stateMachine.switchState(MODscriptStates.idle);
     }

@@ -17,8 +17,8 @@ export class DestroyOutput extends GenericAction {
         if (!triggerOutput || !this.parentEvent || !this.parentEvent.EventActor)
             return;
 
-        
-        if (triggerOutput){
+
+        if (triggerOutput) {
             GameplayScene.instance.destroyBody(triggerOutput);
             this.actionFinished();
         }
@@ -29,11 +29,7 @@ export class DestroyOutput extends GenericAction {
 
     }
 
-    actionFinishedCallback(): void {
-
-    }
-
-    actionFailedCallback(): void {
+    trackActionProgress(): void {
 
     }
 }

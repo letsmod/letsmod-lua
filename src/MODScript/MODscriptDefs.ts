@@ -33,9 +33,13 @@ export abstract class GenericAction{
         }
     }
     abstract performAction(triggerOutput?: BodyHandle | undefined): void
-    abstract actionFinishedCallback(): void
-    abstract actionFailedCallback(): void
+    abstract trackActionProgress():void
     
+    actionUpdate(): void{
+        if(this.actionStarted)
+            this.trackActionProgress();
+    }
+
     startAction(triggerOutput?: BodyHandle | undefined): void{
         if(this.actionStarted) return;
         this.actionStarted = true;
@@ -43,16 +47,14 @@ export abstract class GenericAction{
     }
 
     actionFinished(): void{
-        this.parentEvent.checkActionsStatus();
         this.actionIsFinished = true;
         this.actionStarted = false;
-        this.actionFinishedCallback();
+        this.parentEvent.checkActionsStatus();
     }
 
     actionFailed(): void{
         this.parentEvent.cancelEvent();
         this.actionStarted = false;
-        this.actionFailedCallback();
     }
 }
 

@@ -18,44 +18,42 @@ export class EventHandler implements UpdateHandler {
     }
 
     initialize(): void {
-
+        this.events = this.createDummyData();
+        for (let event of this.events) {
+            event.setCATs();
+        }
     }
 
-    //Dummy Data
-    lady: BodyHandle | undefined;
-    hero: BodyHandle | undefined;
-    wolf: BodyHandle | undefined;
-    initializedDummyData: boolean = false;
 
     createDummyData(): MODscriptEvent[] {
-        
+
         const ladyId = 28804;
         const heroId = 28843;
         const wolfId = 28885;
 
-        //Lady will scream: HELP.
-        const event1: EventDefinition = {
+
+        const event0: EventDefinition = {
             actorId: ladyId,
             trigger: {
                 triggerType: CATs.Nearby,
                 args: {
                     condition: {
                         conditionType: CATs.IsOther,
-                        args: { actorId: heroId }
+                        args: { actorId: wolfId }
                     },
                     maxDistance: 3
                 }
             },
             action: {
-                actionType: CATs.Say,
-                args: { say: "HELP! A Wolf!" }
+                actionType: CATs.JumpUpAction,
+                args: {}
             },
             repeatable: false,
             enabled: true
         };
 
         //Lady will run to the hero.
-        const event2: EventDefinition = {
+        const event1: EventDefinition = {
             actorId: ladyId,
             trigger: {
                 triggerType: CATs.Nearby,
@@ -74,7 +72,25 @@ export class EventHandler implements UpdateHandler {
             repeatable: false,
             enabled: true
         };
-        
+
+
+        //Lady will scream: HELP.
+        const event2: EventDefinition = {
+            actorId: ladyId,
+            trigger: {
+                triggerType: CATs.CompletedEvent,
+                args: {
+                    eventId: 1
+                }
+            },
+            action: {
+                actionType: CATs.Say,
+                args: { say: "SAVE ME HERO! A Wolf!" }
+            },
+            repeatable: false,
+            enabled: true
+        };
+
         //Destroying wolf when hero is close by.
         const event3: EventDefinition = {
             actorId: wolfId,
@@ -90,7 +106,7 @@ export class EventHandler implements UpdateHandler {
             },
             action: {
                 actionType: CATs.DestroyOther,
-                args: { actorId:wolfId }
+                args: { actorId: wolfId }
             },
             repeatable: false,
             enabled: true
@@ -116,7 +132,33 @@ export class EventHandler implements UpdateHandler {
             enabled: true
         };
 
-        return [new MODscriptEvent(0,event1),new MODscriptEvent(1,event2),new MODscriptEvent(2,event3),new MODscriptEvent(2,event4)];
+        //Lady will jump out of joy.
+        const event5: EventDefinition = {
+            actorId: ladyId,
+            trigger: {
+                triggerType: CATs.OtherDestroyed,
+                args: {
+                    condition: {
+                        conditionType: CATs.IsOther,
+                        args: { actorId: wolfId }
+                    },
+                }
+            },
+            action: {
+                actionType: CATs.JumpUpAction,
+                args: {}
+            },
+            repeatable: true,
+            enabled: true
+        };
+
+        return [new MODscriptEvent(0, event0),
+        new MODscriptEvent(1, event1),
+        new MODscriptEvent(2, event2),
+        new MODscriptEvent(3, event3),
+        new MODscriptEvent(4, event4),
+        new MODscriptEvent(5, event5)
+        ];
     }
 
     public getEvent(eventId: number): MODscriptEvent | undefined {
@@ -124,29 +166,8 @@ export class EventHandler implements UpdateHandler {
     }
 
     public onUpdate(dt: number): void {
-        //for dummy data delete later(only for testing puroses)
-        this.lady = Helpers.findBodyInScene("Lady");
-        this.hero = Helpers.findBodyInScene("Hero");
-        this.wolf = Helpers.findBodyInScene("Wolf");
-        //Filling in Dummy Data 
-        if (!this.wolf&& !this.hero && !this.lady) {
-            console.log("Lady, Hero or Wolf not found");
-            console.log("Lady: " + this.lady);
-            console.log("Hero: " + this.hero);
-            console.log("Wolf: " + this.wolf);
-            return;
-        }
-            if (!this.initializedDummyData) {
-                this.events = this.createDummyData();
-                for (let event of this.events){
-                    event.setCATs();
-                }
-                this.initializedDummyData = true;
-            }
-            for (let event of this.events) {
+        for (let event of this.events)
             event.checkEvent();
-        }
-
     }
 
     public GetActiveEvents(): MODscriptEvent[] {

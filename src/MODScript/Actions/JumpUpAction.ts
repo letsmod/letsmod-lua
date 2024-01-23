@@ -5,11 +5,9 @@ import { JumpUp } from "elements/JumpUp";
 import { BodyHandle } from "engine/BodyHandle";
 
 export class JumpUpAction extends GenericAction {
-    jumpHeight: number;
 
     constructor(parentEvent: MODscriptEvent, args: Partial<JumpUpAction>) {
         super(parentEvent);
-        this.jumpHeight = args.jumpHeight ?? 400;
     }
 
     performAction(triggerOutput?: BodyHandle | undefined): void {
@@ -20,17 +18,12 @@ export class JumpUpAction extends GenericAction {
             this.actionFailed();
             return;
         }
-        jumpUpElement.jumpHeight = this.jumpHeight;
         if(jumpUpElement.jump())
             this.actionFinished();
         else this.actionFailed();
     }
 
-    actionFinishedCallback(): void {
-
-    }
-
-    actionFailedCallback(): void {
-
+    trackActionProgress(): void {
+        
     }
 }

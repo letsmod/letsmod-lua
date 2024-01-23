@@ -10,20 +10,17 @@ export class NavigateOutput extends GenericAction {
 
     //Actor here is the trigger output
     performAction(triggerOutput?: BodyHandle | undefined): void {
-        if (!triggerOutput || !this.parentEvent || !this.parentEvent.stateMachine ) return;
+        if (!triggerOutput || !this.parentEvent || !this.parentEvent.stateMachine) return;
 
         this.parentEvent.stateMachine.startState(this.ActionId, MODscriptStates.navigate, triggerOutput.body.getPosition(), triggerOutput.body.getPosition());
-        if(this.parentEvent.stateMachine.stateIsComplete(this.ActionId))
+
+    }
+
+    trackActionProgress(): void {
+        if (!this.parentEvent || !this.parentEvent.stateMachine) return;
+        if (this.parentEvent.stateMachine.stateIsComplete(this.ActionId))
             this.actionFinished();
-        else if(this.parentEvent.stateMachine.stateIsFailed(this.ActionId))
+        else if (this.parentEvent.stateMachine.stateIsFailed(this.ActionId))
             this.actionFailed();
-    }
-
-    actionFinishedCallback(): void {
-
-    }
-
-    actionFailedCallback(): void {
-
     }
 }

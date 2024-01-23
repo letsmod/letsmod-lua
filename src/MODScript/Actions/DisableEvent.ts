@@ -23,11 +23,7 @@ export class DisableEvent extends GenericAction {
             this.actionFailed();
     }
 
-    actionFinishedCallback(): void {
-
-    }
-
-    actionFailedCallback(): void {
-
+    trackActionProgress(): void {
+        
     }
 }
