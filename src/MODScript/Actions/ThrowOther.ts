@@ -8,30 +8,32 @@ export class ThrowOther extends GenericAction {
     prefabId: string; //our prefabs are strings?
     actorId: number;
 
-    constructor(eventId:MODscriptEvent, args:Partial<ThrowOther>) {
+    constructor(eventId: MODscriptEvent, args: Partial<ThrowOther>) {
         super(eventId);
         this.prefabId = args.prefabId ?? "";
         this.actorId = args.actorId ?? 0;
     }
 
     performAction(triggerOutput?: BodyHandle | undefined): void {
-        if (!triggerOutput || !this.parentEvent || !this.parentEvent.stateMachine ) 
+        if (!this.parentEvent || !this.parentEvent.stateMachine)
             return;
         const otherBody = GameplayScene.instance.getBodyById(this.actorId);
-        if(!otherBody)
+        if (!otherBody)
             return;
         this.parentEvent.stateMachine.startState(this.ActionId, MODscriptStates.throw, undefined, otherBody.body.getPosition());
-        if(this.parentEvent.stateMachine.stateIsComplete(this.ActionId))
+        if (this.parentEvent.stateMachine.stateIsComplete(this.ActionId))
             this.actionFinished();
-        else if(this.parentEvent.stateMachine.stateIsFailed(this.ActionId))
+        else if (this.parentEvent.stateMachine.stateIsFailed(this.ActionId))
             this.actionFailed();
     }
-    
+
+    //note we should pass prefabId to the state machine to element PrefabSpawner
+
     actionFinishedCallback(): void {
-        
+
     }
 
     actionFailedCallback(): void {
-        
+
     }
 }
