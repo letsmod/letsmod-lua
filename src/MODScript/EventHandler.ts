@@ -26,9 +26,9 @@ export class EventHandler implements UpdateHandler {
 
     createDummyData(): MODscriptEvent[] {
         
-        const ladyId = 28604;
-        const heroId = 28643;
-        const wolfId = 28685;
+        const ladyId = 28804;
+        const heroId = 28843;
+        const wolfId = 28885;
 
         //Lady will scream: HELP.
         const event1: EventDefinition = {

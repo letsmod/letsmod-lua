@@ -142,7 +142,7 @@ export class MODscriptEvent {
 
         const result = this.eventTrigger.checkTrigger();
         if (result.didTrigger)
-            this.mainAction.performAction(result.outputActor);
+            this.mainAction.startAction(result.outputActor);
     }
 
     completeEvent(): void {
