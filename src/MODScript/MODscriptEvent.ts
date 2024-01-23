@@ -139,7 +139,6 @@ export class MODscriptEvent {
     checkEvent(): void {
 
         if (!this.eventTrigger || !this.mainAction || !this.enabled || this.isFinished && !this.repeatable) return;
-
         const result = this.eventTrigger.checkTrigger();
         if (result.didTrigger)
             this.mainAction.performAction(result.outputActor);

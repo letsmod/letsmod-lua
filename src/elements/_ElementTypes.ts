@@ -61,3 +61,4 @@ export {SlowDownEffect} from "./SlowDownEffect";
 export {CircularChargingEnemy} from "./CircularChargingEnemy";
 export {MSzombie} from "./MODScript States/MSzombie";
 export {IdPrinter} from "./IdPrinter";
+export {JumpUp} from "./JumpUp";
