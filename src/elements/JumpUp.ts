@@ -7,7 +7,7 @@ import { CollisionHandler, CollisionInfo, UpdateHandler } from "engine/MessageHa
 export class JumpUp extends LMent implements CollisionHandler,UpdateHandler {
     
     jumpHeight: number;
-    private isOnGround: boolean = false;
+    private isOnGround: boolean = true;
     constructor(body: BodyHandle, id: number, params: Partial<JumpUp> = {}) {
         super(body, id, params);
         this.jumpHeight = params.jumpHeight ?? 400;
@@ -26,7 +26,6 @@ export class JumpUp extends LMent implements CollisionHandler,UpdateHandler {
     }
     
     jump(): boolean {
-        
         if (this.isOnGround) {
             this.body.body.applyCentralForce(Helpers.NewVector3(0, this.jumpHeight, 0));
             return true;
