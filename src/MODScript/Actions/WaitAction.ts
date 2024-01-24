@@ -22,7 +22,7 @@ export class WaitAction extends GenericAction {
         GameplayScene.instance.dispatcher.queueDelayedFunction(undefined, () => { this.actionFinished(); }, this.timeToWait);
     }
 
-    trackActionProgress(): void {
+    monitorAction(): void {
         
     }
 }

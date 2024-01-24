@@ -23,7 +23,7 @@ export class DisableEvent extends GenericAction {
             this.actionFailed();
     }
 
-    trackActionProgress(): void {
+    monitorAction(): void {
         
     }
 }

@@ -3,6 +3,7 @@ import { TriggerDefinition, ActionDefinition, GenericTrigger, GenericAction, Eve
 import { ActionFactory } from "./FactoryClasses/ActionsFactory";
 import { TriggerFactory } from "./FactoryClasses/TriggersFactory";
 import { MODscriptStateMachineLMent, MODscriptStates } from "elements/MODScript States/MODscriptStates";
+import { Helpers } from "engine/Helpers";
 
 export class MODscriptEvent {
 
@@ -10,6 +11,7 @@ export class MODscriptEvent {
     action: ActionDefinition | undefined;
 
     private actorId: number = -1;
+    private actorName: string = "";
     private eventId: number = 0;
     private repeatable: boolean = false;
     private enabled: boolean = true;
@@ -24,8 +26,6 @@ export class MODscriptEvent {
     public get AllEventActions(): GenericAction[] { return this.allEventActions; }
 
     public get EventActor(): BodyHandle | undefined {
-        if (this._eventActor === undefined)
-            this._eventActor = this.involvedActorBodies.find(actor => actor.body.id === this.actorId);
         return this._eventActor;
     }
 
@@ -61,16 +61,15 @@ export class MODscriptEvent {
 
         this.trigger = this.eventDef.trigger;
         this.action = this.eventDef.action;
-        this.actorId = this.eventDef.actorId;
+        this.actorName = this.eventDef.actorName;
         this.repeatable = this.eventDef.repeatable;
         this.enabled = this.eventDef.enabled;
-
-        this.extractInvolvedActorIDs();
-
     }
 
     setCATs(): void {
         if (this.trigger === undefined || this.action === undefined) return;
+        this.extractInvolvedActors();
+        this.actorId = this.EventActor  ? this.EventActor.body.id : -1;
         this.eventTrigger = TriggerFactory.createTrigger(this, this.trigger);
         this.mainAction = ActionFactory.createAction(this, this.action);
     }
@@ -96,7 +95,7 @@ export class MODscriptEvent {
             this.completeEvent();
     }
 
-    allActionsAreFinished(): boolean {      
+    allActionsAreFinished(): boolean {
         return this.allEventActions.every(action => action.ActionIsFinished);
     }
 
@@ -104,45 +103,43 @@ export class MODscriptEvent {
         return this.involvedActorBodies.find(actor => actor.body.id === actorId);
     }
 
-    debugEvent(): void {
-        if (this.trigger === undefined || this.action === undefined) {
-            console.log("Event is undefined");
-            return;
-        }
-        console.log("ActorId: " + this.actorId);
-        console.log("Repeatable: " + this.repeatable);
-        console.log("Enabled: " + this.enabled);
-        console.log("TriggerType: " + this.trigger.triggerType);
-        console.log("ActionType: " + this.action.actionType);
-        if (this.trigger.args.condition !== undefined) {
-            console.log("ConditionType: " + (this.trigger.args.condition as ConditionDefinition).conditionType);
-            console.log("ConditionActorId: " + (this.trigger.args.condition as ConditionDefinition).args.actorId);
-        }
-        console.log("MaxDistance: " + this.trigger.args.maxDistance);
-        console.log("JumpHeight: " + this.action.args.jumpHeight);
-    }
-
-    private extractInvolvedActorIDs(): void {
+    
+    private extractInvolvedActors(): void {
 
         this.involvedActorIDs.push(this.actorId);
+        this._eventActor = Helpers.findBodyInScene(this.actorName);
+        if (this._eventActor)
+            this.involvedActorBodies.push(this._eventActor);
 
         if (!this.trigger || !this.trigger.args) return;
 
         const condition = this.trigger.args.condition as ConditionDefinition;
-        if (condition && condition.args && "actorId" in condition.args)
+        if (condition && condition.args && "actorName" in condition.args) {
+            const conditionBody = Helpers.findBodyInScene(condition.args.actorName as string);
+            if (conditionBody)
+                this.involvedActorBodies.push(conditionBody);
             this.involvedActorIDs.push(condition.args.actorId as number);
+        }
 
-        if (this.action !== undefined && this.action.args !== undefined && this.action.args.actorId !== undefined)
+        if (this.action !== undefined && this.action.args !== undefined && this.action.args.actorName !== undefined) {
+            const body = Helpers.findBodyInScene(this.action.args.actorName as string);
+            if (body)
+                this.involvedActorBodies.push(body);
             this.involvedActorIDs.push(this.action.args.actorId as number);
+        }
     }
 
     checkEvent(): void {
+        // if (this.eventId == 0) {
+        //     console.log(this.eventDef?.enabled);
+        // }
         if (!this.eventTrigger || !this.mainAction || !this.enabled || this.isFinished && !this.repeatable) return;
+
         const result = this.eventTrigger.checkTrigger();
         if (result.didTrigger)
             this.mainAction.startAction(result.outputActor);
-        for(let x of this.allEventActions){
-            x.trackActionProgress();
+        for (let eventAction of this.allEventActions) {
+            eventAction.actionUpdate();
         }
     }
 

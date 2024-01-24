@@ -5,18 +5,18 @@ import { BodyHandle } from "engine/BodyHandle";
 import { GameplayScene } from "engine/GameplayScene";
 
 export class SayAction extends GenericAction {
-    say: string;
+    sentence: string;
     constructor(parentEvent: MODscriptEvent, args: Partial<SayAction>) {
         super(parentEvent);
-        this.say = args.say ?? "";
+        this.sentence = args.sentence ?? "";
     }
 
     performAction(triggerOutput?: BodyHandle | undefined): void {
-        console.log(this.say);
+        console.log(this.sentence);
         this.actionFinished();
     }
 
-    trackActionProgress(): void {
+    monitorAction(): void {
         
     }
 }

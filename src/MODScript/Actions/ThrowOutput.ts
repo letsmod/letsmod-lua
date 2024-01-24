@@ -20,7 +20,7 @@ export class ThrowOutput extends GenericAction {
         this.parentEvent.stateMachine.startState(this.ActionId, MODscriptStates.throw, undefined, triggerOutput.body.getPosition());
     }
     
-    trackActionProgress(): void {
+    monitorAction(): void {
         if (!this.parentEvent || !this.parentEvent.stateMachine ) return;
         if(this.parentEvent.stateMachine.stateIsComplete(this.ActionId))
             this.actionFinished();

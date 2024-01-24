@@ -23,7 +23,7 @@ export class JumpUpAction extends GenericAction {
         else this.actionFailed();
     }
 
-    trackActionProgress(): void {
+    monitorAction(): void {
         
     }
 }

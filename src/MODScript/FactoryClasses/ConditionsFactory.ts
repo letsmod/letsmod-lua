@@ -1,5 +1,5 @@
 import { AndCond, HasTag, IsHologram, IsKinematic, IsOnTeam, IsOther, IsPhysical, IsPlayer, IsTrue, MaxMass, MinMass, MinSize, NotCond, OrCond, SeenOther } from "MODScript/Conditions";
-import { Element } from "MODScript/Conditions";
+import { HasElement } from "MODScript/Conditions";
 
 import { CATs, ConditionDefinition, GenericCondition } from "MODScript/MODscriptDefs";
 
@@ -10,7 +10,7 @@ export class ConditionFactory {
             case CATs.IsOther:
                 return new IsOther(conditionDef.args);
             case CATs.Element:
-                return new Element(conditionDef.args);
+                return new HasElement(conditionDef.args);
             case CATs.HasTag:
                 return new HasTag(conditionDef.args);
             case CATs.IsPlayer:

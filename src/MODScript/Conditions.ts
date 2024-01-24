@@ -8,9 +8,9 @@ import { Tag } from "elements/Tag";
 import { HitPoints } from "elements/HitPoints";
 import { EventHandler } from "./EventHandler";
 
-export class Element implements GenericCondition {
-    elementId: string; // number or string??
-    constructor(args: Partial<Element>) {
+export class HasElement implements GenericCondition {
+    elementId: string;
+    constructor(args: Partial<HasElement>) {
         this.elementId = args.elementId ?? "";
     }
 
@@ -31,8 +31,6 @@ export class HasTag implements GenericCondition {
     }
 
     checkConditionOnActor(actor: BodyHandle): boolean {
-
-        //const hasTag = actor.getElement(Tag);
         for (let i of actor.getAllElements(Tag))
             if (i.tag === this.tagId)
                 return true;
@@ -186,21 +184,29 @@ export class NotCond implements GenericCondition {
 }
 
 export class IsOther implements GenericCondition {
-    actorId: number;
+    //actorId: number = -1;
+    actorName: string = "";
+    targetActor: BodyHandle | undefined;
     constructor(args: Partial<IsOther>) {
-        this.actorId = args.actorId ?? -1;
+        this.actorName = args.actorName ?? "";
+        this.targetActor = Helpers.findBodyInScene(this.actorName);
+        //this.actorId = this.targetActor ? this.targetActor.body.id : -1;
+        
     }
 
-    checkConditionOnActor(actor: BodyHandle): boolean {
-        const targetActor = GameplayScene.instance.getBodyById(this.actorId);
-        return targetActor ? actor.body.id === targetActor.body.id : false;
+    checkConditionOnActor(actor: BodyHandle, parentEvent: MODscriptEvent): boolean {
+        return this.targetActor ? actor.body.id === this.targetActor.body.id : false;
     }
 }
 
 export class SeenOther implements GenericCondition {
-    actorId: number;
+    actorId: number = -1;
+    actorName: string = "";
+    targetActor: BodyHandle | undefined;
     constructor(args: Partial<SeenOther>) {
-        this.actorId = args.actorId ?? -1;
+        this.actorName = args.actorName ?? "";
+        this.targetActor = Helpers.findBodyInScene(this.actorName);
+        this.actorId = this.targetActor ? this.targetActor.body.id : -1;
     }
 
     checkConditionOnActor(actor: BodyHandle): boolean {

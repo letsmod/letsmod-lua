@@ -5,33 +5,32 @@ import { BodyHandle } from "engine/BodyHandle";
 import { GameplayScene } from "engine/GameplayScene";
 
 export class NavigateOther extends GenericAction {
-    actorId: number;
+    actorId: number = -1;
+    actorName: string = "";
+    targetActor: BodyHandle | undefined;
 
     constructor(parentEvent: MODscriptEvent, args: Partial<NavigateOther>) {
         super(parentEvent);
-        this.actorId = args.actorId ?? 0;
+        if (args.actorName)
+            this.actorName = args.actorName;
+        for (const actor of this.parentEvent.InvolvedActorBodies)
+            if (actor.body.name === this.actorName) {
+                this.actorId = actor.body.id;
+                this.targetActor = actor;
+            }
     }
 
     performAction(triggerOutput?: BodyHandle | undefined): void {
-        const actor = GameplayScene.instance.getBodyById(this.actorId);
-
-        if (!this.parentEvent || !this.parentEvent.stateMachine || !actor) return;
-        this.parentEvent.stateMachine.startState(this.ActionId, MODscriptStates.navigate, actor.body.getPosition(), actor.body.getPosition());
+        if (!this.parentEvent || !this.parentEvent.stateMachine || !this.targetActor) return;
+        this.parentEvent.stateMachine.startState(this.ActionId, MODscriptStates.navigate, this.targetActor.body.getPosition(), this.targetActor.body.getPosition());
     }
 
-    trackActionProgress(): void {
+    monitorAction(): void {
         if (!this.parentEvent || !this.parentEvent.stateMachine) return;
 
         if (this.parentEvent.stateMachine.stateIsComplete(this.ActionId))
             this.actionFinished();
         else if (this.parentEvent.stateMachine.stateIsFailed(this.ActionId))
             this.actionFailed();
-    }
-
-    actionFinishedCallback(): void {
-    }
-
-    actionFailedCallback(): void {
-
     }
 }

@@ -3,14 +3,11 @@ import { MODscriptEvent } from "MODScript/MODscriptEvent";
 
 import { BodyHandle } from "engine/BodyHandle";
 import { GameplayScene } from "engine/GameplayScene";
-import { Helpers } from "engine/Helpers";
 
 export class DestroyOutput extends GenericAction {
-    actorId: number;
 
     constructor(eventId: MODscriptEvent, args: Partial<DestroyOutput>) {
         super(eventId);
-        this.actorId = args.actorId ?? -1;
     }
 
     performAction(triggerOutput?: BodyHandle | undefined): void {
@@ -29,7 +26,7 @@ export class DestroyOutput extends GenericAction {
 
     }
 
-    trackActionProgress(): void {
+    monitorAction(): void {
 
     }
 }
