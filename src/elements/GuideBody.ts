@@ -30,6 +30,8 @@ export class GuideBody extends LMent implements UpdateHandler {
     makeInvisible: boolean; /*To make the body invisible*/
     rotationTolerance: number; /*The tolerance for rotation to be considered "aligned"*/
     addToTargetGroup: boolean; /*To add the follower to the target's group*/
+    raycastMinDistance: number | undefined; /* if a ray between the leader and the follower is longer than this but shorter than the target distance, move to slightly in front of the intersection point */
+    raycastPadding : number; /* the distance to move the follower in front of the intersection point */
 
     private leader: BodyHandle | undefined;
     private follower: BodyHandle | undefined;
@@ -62,6 +64,11 @@ export class GuideBody extends LMent implements UpdateHandler {
         this.rotationTolerance = params.rotationTolerance === undefined ? 0 : params.rotationTolerance;
 
         this.addToTargetGroup = params.addToTargetGroup === undefined ? false : params.addToTargetGroup;
+
+        this.raycastMinDistance = params.raycastMinDistance;
+
+        this.raycastPadding = params.raycastPadding === undefined ? 1 : params.raycastPadding;
+
         this.shouldSnap = true;
     }
 
@@ -69,7 +76,7 @@ export class GuideBody extends LMent implements UpdateHandler {
         GameplayScene.instance.dispatcher.addListener("update", this);
         if (this.makeInvisible)
         {
-            this.body.body.setVisible(false);
+            // this.body.body.setVisible(false);
         }
     }
 
@@ -145,7 +152,26 @@ export class GuideBody extends LMent implements UpdateHandler {
 
         if (this.offsetSpace.toLowerCase() === "local")
             offset.copy(this.offsetVector.clone().applyQuaternion(this.leader.body.getRotation()));
-        let targetVector = this.leader.body.getPosition().clone().add(offset);
+        let leaderPosition = this.leader.body.getPosition();
+        let targetVector = leaderPosition.clone().add(offset);
+
+        if (this.raycastMinDistance !== undefined && GameplayScene.instance.clientInterface !== undefined && GameplayScene.instance.memory?.player !== undefined)
+        {
+            let raycast = GameplayScene.instance.clientInterface.raycast(leaderPosition, offset.clone().normalize(), GameplayScene.instance.memory.player.body.id, true);
+            if (raycast !== undefined && raycast.point !== undefined)
+            {
+                // for some reason the returned point doesn't have a clone function, so we have to make a copy of it
+                raycast.point = Helpers.NewVector3(raycast.point.x, raycast.point.y, raycast.point.z);
+
+                let length = raycast.point.clone().sub(leaderPosition).length();
+
+                if (length < offset.length() && length > this.raycastMinDistance)
+                {
+                    targetVector = raycast.point.clone().sub(offset.normalize().multiplyScalar(this.raycastPadding));
+                }
+            }
+        }
+
         if (this.shouldSnap)
         {
             this.follower.body.setPosition(targetVector);

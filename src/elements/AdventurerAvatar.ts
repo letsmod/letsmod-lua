@@ -1,12 +1,13 @@
 import { AnimatedState, State } from "engine/StateMachineLMent";
 import { AvatarBase } from "./AvatarBase";
 import { BodyHandle, ShapePointer } from "engine/BodyHandle";
-import { CollisionInfo } from "engine/MessageHandlers";
+import { CollisionInfo, InteractHandler } from "engine/MessageHandlers";
 import { Quaternion, Vector3 } from "three";
 import { Helpers } from "engine/Helpers";
 import { GameplayScene } from "engine/GameplayScene";
 import { LMent } from "engine/LMent";
 import { Throwable } from "./Throwable";
+import { GuideBody } from "./GuideBody";
 
 export abstract class AdventurerState extends AnimatedState
 {
@@ -52,9 +53,9 @@ export class IdleState extends StaggerableState
     
   }
 
-  onSwipe(dx: number, dy: number): void {
-    this.stateMachine.switchState("dash");
-  }
+  // onSwipe(dx: number, dy: number): void {
+  //   this.stateMachine.switchState("dash");
+  // }
 
   onTap()
   {
@@ -432,6 +433,7 @@ export class FallState extends StaggerableState
 export class ClamberState extends StaggerableState
 {
   lastTargetPosition: Vector3;
+  timeInClamber : number = 0;
 
   constructor(stateMachine: AdventurerAvatar, shapeToAnimate: ShapePointer | undefined)
   {
@@ -440,7 +442,11 @@ export class ClamberState extends StaggerableState
   }
 
   onEnterState(previousState: State | undefined): void {
-    super.onEnterState(previousState);
+    // super.onEnterState(previousState); // don't use super because we want to use the root motion flag on playAnimation
+    if (this.shape)
+    {
+      this.shape.playAnimation(this.animName, this.animBlendTime, false, true);
+    }
     this.stateMachine.body.body.setUseRootMotion(true, this.shape);
     this.stateMachine.body.body.setVelocity(Helpers.zeroVector);
     if (this.stateMachine.climbTarget && this.stateMachine.climbTargetOffset)
@@ -448,6 +454,7 @@ export class ClamberState extends StaggerableState
       this.lastTargetPosition.copy(this.stateMachine.climbTargetOffset).applyQuaternion(this.stateMachine.climbTarget.body.getRotation()).add(this.stateMachine.climbTarget.body.getPosition());
       this.stateMachine.body.body.disableCollisionWith(this.stateMachine.climbTarget.body);
     }
+    this.timeInClamber = 0;
   }
 
   onExitState(nextState: State | undefined): void {
@@ -460,6 +467,7 @@ export class ClamberState extends StaggerableState
 
   onUpdate(dt: number): void
   {
+    this.timeInClamber += dt;
     if (this.stateMachine.climbTarget !== undefined && this.stateMachine.climbTargetOffset !== undefined)
     {
       let targetPosition = this.stateMachine.climbTargetOffset.clone().applyQuaternion(this.stateMachine.climbTarget.body.getRotation()).add(this.stateMachine.climbTarget.body.getPosition());
@@ -484,9 +492,16 @@ export class ClamberState extends StaggerableState
 
       this.lastTargetPosition.copy(targetPosition);
     }
-    if (this.shape?.isAnimationFinished())
+    if (this.shape?.isAnimationFinished() || this.timeInClamber >= this.stateMachine.clamberCutoffTime)
     {
-      this.stateMachine.switchState("idle");
+      if (this.stateMachine.dragDx != 0 || this.stateMachine.dragDy != 0)
+      {
+        this.stateMachine.switchState("jog");
+      }
+      else
+      {
+        this.stateMachine.switchState("idle");
+      }
     }
   }
 }
@@ -495,6 +510,7 @@ export class ClamberState extends StaggerableState
 export class ClimbState extends StaggerableState
 {
   lastTargetPosition: Vector3;
+  timeInClimb: number = 0;
 
   constructor(stateMachine: AdventurerAvatar, shapeToAnimate: ShapePointer | undefined)
   {
@@ -503,7 +519,11 @@ export class ClimbState extends StaggerableState
   }
 
   onEnterState(previousState: State | undefined): void {
-    super.onEnterState(previousState);
+    // super.onEnterState(previousState); // don't use super because we want to use the root motion flag on playAnimation
+    if (this.shape)
+    {
+      this.shape.playAnimation(this.animName, this.animBlendTime, false, true);
+    }
     this.stateMachine.body.body.setUseRootMotion(true, this.shape);
     this.stateMachine.body.body.setVelocity(Helpers.zeroVector);
     if (this.stateMachine.climbTarget && this.stateMachine.climbTargetOffset)
@@ -511,6 +531,7 @@ export class ClimbState extends StaggerableState
       this.lastTargetPosition.copy(this.stateMachine.climbTargetOffset).applyQuaternion(this.stateMachine.climbTarget.body.getRotation()).add(this.stateMachine.climbTarget.body.getPosition());
       this.stateMachine.body.body.disableCollisionWith(this.stateMachine.climbTarget.body);
     }
+    this.timeInClimb = 0;
   }
 
   onExitState(nextState: State | undefined): void {
@@ -523,6 +544,7 @@ export class ClimbState extends StaggerableState
 
   onUpdate(dt: number): void
   {
+    this.timeInClimb += dt;
     if (this.stateMachine.climbTarget !== undefined && this.stateMachine.climbTargetOffset !== undefined)
     {
       let targetPosition = this.stateMachine.climbTargetOffset.clone().applyQuaternion(this.stateMachine.climbTarget.body.getRotation()).add(this.stateMachine.climbTarget.body.getPosition());
@@ -547,9 +569,16 @@ export class ClimbState extends StaggerableState
 
       this.lastTargetPosition.copy(targetPosition);
     }
-    if (this.shape?.isAnimationFinished())
+    if (this.shape?.isAnimationFinished() || this.timeInClimb >= this.stateMachine.climbCutoffTime)
     {
-      this.stateMachine.switchState("idle");
+      if (this.stateMachine.dragDx != 0 || this.stateMachine.dragDy != 0)
+      {
+        this.stateMachine.switchState("jog");
+      }
+      else
+      {
+        this.stateMachine.switchState("idle");
+      }
     }
   }
 }
@@ -559,7 +588,7 @@ export class LiftState extends StaggerableState
   liftedItem: BodyHandle | undefined;
   constructor(stateMachine: AdventurerAvatar, shapeToAnimate: ShapePointer | undefined)
   {
-    super("lift", stateMachine, shapeToAnimate, "lift", stateMachine.baseBlendTime);
+    super("lift", stateMachine, shapeToAnimate, "lift", /*stateMachine.baseBlendTime*/0.0);
   }
 
   onEnterState(previousState: State | undefined): void {
@@ -583,7 +612,6 @@ export class LiftState extends StaggerableState
   onActorDestroyed(actor: BodyHandle): void {
     if (actor == this.liftedItem)
     {
-      console.log("actor broke");
       this.stateMachine.switchState("idle");
     }
   }
@@ -626,7 +654,6 @@ export class PlaceState extends StaggerableState
   onActorDestroyed(actor: BodyHandle): void {
     if (actor == this.liftedItem)
     {
-      console.log("actor broke 2");
       this.stateMachine.switchState("idle");
     }
   }
@@ -640,9 +667,68 @@ export class PlaceState extends StaggerableState
   }
 }
 
+export class ThrowState extends StaggerableState
+{
+  timeInThrow: number = 0;
+  liftedItem: BodyHandle | undefined;
+  constructor(stateMachine: AdventurerAvatar, shapeToAnimate: ShapePointer | undefined)
+  {
+    super("throw", stateMachine, shapeToAnimate, "throw", stateMachine.baseBlendTime);
+  }
+
+  onEnterState(previousState: State | undefined): void {
+    super.onEnterState(previousState);
+    this.liftedItem = this.stateMachine.liftedItem;
+    if (this.liftedItem)
+    {
+      this.liftedItem.body.setVelocity(this.stateMachine.body.body.getVelocity());
+      this.liftedItem.body.setAngularVelocity(Helpers.zeroVector);
+      this.stateMachine.body.body.addHoldConstraintWith(this.liftedItem.body, "item_node");
+    }
+    this.timeInThrow = 0;
+  }
+
+  onExitState(nextState: State | undefined): void {
+    if (this.liftedItem)
+    {
+      this.stateMachine.body.body.removeHoldConstraintWith(this.liftedItem.body);
+    }
+  }
+
+  onUpdate(dt: number): void
+  {
+    this.timeInThrow += dt;
+
+    if (this.timeInThrow >= this.stateMachine.throwReleaseTime && this.liftedItem)
+    {
+      let throwable = this.liftedItem.getElement(Throwable);
+      if (throwable)
+      {
+        this.stateMachine.body.body.removeHoldConstraintWith(this.liftedItem.body);
+        throwable.doThrow();
+      }
+      this.liftedItem = undefined;
+    }
+
+    if (this.shape?.isAnimationFinished())
+    {
+      this.stateMachine.switchState("idle");
+    }
+  }
+
+  onActorDestroyed(actor: BodyHandle): void {
+    if (actor == this.liftedItem)
+    {
+      this.stateMachine.switchState("idle");
+    }
+  }
+}
+
 export class IdleHoldingState extends StaggerableState
 {
   liftedItem: BodyHandle | undefined;
+  wasJustJogging: number = 0;
+
   constructor(stateMachine: AdventurerAvatar, shapeToAnimate: ShapePointer | undefined)
   {
     super("idle_holding", stateMachine, shapeToAnimate, "idle_holding", stateMachine.idleBlendTime);
@@ -656,6 +742,14 @@ export class IdleHoldingState extends StaggerableState
       this.liftedItem.body.setVelocity(this.stateMachine.body.body.getVelocity());
       this.liftedItem.body.setAngularVelocity(Helpers.zeroVector);
       this.stateMachine.body.body.addHoldConstraintWith(this.liftedItem.body, "item_node");
+    }
+    if (previousState instanceof JogHoldingState)
+    {
+      this.wasJustJogging = 5;
+    }
+    else
+    {
+      this.wasJustJogging = 0;
     }
   }
 
@@ -676,19 +770,32 @@ export class IdleHoldingState extends StaggerableState
     {
       this.stateMachine.switchState("jog_holding");
     }
+    this.wasJustJogging--;
   }
 
   onActorDestroyed(actor: BodyHandle): void {
     if (actor == this.liftedItem)
     {
-      console.log("actor broke 3");
       this.stateMachine.switchState("idle");
     }
   }
 
   onTap()
   {
-    this.stateMachine.switchState("place");
+    if (this.wasJustJogging > 0)
+    {
+      this.stateMachine.switchState("throw");
+    }
+    else
+    {
+      this.stateMachine.switchState("place");
+    }
+  }
+
+  onSwipe(dx: number, dy: number)
+  {
+    this.stateMachine.setFacing(-dx, -dy);
+    this.stateMachine.switchState("throw");
   }
 }
 
@@ -779,10 +886,20 @@ export class JogHoldingState extends StaggerableState
     return subtype == "blocked_y_clamber";
   }
 
+  onTap()
+  {
+    this.stateMachine.switchState("throw");
+  }
+
+  onSwipe(dx: number, dy: number)
+  {
+    this.stateMachine.setFacing(-dx, -dy);
+    this.stateMachine.switchState("throw");
+  }
+
   onActorDestroyed(actor: BodyHandle): void {
     if (actor == this.liftedItem)
     {
-      console.log("actor broke 4");
       this.stateMachine.switchState("jog");
     }
   }
@@ -870,7 +987,6 @@ export class JumpHoldingState extends StaggerableState
   onActorDestroyed(actor: BodyHandle): void {
     if (actor == this.liftedItem)
     {
-      console.log("actor broke 5");
       this.stateMachine.switchState("fall");
     }
   }
@@ -947,7 +1063,6 @@ export class FallHoldingState extends StaggerableState
   onActorDestroyed(actor: BodyHandle): void {
     if (actor == this.liftedItem)
     {
-      console.log("actor broke 6");
       this.stateMachine.switchState("fall");
     }
   }
@@ -984,6 +1099,19 @@ export class AdventurerAvatar extends AvatarBase
 
   detectorYOffset : number;
 
+  cameraRotationDelayOnFlip: number;
+  flipDotProductThreshold: number;
+
+  throwReleaseTime: number;
+
+  climbCutoffTime : number;
+  clamberCutoffTime : number;
+
+  climbDetectorPrefab : string;
+  clamberDetectorPrefab : string;
+  jumpDetectorPrefab : string;
+  cameraGuidePrefab : string;
+
   // runtime fields
   lastOnGround : number = Infinity;
 
@@ -992,7 +1120,11 @@ export class AdventurerAvatar extends AvatarBase
   clamberDetector: BodyHandle | undefined = undefined;
   climbDetector: BodyHandle | undefined = undefined;
   jumpDetector: BodyHandle | undefined = undefined;
+  cameraGuide: BodyHandle | undefined = undefined;
   liftedItem: BodyHandle | undefined = undefined;
+  myGuideElement: GuideBody | undefined = undefined;
+
+  cameraRotationDelayTimer: number = 0;
 
   constructor(body: BodyHandle, id: number, params: Partial<AdventurerAvatar> = {})
   {
@@ -1024,12 +1156,26 @@ export class AdventurerAvatar extends AvatarBase
 
     this.climbDetectorMaxDistance = params.climbDetectorMaxDistance ?? 0.5;
 
+    this.cameraRotationDelayOnFlip = params.cameraRotationDelayOnFlip === undefined ? 3 : params.cameraRotationDelayOnFlip;
+    this.flipDotProductThreshold = params.flipDotProductThreshold ?? 0.75;
+
+    this.throwReleaseTime = params.throwReleaseTime ?? 0.2;
+
+    this.climbCutoffTime = params.climbCutoffTime ?? 0.8;
+    this.clamberCutoffTime = params.clamberCutoffTime ?? 0.6;
+
     this.detectorYOffset = params.detectorYOffset ?? -0.7349385521597851;
+
+    this.climbDetectorPrefab = params.climbDetectorPrefab ?? "ClimbDetector";
+    this.clamberDetectorPrefab = params.clamberDetectorPrefab ?? "ClamberDetector";
+    this.jumpDetectorPrefab = params.jumpDetectorPrefab ?? "JumpDetector";
+    this.cameraGuidePrefab = params.cameraGuidePrefab ?? "CameraGuide_v2";
   }
 
   accelerateWithParams(acceleration: number, smoothFactor: number, maxSpeed: number, dt: number)
   {
     this.setFacing(-this.dragDx, -this.dragDy);
+
     let facing = this.getFacing();
     let targetVelocity : Vector3;
     let currentPlanarVelocity = this.getPlanarVelocity();
@@ -1098,6 +1244,7 @@ export class AdventurerAvatar extends AvatarBase
       climb: new ClimbState(this, shape),
       lift: new LiftState(this, shape),
       place: new PlaceState(this, shape),
+      throw: new ThrowState(this, shape),
       idle_holding: new IdleHoldingState(this, shape),
       jog_holding: new JogHoldingState(this, shape),
       jump_holding: new JumpHoldingState(this, shape),
@@ -1109,11 +1256,43 @@ export class AdventurerAvatar extends AvatarBase
 
   onStart(): void {
     super.onStart();
+
+    this.clamberDetector = GameplayScene.instance.clonePrefab(this.clamberDetectorPrefab);
+    this.climbDetector = GameplayScene.instance.clonePrefab(this.climbDetectorPrefab);
+    this.jumpDetector = GameplayScene.instance.clonePrefab(this.jumpDetectorPrefab);
+    this.cameraGuide = GameplayScene.instance.clonePrefab(this.cameraGuidePrefab);
+    
+    if (this.cameraGuide)
+    {
+      this.myGuideElement = this.cameraGuide.getElement(GuideBody);
+    }
   }
 
   canInteract(): boolean
   {
     return this.currentState?.name == "idle" || this.currentState?.name == "jog";
+  }
+
+  highlightInteractableObject()
+  {
+    let interactables = GameplayScene.instance.dispatcher.getInteractables().filter((i) => i.isInInteractionRange(this.body));
+
+    let maxPriority = -Infinity;
+    let selectedInteractable : InteractHandler | undefined = undefined;
+
+    for (let interactable of interactables)
+    {
+      if (interactable.interactionPriority > maxPriority)
+      {
+        maxPriority = interactable.interactionPriority;
+        selectedInteractable = interactable;
+      }
+    }
+
+    if (selectedInteractable instanceof LMent)
+    {
+      selectedInteractable.body.body.showHighlight();
+    }
   }
 
   pickUpItem(item: Throwable)
@@ -1149,37 +1328,35 @@ export class AdventurerAvatar extends AvatarBase
     {
       this.isOnGround = false;
     }
-    if (this.clamberDetector === undefined)
+
+    let dragVec = Helpers.NewVector3(this.dragDx, 0, this.dragDy);
+
+    let isFlipping = dragVec.dot(Helpers.forwardVector) > this.flipDotProductThreshold;
+
+    if (this.myGuideElement !== undefined && this.myGuideElement.rotationSpeed > 0)
     {
-      for (let body of this.body.bodyGroup)
+      if (isFlipping)
       {
-        if (body.body.name == "ClamberDetector")
+        this.myGuideElement.rotate = false;
+        this.cameraRotationDelayTimer = 0;
+      }
+      else if (dragVec.lengthSq() > 0.01)
+      {
+        this.myGuideElement.rotate = true;
+      }
+      else
+      {
+        this.cameraRotationDelayTimer += dt;
+        if (this.cameraRotationDelayTimer >= this.cameraRotationDelayOnFlip)
         {
-          this.clamberDetector = body;
+          this.myGuideElement.rotate = true;
         }
       }
     }
 
-    if (this.climbDetector === undefined)
+    if (this.canInteract())
     {
-      for (let body of this.body.bodyGroup)
-      {
-        if (body.body.name == "ClimbDetector")
-        {
-          this.climbDetector = body;
-        }
-      }
-    }
-
-    if (this.jumpDetector === undefined)
-    {
-      for (let body of this.body.bodyGroup)
-      {
-        if (body.body.name == "JumpDetector")
-        {
-          this.jumpDetector = body;
-        }
-      }
+      this.highlightInteractableObject();
     }
   }
 

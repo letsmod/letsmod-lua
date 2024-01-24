@@ -38,7 +38,7 @@ export interface ShapePointer
 
   isAnimationFinished() : boolean;
   
-  playAnimation(animKey : string, blendTime: number, forceRestart?: boolean) : void;
+  playAnimation(animKey : string, blendTime: number, forceRestart?: boolean, extractRootMotion?: boolean) : void;
 }
 
 // interface to a javascript object which provides a lua-compatible interface for the js BodyView scene node
@@ -101,6 +101,8 @@ export interface BodyPointer
   addHoldConstraintWith(other: BodyPointer, nodeToTrack : string) : void;
 
   removeHoldConstraintWith(other: BodyPointer) : void;
+
+  showHighlight() : void; // highlights the body for one frame
 
   // internal use; use gameplayScene.destroyBody / cloneBody instead
   destroyBody() : void;
