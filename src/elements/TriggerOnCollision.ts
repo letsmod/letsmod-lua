@@ -12,7 +12,6 @@ export class TriggerOnCollision extends LMent implements CollisionHandler {
   triggerOnCollisionWithBodyType: number | undefined;
   contactDirection: Vector3;
   dotMinimum: number | undefined;
-  triggerOnCollisionWithBodyType: number | undefined;
 
   constructor(body: BodyHandle, id: number, params: Partial<TriggerOnCollision> = {}) {
     super(body, id, params);
@@ -63,7 +62,6 @@ export class TriggerOnCollision extends LMent implements CollisionHandler {
         }
       }
     }
-  }
 
 
   sendTrigger() {
