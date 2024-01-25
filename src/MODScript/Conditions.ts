@@ -42,7 +42,6 @@ export class HasTag implements GenericCondition {
 export class IsPlayer implements GenericCondition {
 
     checkConditionOnActor(actor: BodyHandle): boolean {
-
         return GameplayScene.instance.memory.player !== undefined && actor.body.id === GameplayScene.instance.memory.player.body.id;
     }
 }
@@ -191,7 +190,7 @@ export class IsOther implements GenericCondition {
         this.actorName = args.actorName ?? "";
         this.targetActor = Helpers.findBodyInScene(this.actorName);
         //this.actorId = this.targetActor ? this.targetActor.body.id : -1;
-        
+
     }
 
     checkConditionOnActor(actor: BodyHandle, parentEvent: MODscriptEvent): boolean {
