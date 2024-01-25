@@ -59,3 +59,5 @@ export {StationaryNPC} from "./StationaryNPC";
 export {ScaleWaypoint} from "./ScaleWaypoint";
 export {SlowDownEffect} from "./SlowDownEffect";
 export {CircularChargingEnemy} from "./CircularChargingEnemy";
+export {AdventurerAvatar} from "./AdventurerAvatar";
+export {Throwable} from "./Throwable";

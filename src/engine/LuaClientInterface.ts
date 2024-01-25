@@ -1,4 +1,4 @@
-import { BodyHandle } from "./BodyHandle";
+import { BodyHandle, BodyPointer } from "./BodyHandle";
 
 export interface LuaClientInterface
 {

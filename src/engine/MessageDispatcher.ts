@@ -418,8 +418,6 @@ export class MessageDispatcher
 
   // InteractHandler
 
-  // TBD: determine how to assign interactors to interactables such that the highest priority one in range is chosen
-
   onInteract(interactor : BodyHandle)
   {
     let listeners = this.listeners["interact"].slice();
@@ -438,6 +436,11 @@ export class MessageDispatcher
     }
 
     return false;
+  }
+
+  getInteractables()
+  {
+    return this.listeners["interact"].filter((listener) => listener.enabled);
   }
 
   // ActorDestructionHandler
