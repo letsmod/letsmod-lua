@@ -48,13 +48,6 @@ export class GameplayScene {
     handle.isInScene = true;
     this.bodies.push(handle);
     this.bodyIdMap.set(bodyNode.id, handle);
-
-    if (this.eventHandler !== undefined)
-      for (let e of this.eventHandler.events) {
-        if (e.InvolvedActorIDs.includes(handle.body.id))
-          e.addInvolvedActor(handle);
-      }
-
     return handle;
   }
 
@@ -100,7 +93,7 @@ export class GameplayScene {
 
   initializeMemory(memoryOverride: Partial<GameplayMemory>) {
     this.memory = { ...new GameplayMemory(), ...memoryOverride };
-    if (this.eventHandler !== undefined)
+    if(this.eventHandler)
       this.eventHandler.initialize();
   }
 
@@ -114,19 +107,15 @@ export class GameplayScene {
     for (let body of this.bodies) {
       body.startElements();
     }
+    
     this.dispatcher.updateFunctionQueue(dt);
   }
 
   update() {
     this.dispatcher.onUpdate(this.currentDt);
     if (!this.eventHandler)return;
-
+    this.eventHandler.initCATs();
     this.eventHandler.onUpdate(this.currentDt);
-    // console.log("Event Handler: " + this.eventHandler.events.length);
-    // for (let e of this.eventHandler.events) {
-    //   console.log("Event Involved IDs: " + e.InvolvedActorIDs.length);
-    //   console.log("Event Involved Bodies: " + e.InvolvedActorBodies.length);
-    // }
   }
 
   cloneBody(body: BodyHandle): BodyHandle | undefined {
@@ -164,6 +153,7 @@ export class GameplayScene {
       }
       body.body.destroyBody();
       body.isInScene = false;
+      
     }
 
     //ASK DON: This should still be in the involvedActors to know when it gets destroyed, otherwise the OtherDestroyed trigger won't work.

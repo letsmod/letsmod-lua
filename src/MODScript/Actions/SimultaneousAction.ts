@@ -47,7 +47,7 @@ export class SimultaneousAction extends GenericAction {
         else this.genericAction2.performAction(triggerOutput);
     }
 
-    trackActionProgress(): void {
+    monitorAction(): void {
         if (this.genericAction1?.ActionIsFinished && this.genericAction2?.ActionIsFinished)
             this.actionFinished();
     }

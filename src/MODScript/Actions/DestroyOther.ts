@@ -4,19 +4,26 @@ import { BodyHandle } from "engine/BodyHandle";
 import { GameplayScene } from "engine/GameplayScene";
 
 export class DestroyOther extends GenericAction {
-    actorId: number;
+    actorId: number = -1;
+    actorName: string = '';
+    targetActor: BodyHandle | undefined;
 
     constructor(eventId: MODscriptEvent, args: Partial<DestroyOther>) {
         super(eventId);
-        this.actorId = args.actorId ?? -1;
+        if (args.actorName)
+            this.actorName = args.actorName;
+        for (const actor of this.parentEvent.InvolvedActorBodies)
+            if (actor.body.name === this.actorName) {
+                this.actorId = actor.body.id;
+                this.targetActor = actor;
+            }
     }
 
     performAction(triggerOutput?: BodyHandle | undefined): void {
         if (!triggerOutput || !this.parentEvent || !this.parentEvent.EventActor) return;
 
-        const targetActor = this.parentEvent.getInvolvedActor(this.actorId);
-        if (targetActor) {
-            GameplayScene.instance.destroyBody(targetActor);
+        if (this.targetActor) {
+            GameplayScene.instance.destroyBody(this.targetActor);
             this.actionFinished();
         }
         else {
@@ -25,7 +32,7 @@ export class DestroyOther extends GenericAction {
         }
 
     }
-    trackActionProgress(): void {
+    monitorAction(): void {
 
     }
 }

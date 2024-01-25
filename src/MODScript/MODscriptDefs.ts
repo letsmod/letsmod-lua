@@ -22,7 +22,7 @@ export abstract class GenericAction{
     private static actionIdCounter: number = 0;
     protected actionIsFinished: boolean = false;
     private actionStarted: boolean = false;
-
+    
     constructor(parentEvent: MODscriptEvent) {
         this.parentEvent = parentEvent;
         if(parentEvent.action)
@@ -33,11 +33,11 @@ export abstract class GenericAction{
         }
     }
     abstract performAction(triggerOutput?: BodyHandle | undefined): void
-    abstract trackActionProgress():void
+    abstract monitorAction():void
     
     actionUpdate(): void{
         if(this.actionStarted)
-            this.trackActionProgress();
+            this.monitorAction();
     }
 
     startAction(triggerOutput?: BodyHandle | undefined): void{
@@ -62,7 +62,7 @@ export interface GenericCondition {
     checkConditionOnActor(actor: BodyHandle, parentEvent: MODscriptEvent): boolean;
 }
 
-declare type Vector3 = {
+export declare type Vector3 = {
     x: number;
     y: number;
     z: number;
@@ -70,7 +70,7 @@ declare type Vector3 = {
 
 export declare type ConditionDefinition = {
     conditionType: string;
-    args: { [key: string]: number | Vector3 | ConditionDefinition};
+    args: { [key: string]: number | Vector3 | ConditionDefinition | string};
 }
 
 export declare type TriggerDefinition = {
@@ -84,7 +84,7 @@ export declare type ActionDefinition = {
 }
 
 export declare type EventDefinition = {
-    actorId: number;
+    actorName: string;
     trigger: TriggerDefinition;
     action: ActionDefinition;
     repeatable: boolean;

@@ -18,7 +18,7 @@ export class LookOutput extends GenericAction {
 
     }
     
-    trackActionProgress(): void {
+    monitorAction(): void {
         if(!this.parentEvent || !this.parentEvent.stateMachine) return;
         if(this.parentEvent.stateMachine.stateIsComplete(this.ActionId))
             this.actionFinished();
