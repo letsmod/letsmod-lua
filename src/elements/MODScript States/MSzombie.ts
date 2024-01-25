@@ -4,7 +4,8 @@ import { MODscriptIdleState,
          MODscriptLookAtState, 
          MODscriptNavigateState, 
          MODscriptStateMachineLMent, 
-         MODscriptStates } from "./MODscriptStates";
+         MODscriptStates, 
+         MODscriptThrowState} from "./MODscriptStates";
 
 class MS_ZombieNavigate extends MODscriptNavigateState {
 
@@ -38,7 +39,8 @@ export class MSzombie extends MODscriptStateMachineLMent{
         this.states = {
             [MODscriptStates.navigate]: new MS_ZombieNavigate(this),
             [MODscriptStates.idle]: new MS_ZombieIdle(this),
-            [MODscriptStates.lookAt]: new MS_ZombieLookAt(this)
+            [MODscriptStates.lookAt]: new MS_ZombieLookAt(this),
+            [MODscriptStates.throw]: new MODscriptThrowState(this)
         }
 
         this.switchState(MODscriptStates.idle);

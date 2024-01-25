@@ -3,7 +3,7 @@ import { TriggerDefinition, ActionDefinition, GenericTrigger, GenericAction, Eve
 import { ActionFactory } from "./FactoryClasses/ActionsFactory";
 import { TriggerFactory } from "./FactoryClasses/TriggersFactory";
 import { MODscriptStateMachineLMent, MODscriptStates } from "elements/MODScript States/MODscriptStates";
-import { Helpers } from "engine/Helpers";
+import { Constants, Helpers } from "engine/Helpers";
 import { GameplayScene } from "engine/GameplayScene";
 
 export class MODscriptEvent {
@@ -75,18 +75,6 @@ export class MODscriptEvent {
         this.mainAction = ActionFactory.createAction(this, this.action);
     }
 
-    //Filled in GameplayScene
-    addInvolvedActor(actor: BodyHandle): void {
-        this.involvedActorBodies.push(actor);
-    }
-
-    removeInvolvedActor(actor: BodyHandle): void {
-        const index = this.involvedActorBodies.indexOf(actor);
-        if (index > -1) {
-            this.involvedActorBodies.splice(index, 1);
-        }
-    }
-
     addAction(action: GenericAction): void {
         this.allEventActions.push(action);
     }
@@ -129,7 +117,11 @@ export class MODscriptEvent {
         }
 
         if (this.action !== undefined && this.action.args !== undefined && this.action.args.actorName !== undefined) {
-            const body = Helpers.findBodyInScene(this.action.args.actorName as string);
+            let body: BodyHandle | undefined;
+            if((this.action.args.actorName as string) === "Player") 
+                body = GameplayScene.instance.memory.player;
+            else
+                body = Helpers.findBodyInScene(this.action.args.actorName as string);
             if (body)
                 this.involvedActorBodies.push(body);
             this.involvedActorIDs.push(this.action.args.actorId as number);

@@ -6,13 +6,14 @@ import { GameplayScene } from "engine/GameplayScene";
 
 export class ThrowOther extends GenericAction {
     prefabId: string; //our prefabs are strings?
-    actorId: number=-1
+    actorId: number = -1
     actorName: string = "";
     targetActor: BodyHandle | undefined;
 
-    constructor(eventId:MODscriptEvent, args:Partial<ThrowOther>) {
+    constructor(eventId: MODscriptEvent, args: Partial<ThrowOther>) {
         super(eventId);
         this.prefabId = args.prefabId ?? "";
+        console.log("actorName: " + args.actorName);
         if (args.actorName)
             this.actorName = args.actorName;
         for (const actor of this.parentEvent.InvolvedActorBodies)
@@ -23,17 +24,17 @@ export class ThrowOther extends GenericAction {
     }
 
     performAction(triggerOutput?: BodyHandle | undefined): void {
-        if (!triggerOutput || !this.parentEvent || !this.parentEvent.stateMachine || !this.targetActor) 
+        if (!this.parentEvent || !this.parentEvent.stateMachine || !this.targetActor)
             return;
-        
+
         this.parentEvent.stateMachine.startState(this.ActionId, MODscriptStates.throw, undefined, this.targetActor.body.getPosition());
     }
-    
+
     monitorAction(): void {
-        if (!this.parentEvent || !this.parentEvent.stateMachine ) return;
-        if(this.parentEvent.stateMachine.stateIsComplete(this.ActionId))
+        if (!this.parentEvent || !this.parentEvent.stateMachine) return;
+        if (this.parentEvent.stateMachine.stateIsComplete(this.ActionId))
             this.actionFinished();
-        else if(this.parentEvent.stateMachine.stateIsFailed(this.ActionId))
+        else if (this.parentEvent.stateMachine.stateIsFailed(this.ActionId))
             this.actionFailed();
     }
 }

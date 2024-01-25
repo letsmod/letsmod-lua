@@ -115,8 +115,12 @@ export class JSONparser {
                 args.maxSize = Number(value);
             else if (key.includes("actorId"))
                 args.actorId = Number(value);
-            else if (key.includes("actorName"))
+            else if (key.includes("actorName")) {
                 args.actorName = value.split('"').join('')
+                //HACK: This should be temporary.
+                if (args.actorName === "Player")
+                    args.actorName = "Adventurer";
+            }
             // else if (key.includes("condition1"))
             //     args.condition1 = this.parseConditionDefinition(this.getStringBetween(argsString, '{', '}'));
             // else if (key.includes("condition2"))
@@ -134,8 +138,12 @@ export class JSONparser {
         let args: { [key: string]: number | string } = {}
 
         for (const [key, value] of keyValues) {
-            if (key.includes("actorName"))
+            if (key.includes("actorName")) {
                 args.actorName = value.split('"').join('');
+                //HACK: This should be temporary.
+                if (args.actorName === "Player")
+                    args.actorName = "Adventurer";
+            }
             else if (key.includes("actorId"))
                 args.actorId = Number(value);
             else if (key.includes("sentence"))

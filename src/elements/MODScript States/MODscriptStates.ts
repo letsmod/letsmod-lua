@@ -6,7 +6,7 @@ import { GameplayScene } from "engine/GameplayScene";
 import { Helpers } from "engine/Helpers";
 import { CollisionHandler, CollisionInfo, UpdateHandler } from "engine/MessageHandlers";
 import { State, StateMachineLMent } from "engine/StateMachineLMent";
-import { Vector, Vector3 } from "three";
+import { Vector3 } from "three";
 
 export enum MODscriptStates {
     idle = "idle",
