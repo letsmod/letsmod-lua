@@ -76,7 +76,7 @@ export class GuideBody extends LMent implements UpdateHandler {
         GameplayScene.instance.dispatcher.addListener("update", this);
         if (this.makeInvisible)
         {
-            // this.body.body.setVisible(false);
+            this.body.body.setVisible(false);
         }
     }
 

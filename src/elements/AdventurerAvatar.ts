@@ -8,6 +8,7 @@ import { GameplayScene } from "engine/GameplayScene";
 import { LMent } from "engine/LMent";
 import { Throwable } from "./Throwable";
 import { GuideBody } from "./GuideBody";
+import { CameraTarget } from "./CameraTarget";
 
 export abstract class AdventurerState extends AnimatedState
 {
@@ -1144,7 +1145,7 @@ export class AdventurerAvatar extends AvatarBase
     this.midairDeceleration  = params.midairDeceleration ?? 5;
 
     this.jumpInitialVelocity = params.jumpInitialVelocity ?? 9;
-    this.autoJumpMinDistance = params.autoJumpMinDistance ?? 2;
+    this.autoJumpMinDistance = params.autoJumpMinDistance ?? 3;
     this.jumpToFallThreshold = params.jumpToFallThreshold ?? -9.0;
 
     this.baseBlendTime = params.baseBlendTime ?? 0.1;
@@ -1231,6 +1232,22 @@ export class AdventurerAvatar extends AvatarBase
   onInit()
   {
     super.onInit();
+
+    this.clamberDetector = GameplayScene.instance.clonePrefab(this.clamberDetectorPrefab);
+    this.climbDetector = GameplayScene.instance.clonePrefab(this.climbDetectorPrefab);
+    this.jumpDetector = GameplayScene.instance.clonePrefab(this.jumpDetectorPrefab);
+    this.cameraGuide = GameplayScene.instance.clonePrefab(this.cameraGuidePrefab);
+    
+    if (this.cameraGuide)
+    {
+      this.myGuideElement = this.cameraGuide.getElement(GuideBody);
+      this.camGuide = this.myGuideElement;
+      if (this.camGuide)
+      {
+        this.camTarget = this.camGuide.body.getElement(CameraTarget);
+      }
+    }
+
     this.body.body.lockRotation(true, true, true);
 
     let shape = this.body.body.getShapes()[0];
@@ -1256,16 +1273,6 @@ export class AdventurerAvatar extends AvatarBase
 
   onStart(): void {
     super.onStart();
-
-    this.clamberDetector = GameplayScene.instance.clonePrefab(this.clamberDetectorPrefab);
-    this.climbDetector = GameplayScene.instance.clonePrefab(this.climbDetectorPrefab);
-    this.jumpDetector = GameplayScene.instance.clonePrefab(this.jumpDetectorPrefab);
-    this.cameraGuide = GameplayScene.instance.clonePrefab(this.cameraGuidePrefab);
-    
-    if (this.cameraGuide)
-    {
-      this.myGuideElement = this.cameraGuide.getElement(GuideBody);
-    }
   }
 
   canInteract(): boolean
