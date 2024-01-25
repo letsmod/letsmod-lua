@@ -41,7 +41,7 @@ export class ScaleWaypoint extends LMent implements PhysicsSubstepHandler {
 
     validateScalePoints() {
         this.points.forEach(point => {
-            point.interpolate = point.interpolate ? point.interpolate.toLowerCase() as InterpolationType : "linear";
+            point.interpolate = point.interpolate !== undefined ? point.interpolate.toLowerCase() as InterpolationType : "linear";
             if (!Helpers.validateInterpolateType(point.interpolate)) {
                 point.interpolate = "linear";
                 console.log("Interpolate type " + this.points[0].interpolate + " not found, setting to linear");

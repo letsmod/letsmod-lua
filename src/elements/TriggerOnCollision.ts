@@ -9,6 +9,7 @@ export class TriggerOnCollision extends LMent implements CollisionHandler {
   triggerId: string | undefined;
   triggerContext: "local" | "group" | "global";
   triggerOnCollisionWithElementType: string | undefined;
+  triggerOnCollisionWithBodyType: number | undefined;
   contactDirection: Vector3;
   dotMinimum: number | undefined;
   triggerOnCollisionWithBodyType: number | undefined;
@@ -19,7 +20,6 @@ export class TriggerOnCollision extends LMent implements CollisionHandler {
     this.triggerContext = params.triggerContext === undefined ? "group" : params.triggerContext;
     this.triggerOnCollisionWithElementType = params.triggerOnCollisionWithElementType;
     this.triggerOnCollisionWithBodyType = params.triggerOnCollisionWithBodyType;
-
     this.contactDirection = params.contactDirection === undefined ? Helpers.upVector : params.contactDirection;
     this.dotMinimum = params.dotMinimum;
   }
@@ -34,22 +34,26 @@ export class TriggerOnCollision extends LMent implements CollisionHandler {
   onCollision(info: CollisionInfo) {
     let other = GameplayScene.instance.getBodyById(info.getOtherObjectId());
     let inBodyGroup = false;
-    if (other !== undefined) {
+    if (other !== undefined)
+    {
       for (let i of this.body.bodyGroup) {
-        if (i == other) {
+        if (i == other)
+        {
           inBodyGroup = true;
         }
       }
-      let otherType = other ? other.body.getPhysicsBodyType() : undefined;
+    }
 
-      if (!inBodyGroup && other &&
+    let otherType = other ? other.body.getPhysicsBodyType() : undefined;
+
+    if (!inBodyGroup && other &&
         (
           (this.triggerOnCollisionWithBodyType === undefined && otherType !== 2) ||
           (this.triggerOnCollisionWithBodyType !== undefined && this.triggerOnCollisionWithBodyType === otherType)
         )
       ) {
-        let collisionDirection = info.getDeltaVOther().normalize();
-        let adjustedContactDirection = this.contactDirection.clone().applyQuaternion(this.body.body.getRotation());
+      let collisionDirection = info.getDeltaVOther().normalize();
+      let adjustedContactDirection = this.contactDirection.clone().applyQuaternion(this.body.body.getRotation());
 
         let dotProduct = collisionDirection.dot(adjustedContactDirection);
         if (this.dotMinimum === undefined || dotProduct >= this.dotMinimum) {

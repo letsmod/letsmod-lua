@@ -3,6 +3,7 @@ import { MessageDispatcher } from "engine/MessageDispatcher";
 import { GameplayMemory } from "engine/GameplayMemory";
 import { LuaClientInterface } from "./LuaClientInterface";
 import { EventHandler } from "../MODScript/EventHandler";
+import { LMent } from "./LMent";
 
 type GamePreferences = {
   defaultPlayDifficulty: "normal" | "hardcore";
@@ -80,6 +81,17 @@ export class GameplayScene {
 
   getBodyById(id: number): BodyHandle | undefined {
     return this.bodyIdMap.get(id);
+  }
+
+  findAllElements<U extends LMent> (T : new (...args: any[]) => U ) : U[]
+  {
+    let elements : U[] = [];
+    for (let body of this.bodies)
+    {
+      let bodyElements = body.getAllElements(T);
+      elements.push(...bodyElements);
+    }
+    return elements;
   }
 
   clear() {

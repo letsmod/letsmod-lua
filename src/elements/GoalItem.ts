@@ -16,7 +16,7 @@ export class GoalItem extends Collectible {
             return;
         super.collect();
         const sound = this.body.getElement(SfxPlayer) as SfxPlayer;
-        if (sound) {
+        if (sound !== undefined) {
             sound.playAudio();
         }
         GameplayScene.instance.clientInterface?.winMod();
