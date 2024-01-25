@@ -1,9 +1,10 @@
 import { BodyHandle } from "engine/BodyHandle";
-import { TriggerDefinition, ActionDefinition, GenericTrigger, GenericAction, EventDefinition, ConditionDefinition, GenericCondition } from "./MODscriptDefs";
+import { TriggerDefinition, ActionDefinition, GenericTrigger, GenericAction, EventDefinition, ConditionDefinition, GenericCondition, CATs } from "./MODscriptDefs";
 import { ActionFactory } from "./FactoryClasses/ActionsFactory";
 import { TriggerFactory } from "./FactoryClasses/TriggersFactory";
 import { MODscriptStateMachineLMent, MODscriptStates } from "elements/MODScript States/MODscriptStates";
 import { Helpers } from "engine/Helpers";
+import { GameplayScene } from "engine/GameplayScene";
 
 export class MODscriptEvent {
 
@@ -69,7 +70,7 @@ export class MODscriptEvent {
     setCATs(): void {
         if (this.trigger === undefined || this.action === undefined) return;
         this.extractInvolvedActors();
-        this.actorId = this.EventActor  ? this.EventActor.body.id : -1;
+        this.actorId = this.EventActor ? this.EventActor.body.id : -1;
         this.eventTrigger = TriggerFactory.createTrigger(this, this.trigger);
         this.mainAction = ActionFactory.createAction(this, this.action);
     }
@@ -103,7 +104,7 @@ export class MODscriptEvent {
         return this.involvedActorBodies.find(actor => actor.body.id === actorId);
     }
 
-    
+
     private extractInvolvedActors(): void {
 
         this.involvedActorIDs.push(this.actorId);
@@ -119,6 +120,12 @@ export class MODscriptEvent {
             if (conditionBody)
                 this.involvedActorBodies.push(conditionBody);
             this.involvedActorIDs.push(condition.args.actorId as number);
+        } else if (condition && condition.conditionType === CATs.IsPlayer) {
+            const player = GameplayScene.instance.memory.player;
+            if (player) {
+                this.involvedActorBodies.push(player);
+                this.involvedActorIDs.push(player.body.id as number);
+            }
         }
 
         if (this.action !== undefined && this.action.args !== undefined && this.action.args.actorName !== undefined) {

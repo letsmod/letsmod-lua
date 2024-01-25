@@ -53,12 +53,14 @@ export class BallControls extends AvatarBase {
         this.initBallGuide();
     }
 
-    override onUpdate(dt?: number): void {
+    override onUpdate(dt: number): void {
         super.onUpdate(dt);
 
-        this.onGroundReset(dt);
-        if (dt)
+        this.onGroundReset();
+        if (dt > 0)
+        {
             this.Roll(dt);
+        }
     }
 
     onGroundReset(dt?:number) {

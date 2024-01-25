@@ -28,10 +28,17 @@ export class GuideBody extends LMent implements UpdateHandler {
     move: boolean; /*Defaults to TRUE, which allows it to update position to match target every frame*/
     mode: string; /*To tell whether to leade the target or follow the target*/
     makeInvisible: boolean; /*To make the body invisible*/
+    rotationTolerance: number; /*The tolerance for rotation to be considered "aligned"*/
+    addToTargetGroup: boolean; /*To add the follower to the target's group*/
+    raycastMinDistance: number | undefined; /* if a ray between the leader and the follower is longer than this but shorter than the target distance, move to slightly in front of the intersection point */
+    raycastPadding : number; /* the distance to move the follower in front of the intersection point */
 
     private leader: BodyHandle | undefined;
     private follower: BodyHandle | undefined;
 
+    public shouldSnap : boolean;
+
+    
     constructor(body: BodyHandle, id: number, params: Partial<GuideBody> = {}) {
         super(body, id, params);
         this.target = params.target === undefined ? Helpers.NA : params.target;
@@ -53,6 +60,16 @@ export class GuideBody extends LMent implements UpdateHandler {
         this.makeInvisible = params.makeInvisible === undefined ? false : params.makeInvisible;
 
         this.targetContext = params.targetContext === undefined ? "group" : params.targetContext;
+        
+        this.rotationTolerance = params.rotationTolerance === undefined ? 0 : params.rotationTolerance;
+
+        this.addToTargetGroup = params.addToTargetGroup === undefined ? false : params.addToTargetGroup;
+
+        this.raycastMinDistance = params.raycastMinDistance;
+
+        this.raycastPadding = params.raycastPadding === undefined ? 1 : params.raycastPadding;
+
+        this.shouldSnap = true;
     }
 
     onInit(): void {
@@ -62,21 +79,37 @@ export class GuideBody extends LMent implements UpdateHandler {
         }
     }
 
-    initTargetBody() {
-        GameplayScene.instance.dispatcher.queueDelayedFunction(this, () => {
+    initTargetBody(){
+        GameplayScene.instance.dispatcher.queueDelayedFunction(this,()=>
+        {
             this.targetBody = undefined;
-            if (this.target.toLowerCase() === Constants.Player)
+            if(this.target.toLowerCase() === Constants.Player)
+            {
                 this.targetBody = GameplayScene.instance.memory.player;
-            else if (this.target === Constants.MainCamera)
-                this.targetBody = GameplayScene.instance.memory.mainCamera;
-            else {
-                if (this.targetContext.toLowerCase() === "global")
-                    this.targetBody = Helpers.findBodyInScene(this.target);
-                else if (this.targetContext.toLowerCase() === "group")
-                    this.targetBody = Helpers.findBodyWithinGroup(this.body, this.target);
-                else console.log("Invalid target context: " + this.targetContext);
             }
-        }, 1 / 30);
+            else if(this.target === Constants.MainCamera)
+            {
+                this.targetBody = GameplayScene.instance.memory.mainCamera;
+            }
+            else {
+                if(this.targetContext.toLowerCase() === "global")
+                    this.targetBody = Helpers.findBodyInScene(this.target);
+                else if(this.targetContext.toLowerCase() === "group")
+                    this.targetBody = Helpers.findBodyWithinGroup(this.body,this.target);
+                else console.log("Invalid target context: "+this.targetContext);
+            }
+
+            if (this.addToTargetGroup && this.targetBody !== undefined)
+            {
+                let index = this.body.bodyGroup.indexOf(this.body);
+                if (index >= 0)
+                {
+                    this.body.bodyGroup.splice(index, 1);
+                }
+                this.targetBody.bodyGroup.push(this.body);
+                this.body.bodyGroup = this.targetBody.bodyGroup;
+            }
+        },Helpers.deltaTime);
     }
 
     getTargetBody() {
@@ -109,14 +142,42 @@ export class GuideBody extends LMent implements UpdateHandler {
 
     updateTargetPosition(dt?: number) {
         if (this.targetBody === undefined || this.leader === undefined || this.follower === undefined)
+        {
             return;
+        }
 
         let offset = this.offsetVector.clone();
 
         if (this.offsetSpace.toLowerCase() === "local")
             offset.copy(this.offsetVector.clone().applyQuaternion(this.leader.body.getRotation()));
-        let targetVector = this.leader.body.getPosition().clone().add(offset);
-        this.follower.body.setPosition(this.follower.body.getPosition().clone().lerp(targetVector, this.followSpeed * (dt ?? 1 / 30)));
+        let leaderPosition = this.leader.body.getPosition();
+        let targetVector = leaderPosition.clone().add(offset);
+
+        if (this.raycastMinDistance !== undefined && GameplayScene.instance.clientInterface !== undefined && GameplayScene.instance.memory?.player !== undefined)
+        {
+            let raycast = GameplayScene.instance.clientInterface.raycast(leaderPosition, offset.clone().normalize(), GameplayScene.instance.memory.player.body.id, true);
+            if (raycast !== undefined && raycast.point !== undefined)
+            {
+                // for some reason the returned point doesn't have a clone function, so we have to make a copy of it
+                raycast.point = Helpers.NewVector3(raycast.point.x, raycast.point.y, raycast.point.z);
+
+                let length = raycast.point.clone().sub(leaderPosition).length();
+
+                if (length < offset.length() && length > this.raycastMinDistance)
+                {
+                    targetVector = raycast.point.clone().sub(offset.normalize().multiplyScalar(this.raycastPadding));
+                }
+            }
+        }
+
+        if (this.shouldSnap)
+        {
+            this.follower.body.setPosition(targetVector);
+        }
+        else
+        {
+            this.follower.body.setPosition(this.follower.body.getPosition().clone().lerp(targetVector, this.followSpeed * Helpers.deltaTime));
+        }
     }
 
     updateTargetOrientation(dt?: number) {
@@ -126,14 +187,31 @@ export class GuideBody extends LMent implements UpdateHandler {
         if (this.rotationSpeed == 0)
             this.follower.body.setRotation(this.rotationOffsetQuaternion);
         let targetOrientation = this.leader.body.getRotation().clone().multiply(this.rotationOffsetQuaternion).normalize();
-        this.follower.body.setRotation(this.follower.body.getRotation().clone().slerp(targetOrientation, this.rotationSpeed * (dt ?? 1 / 30)));
+        if (this.shouldSnap)
+        {
+            this.follower.body.setRotation(targetOrientation);
+        }
+        else
+        {
+            this.follower.body.setRotation(this.follower.body.getRotation().clone().slerp(targetOrientation, this.rotationSpeed * Helpers.deltaTime));
+        }
     }
 
     onUpdate(dt?: number): void {
         if (this.move)
-            this.updateTargetPosition(dt);
+        {
+            this.updateTargetPosition();
+        }
 
         if (this.rotate)
-            this.updateTargetOrientation(dt);
+        {
+            this.updateTargetOrientation();
+        }
+
+
+        if (this.targetBody !== undefined && this.leader !== undefined && this.follower !== undefined)
+        {
+            this.shouldSnap = false;
+        }
     }
 }

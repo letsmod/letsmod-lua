@@ -62,3 +62,5 @@ export {CircularChargingEnemy} from "./CircularChargingEnemy";
 export {MSzombie} from "./MODScript States/MSzombie";
 export {JumpUp} from "./JumpUp";
 export {JSONelement} from "./JSONelement";
+export {AdventurerAvatar} from "./AdventurerAvatar";
+export {Throwable} from "./Throwable";

@@ -103,8 +103,8 @@ export class WingSuitControls extends AvatarBase implements ButtonHandler, DragG
     this.staminaBarControl.ResetBar();
   }
 
-  override onUpdate(): void {
-    super.onUpdate();
+  override onUpdate(dt: number): void {
+    super.onUpdate(dt);
 
     this.onGroundResetter();
     this.move();
