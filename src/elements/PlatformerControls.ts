@@ -54,9 +54,9 @@ export class PlatformerControls extends AvatarBase implements ButtonHandler {
 
   PlayLandingSound(){
     const sound = this.body.getElementByName("LandAudio") as SfxPlayer;
-        if (sound) {
-          sound.playAudio();
-        }
+    if (sound !== undefined) {
+      sound.playAudio();
+    }
   }
 
   override onStart(): void {
@@ -83,7 +83,7 @@ export class PlatformerControls extends AvatarBase implements ButtonHandler {
 
   decelDelayFunc: any | undefined;
   override onUpdate(dt: number): void {
-    super.onUpdate();
+    super.onUpdate(dt);
 
     this.onGroundReset();
 

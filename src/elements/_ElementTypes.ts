@@ -62,3 +62,5 @@ export {SfxPlayer} from "./SfxPlayer";
 export {StationaryNPC} from "./StationaryNPC";
 export {ScaleWaypoint} from "./ScaleWaypoint";
 export {SlowDownEffect} from "./SlowDownEffect";
+export {AdventurerAvatar} from "./AdventurerAvatar";
+export {Throwable} from "./Throwable";

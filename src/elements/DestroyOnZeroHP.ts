@@ -30,7 +30,7 @@ export class DestroyOnZeroHP extends LMent implements HitPointChangeHandler {
     if (source == this.body && currentHP <= 0 && !this.destroyed) {
       if (this.destructionDelay <= 0) {
         const sound = this.body.getElementByName("Death") as SfxPlayer;
-        if (sound) {
+        if (sound !== undefined) {
           sound.playAudio();
         }
         this.doDestroy();
