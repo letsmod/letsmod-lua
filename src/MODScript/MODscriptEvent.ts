@@ -5,6 +5,7 @@ import { TriggerFactory } from "./FactoryClasses/TriggersFactory";
 import { MODscriptStateMachineLMent, MODscriptStates } from "elements/MODScript States/MODscriptStates";
 import { Constants, Helpers } from "engine/Helpers";
 import { GameplayScene } from "engine/GameplayScene";
+import { CollisionInfo } from "engine/MessageHandlers";
 
 export class MODscriptEvent {
 
@@ -101,40 +102,65 @@ export class MODscriptEvent {
             this.involvedActorBodies.push(this._eventActor);
 
         if (!this.trigger || !this.trigger.args) return;
-
+       
         const condition = this.trigger.args.condition as ConditionDefinition;
-        if (condition && condition.args && "actorName" in condition.args) {
+        
+        if(condition)
+            this.extractInvolvedActorsFromCondition(condition);
+        
+        if(this.action)
+            this.extractInvolvedActorsFromAction(this.action);
+        
+
+    }
+
+    extractInvolvedActorsFromCondition(condition: ConditionDefinition): void {
+
+        let conditionActorIds: number[] = [];
+        if (condition.args && "actorName" in condition.args) {
             const conditionBody = Helpers.findBodyInScene(condition.args.actorName as string);
+            conditionActorIds.push(condition.args.actorId as number);
             if (conditionBody)
                 this.involvedActorBodies.push(conditionBody);
-            this.involvedActorIDs.push(condition.args.actorId as number);
-        } else if (condition && condition.conditionType === CATs.IsPlayer) {
+        } else if (condition.conditionType === CATs.IsPlayer) {
             const player = GameplayScene.instance.memory.player;
             if (player) {
                 this.involvedActorBodies.push(player);
-                this.involvedActorIDs.push(player.body.id as number);
+                conditionActorIds.push(player.body.id as number);
             }
         }
-
-        if (this.action !== undefined && this.action.args !== undefined && this.action.args.actorName !== undefined) {
-            let body: BodyHandle | undefined;
-            if((this.action.args.actorName as string) === "Player") 
-                body = GameplayScene.instance.memory.player;
-            else
-                body = Helpers.findBodyInScene(this.action.args.actorName as string);
-            if (body)
-                this.involvedActorBodies.push(body);
-            this.involvedActorIDs.push(this.action.args.actorId as number);
-        }
+        
+        this.involvedActorIDs.push(...conditionActorIds);
+        
+        // TODO: Make it recursive in case condition type is "And" or "Or"
     }
 
-    checkEvent(): void {
-        // if (this.eventId == 0) {
-        //     console.log(this.eventDef?.enabled);
-        // }
-        if (!this.eventTrigger || !this.mainAction || !this.enabled || this.isFinished && !this.repeatable) return;
+    extractInvolvedActorsFromAction(action: ActionDefinition): void {
+        if (!action.args || !action.args.actorName) return;
+        let body: BodyHandle | undefined;
+            if((action.args.actorName as string) === "Player") 
+                body = GameplayScene.instance.memory.player;
+            else
+                body = Helpers.findBodyInScene(action.args.actorName as string);
+            if (body)
+                this.involvedActorBodies.push(body);
+            this.involvedActorIDs.push(action.args.actorId as number);
 
-        const result = this.eventTrigger.checkTrigger();
+        //TODO: Make it recursive in case action type is simultaneuos.
+    }
+
+
+    checkEvent(info?:CollisionInfo): void {
+        if (!this.eventTrigger) return;
+
+        if(info && this.eventTrigger.requiresCollision)
+            this.handleEventResult(this.eventTrigger.checkTrigger(info));
+        else this.handleEventResult(this.eventTrigger.checkTrigger());
+    }
+    
+    handleEventResult(result: {didTrigger:boolean, outputActor:BodyHandle | undefined}): void {
+        if (!this.mainAction || !this.enabled || this.isFinished && !this.repeatable) return;
+
         if (result.didTrigger)
             this.mainAction.startAction(result.outputActor);
         for (let eventAction of this.allEventActions) {

@@ -1,39 +1,35 @@
 import { BodyHandle } from "engine/BodyHandle";
-import { ConditionDefinition, GenericCondition, GenericTrigger} from "../MODscriptDefs";
+import { ConditionDefinition, GenericCondition, GenericTrigger } from "../MODscriptDefs";
 import { CollisionHandler, CollisionInfo } from "engine/MessageHandlers";
 import { MODscriptEvent } from "MODScript/MODscriptEvent";
 import { ConditionFactory } from "MODScript/FactoryClasses/ConditionsFactory";
+import { GameplayScene } from "engine/GameplayScene";
 
-export class Touched extends GenericTrigger implements CollisionHandler {
+export class Touched extends GenericTrigger {
 
     condition: ConditionDefinition | undefined;
     conditionInstance: GenericCondition | undefined;
-    didTouch: boolean = false;
-    collidedActorId: number = -1;
 
     constructor(parentEvent: MODscriptEvent, triggerArgs: Partial<Touched>) {
         super(parentEvent);
         this.condition = triggerArgs.condition;
+        this.requiresCollision = true;
+
         if (this.condition)
             this.conditionInstance = ConditionFactory.createCondition(this.condition);
+
+        if (!this.conditionInstance) return;
     }
 
-    checkTrigger(): { didTrigger: boolean, outputActor: BodyHandle | undefined } {
+    checkTrigger(info?: CollisionInfo): { didTrigger: boolean, outputActor: BodyHandle | undefined } {
+        let localDidTrigger = false;
+        let localOutputActor = undefined;
 
-        if (this.conditionInstance) {
-            for (let actor of this.parentEvent.InvolvedActorBodies)
-                if (this.conditionInstance.checkConditionOnActor(actor,this.parentEvent))
-                    if (actor.body.id === this.collidedActorId) {
-                        this.collidedActorId = -1;
-                        return { didTrigger: true, outputActor: actor };
-                    }
+        if (info) {
+            const other = this.parentEvent.InvolvedActorBodies.find((body) => body.body.id === info.getOtherObjectId());
+            localDidTrigger = other !== undefined && (this.conditionInstance?.checkConditionOnActor(other, this.parentEvent) ?? false);
+            localOutputActor = other;
         }
-        return { didTrigger: false, outputActor: undefined };
+        return { didTrigger: localDidTrigger, outputActor: localOutputActor };
     }
-
-    onCollision(info: CollisionInfo): void {
-        this.collidedActorId = info.getOtherObjectId();
-    }
-
-
 }

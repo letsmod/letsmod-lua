@@ -1,4 +1,4 @@
-import { UpdateHandler } from "engine/MessageHandlers";
+import { CollisionInfoFactory, UpdateHandler } from "engine/MessageHandlers";
 import { CATs, EventDefinition } from "./MODscriptDefs";
 import { MODscriptEvent } from "./MODscriptEvent";
 import { JSONparser } from "./JSONparser";
@@ -7,7 +7,8 @@ export class EventHandler implements UpdateHandler {
 
     jsonData: string = '';//'[{"actorName":"zombie","trigger":{"triggerType":"Nearby","args":{"condition":{"conditionType":"IsOther","args":{"actorName":"wolf"}},"maxDistance":3}},"action":{"actionType":"Say","args":{"sentence":"Hey buddy lets eat some brains!"}},"repeatable":false,"enabled":true},{"actorName":"zombie","trigger":{"triggerType":"Nearby","args":{"condition":{"conditionType":"IsOther","args":{"actorName":"wolf"}},"maxDistance":2}},"action":{"actionType":"NavigateOther","args":{"actorName":"human"}},"repeatable":false,"enabled":true},{"actorName":"human","trigger":{"triggerType":"Nearby","args":{"condition":{"conditionType":"IsOther","args":{"actorName":"zombie"}},"maxDistance":7}},"action":{"actionType":"JumpUpAction","args":{}},"repeatable":true,"enabled":true},{"actorName":"human","trigger":{"triggerType":"Nearby","args":{"condition":{"conditionType":"IsOther","args":{"actorName":"zombie"}},"maxDistance":7}},"action":{"actionType":"Say","args":{"sentence":"HEEEEELP .. A ZOOMBIE!!"}},"repeatable":false,"enabled":true},{"actorName":"zombie","trigger":{"triggerType":"Nearby","args":{"condition":{"conditionType":"IsOther","args":{"actorName":"hero"}},"maxDistance":3}},"action":{"actionType":"DestroyOther","args":{"actorName":"zombie"}},"repeatable":false,"enabled":true},{"actorName":"human","trigger":{"triggerType":"OtherDestroyed","args":{"condition":{"conditionType":"IsOther","args":{"actorName":"zombie"}}}},"action":{"actionType":"Say","args":{"sentence":"My hero! You saved me!"}},"repeatable":false,"enabled":true},{"actorName":"human","trigger":{"triggerType":"Nearby","args":{"condition":{"conditionType":"IsOther","args":{"actorName":"zombie"}},"maxDistance":3}},"action":{"actionType":"DestroyOther","args":{"actorName":"human"}},"repeatable":false,"enabled":true},{"actorName":"zombie","trigger":{"triggerType":"OtherDestroyed","args":{"condition":{"conditionType":"IsOther","args":{"actorName":"human"}}}},"action":{"actionType":"Say","args":{"sentence":"Yummi BRAINZ!"}},"repeatable":false,"enabled":true}]';
     events: MODscriptEvent[] = [];
-    private catsInitialized:boolean = false;
+    private collisionEventBodyMap: { event: MODscriptEvent, bodyId: number }[] = [];
+    private catsInitialized: boolean = false;
     static _instance: EventHandler
 
     public static get instance(): EventHandler {
@@ -30,24 +31,26 @@ export class EventHandler implements UpdateHandler {
     }
 
     parseDummyJson(): MODscriptEvent[] {
-        
+
         const eventDefs = JSONparser.parseEventDefinitions(this.jsonData.split("'").join('"'));
         let events: MODscriptEvent[] = [];
-        for (let i=0; i<eventDefs.length; i++) {
+        for (let i = 0; i < eventDefs.length; i++) {
             //this.printEventDefinition(eventDefs[i]);
             events.push(new MODscriptEvent(i, eventDefs[i]));
         }
         return events;
     }
 
+    //For debugging purposes.
     printEventDefinition(eventDef: EventDefinition) {
         this.printObject(eventDef, '');
     }
-    
+
+    //For debugging purposes.
     printObject(obj: any, indent: string) {
         for (const key in obj) {
             if (!obj.hasOwnProperty(key)) continue;
-    
+
             if (typeof obj[key] === 'object' && obj[key] !== null) {
                 console.log(`${indent}${key}:`);
                 this.printObject(obj[key], indent + '  ');
@@ -64,6 +67,28 @@ export class EventHandler implements UpdateHandler {
     public onUpdate(dt: number): void {
         for (let event of this.events)
             event.checkEvent();
+    }
+
+    public addEventBodyMapEntry(event: MODscriptEvent, bodyId: number) {
+        this.collisionEventBodyMap.push({ event: event, bodyId: bodyId });
+    }
+
+    public onCollision(infoFactory: CollisionInfoFactory) {
+        const body1id = infoFactory.aId;
+        const body2id = infoFactory.bId;
+
+        //console.log("map item"+this.collisionEventBodyMap[0].bodyId);
+        for (let mapItem of this.collisionEventBodyMap) {
+           
+            const event = mapItem.event;
+            if(mapItem.bodyId === body1id){
+                
+                event.checkEvent(infoFactory.makeCollisionInfo("a"));
+            }
+            else if (mapItem.bodyId === body2id){
+                event.checkEvent(infoFactory.makeCollisionInfo("b"));
+            }
+        }
     }
 
     public GetActiveEvents(): MODscriptEvent[] {
