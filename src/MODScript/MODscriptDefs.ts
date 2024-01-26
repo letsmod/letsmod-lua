@@ -93,7 +93,7 @@ export declare type EventDefinition = {
 
 export const CATs = {
     /*** Conditions ***/
-    Element: "Element",
+    HasElement: "Element",
     HasTag: "HasTag",
     IsPlayer: "IsPlayer",
     IsPhysical: "IsPhysical",
