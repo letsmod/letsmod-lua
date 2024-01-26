@@ -38,15 +38,15 @@ export class GuideBody extends LMent implements UpdateHandler {
 
     public shouldSnap : boolean;
 
-    constructor(body: BodyHandle, id: number, params: Partial<GuideBody> = {})
-    {
-        super(body, id,params);
-        this.target = params.target === undefined?Helpers.NA:params.target;
-        this.guideName = params.guideName === undefined?Helpers.NA:params.guideName;
-        this.mode = params.mode === undefined?"follow":params.mode;
-        this.offset = params.offset === undefined?{x:0,y:0,z:0}:params.offset;
-        this.offsetVector = Helpers.NewVector3(this.offset.x,this.offset.y,this.offset.z);
-        this.move = params.move === undefined?true:params.move;
+    
+    constructor(body: BodyHandle, id: number, params: Partial<GuideBody> = {}) {
+        super(body, id, params);
+        this.target = params.target === undefined ? Helpers.NA : params.target;
+        this.guideName = params.guideName === undefined ? Helpers.NA : params.guideName;
+        this.mode = params.mode === undefined ? "follow" : params.mode;
+        this.offset = params.offset === undefined ? { x: 0, y: 0, z: 0 } : params.offset;
+        this.offsetVector = Helpers.NewVector3(this.offset.x, this.offset.y, this.offset.z);
+        this.move = params.move === undefined ? true : params.move;
 
         this.rotationOffset = params.rotationOffset === undefined ? { x: 0, y: 0, z: 0 } : params.rotationOffset;
         this.rotationOffsetQuaternion = Helpers.NewQuatFromEuler(Helpers.Rad(this.rotationOffset.x), Helpers.Rad(this.rotationOffset.y), Helpers.Rad(this.rotationOffset.z));
@@ -74,8 +74,7 @@ export class GuideBody extends LMent implements UpdateHandler {
 
     onInit(): void {
         GameplayScene.instance.dispatcher.addListener("update", this);
-        if (this.makeInvisible)
-        {
+        if (this.makeInvisible) {
             this.body.body.setVisible(false);
         }
     }
@@ -113,8 +112,7 @@ export class GuideBody extends LMent implements UpdateHandler {
         },Helpers.deltaTime);
     }
 
-    getTargetBody()
-    {
+    getTargetBody() {
         return this.targetBody;
     }
 
@@ -133,7 +131,7 @@ export class GuideBody extends LMent implements UpdateHandler {
                 this.leader = this.body;
                 this.follower = this.targetBody;
             }
-        }, 2 * Helpers.deltaTime)
+        }, 2 / 30)
     }
 
     updateOffsetVector(x: number, y: number, z: number, additive: boolean = true) {
@@ -142,7 +140,7 @@ export class GuideBody extends LMent implements UpdateHandler {
         else this.offsetVector.set(x, y, z);
     }
 
-    updateTargetPosition() {
+    updateTargetPosition(dt?: number) {
         if (this.targetBody === undefined || this.leader === undefined || this.follower === undefined)
         {
             return;
@@ -182,7 +180,7 @@ export class GuideBody extends LMent implements UpdateHandler {
         }
     }
 
-    updateTargetOrientation() {
+    updateTargetOrientation(dt?: number) {
         if (this.targetBody === undefined || this.leader === undefined || this.follower === undefined)
             return;
 
@@ -199,7 +197,7 @@ export class GuideBody extends LMent implements UpdateHandler {
         }
     }
 
-    onUpdate(): void {
+    onUpdate(dt?: number): void {
         if (this.move)
         {
             this.updateTargetPosition();

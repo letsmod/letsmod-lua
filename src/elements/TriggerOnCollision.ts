@@ -54,14 +54,14 @@ export class TriggerOnCollision extends LMent implements CollisionHandler {
       let collisionDirection = info.getDeltaVOther().normalize();
       let adjustedContactDirection = this.contactDirection.clone().applyQuaternion(this.body.body.getRotation());
 
-      let dotProduct = collisionDirection.dot(adjustedContactDirection);
-      if (this.dotMinimum === undefined || dotProduct >= this.dotMinimum) {
-        if (this.triggerOnCollisionWithElementType === undefined || other.getElementByTypeName(this.triggerOnCollisionWithElementType) !== undefined) {
-          this.sendTrigger();
+        let dotProduct = collisionDirection.dot(adjustedContactDirection);
+        if (this.dotMinimum === undefined || dotProduct >= this.dotMinimum) {
+          if (this.triggerOnCollisionWithElementType === undefined || other.getElementByTypeName(this.triggerOnCollisionWithElementType) !== undefined) {
+            this.sendTrigger();
+          }
         }
       }
     }
-  }
 
 
   sendTrigger() {

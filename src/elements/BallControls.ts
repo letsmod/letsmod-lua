@@ -63,10 +63,10 @@ export class BallControls extends AvatarBase {
         }
     }
 
-    onGroundReset() {
+    onGroundReset(dt?:number) {
         GameplayScene.instance.dispatcher.queueDelayedFunction(this, () => {
             this.isOnGround = false;
-        }, Helpers.deltaTime);
+        }, dt ?? 1/30);
     }
 
     Roll(dt: number) {
