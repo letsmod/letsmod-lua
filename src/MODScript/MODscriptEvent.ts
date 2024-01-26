@@ -111,6 +111,10 @@ export class MODscriptEvent {
         if(this.action)
             this.extractInvolvedActorsFromAction(this.action);
         
+        if(GameplayScene.instance?.eventHandler)
+            {
+                this.involvedActorBodies.push(...GameplayScene.instance.eventHandler.TaggedBodiesList);
+            }
 
     }
 
@@ -132,7 +136,18 @@ export class MODscriptEvent {
         
         this.involvedActorIDs.push(...conditionActorIds);
         
-        // TODO: Make it recursive in case condition type is "And" or "Or"
+        if (condition.args && "condition" in condition.args) {
+            const subCondition = condition.args.condition as ConditionDefinition;
+            this.extractInvolvedActorsFromCondition(subCondition);
+        }
+        if (condition.args && "condition1" in condition.args) {
+            const subCondition = condition.args.condition1 as ConditionDefinition;
+            this.extractInvolvedActorsFromCondition(subCondition);
+        }
+        if (condition.args && "condition2" in condition.args) {
+            const subCondition = condition.args.condition2 as ConditionDefinition;
+            this.extractInvolvedActorsFromCondition(subCondition);
+        }
     }
 
     extractInvolvedActorsFromAction(action: ActionDefinition): void {

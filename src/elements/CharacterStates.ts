@@ -349,7 +349,6 @@ export class characterPatrolState extends CharacterStateBase implements Collisio
             const currentPos = this.stateMachine.body.body.getPosition();
             this.stateMachine.body.body.setPosition(currentPos.clone().add(myFwd.multiplyScalar(-0.3)));
             this.points[this.currentPointIndex] = currentPos.clone();
-            console.log("Distance to next point: " + currentPos.distanceTo(nextPoint));
             if (currentPos.distanceTo(nextPoint) <= 2)
                 this.points[(this.currentPointIndex + 1) % this.points.length] = currentPos.clone().add(myRight.multiplyScalar(Math.random() + 3));
 

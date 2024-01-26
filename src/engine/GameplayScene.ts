@@ -4,6 +4,7 @@ import { GameplayMemory } from "engine/GameplayMemory";
 import { LuaClientInterface } from "./LuaClientInterface";
 import { EventHandler } from "../MODScript/EventHandler";
 import { LMent } from "./LMent";
+import { ConditionFactory } from "MODScript/FactoryClasses/ConditionsFactory";
 
 type GamePreferences = {
   defaultPlayDifficulty: "normal" | "hardcore";
@@ -33,7 +34,6 @@ export class GameplayScene {
   };
 
   private constructor() {
-
   }
 
   setClientInterface(clientInterface: LuaClientInterface) {

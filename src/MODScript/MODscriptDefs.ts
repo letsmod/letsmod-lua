@@ -114,7 +114,7 @@ export const CATs = {
     NotCond: "NotCond",
     IsOther: "IsOther",
     SeenOther: "SeenOther",
-    IsTrue: "IsTrue",
+    IsTrue: "True",
     
     /*** Actions ***/
     JumpUpAction: "JumpUpAction",

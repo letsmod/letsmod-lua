@@ -100,7 +100,7 @@ export class JSONparser {
             if (key.includes("elementId"))
                 args.elementId = value;
             else if (key.includes("tagId"))
-                args.tagId = value;
+                args.tagId = value.split('"').join('');
             else if (key.includes("maxDistance"))
                 args.maxDistance = value;
             else if (key.includes("teamId"))
@@ -121,12 +121,12 @@ export class JSONparser {
                 if (args.actorName === "Player")
                     args.actorName = "Adventurer";
             }
-            // else if (key.includes("condition1"))
-            //     args.condition1 = this.parseConditionDefinition(this.getStringBetween(argsString, '{', '}'));
-            // else if (key.includes("condition2"))
-            //     args.condition2 = this.parseConditionDefinition(this.getStringBetween(argsString, '{', '}'));
-            // else if (key.includes("condition"))
-            //     args.condition = this.parseConditionDefinition(this.getStringBetween(argsString, '{', '}'));                
+            else if (key.includes("condition1"))
+                 args.condition1 = this.parseConditionDefinition(this.getStringBetween(argsString, '{', '}'));
+            else if (key.includes("condition2"))
+                 args.condition2 = this.parseConditionDefinition(this.getStringBetween(argsString, '{', '}'));
+            else if (key.includes("condition"))
+                 args.condition = this.parseConditionDefinition(this.getStringBetween(argsString, '{', '}'));                
         }
         return args;
     }
