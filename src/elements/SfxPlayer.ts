@@ -78,7 +78,6 @@ export class SfxPlayer extends LMent implements UpdateHandler, TriggerHandler {
         if (!clientInterface) return;
         if (!this.randomMax || !this.randomMin) return;
         const random = Math.floor(Math.random() * (this.randomMax) + (this.randomMin));
-        console.log(this.audio + random);
         clientInterface.playAudio(this.audio + random, this.id.toString());
     }
 }
