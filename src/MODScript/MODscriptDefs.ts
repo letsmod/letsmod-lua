@@ -1,15 +1,20 @@
 import { BodyHandle } from "engine/BodyHandle";
 import { MODscriptEvent } from "./MODscriptEvent";
+import { CollisionInfo } from "engine/MessageHandlers";
 
+export interface eventCollisionHandler{
+    handleCollision(event: MODscriptEvent, collidedActor: BodyHandle): void;
+}
 
 export abstract class GenericTrigger {
-
+    requiresCollision: boolean = false;
     parentEvent: MODscriptEvent;
+    
     constructor(parentEvent: MODscriptEvent) {
         this.parentEvent = parentEvent;
     }
 
-    abstract checkTrigger(): { didTrigger: boolean; outputActor: BodyHandle | undefined; }
+    abstract checkTrigger(info?:CollisionInfo): { didTrigger: boolean; outputActor: BodyHandle | undefined; }
 }
 
 export abstract class GenericAction{
