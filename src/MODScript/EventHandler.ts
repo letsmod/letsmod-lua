@@ -77,6 +77,7 @@ export class EventHandler implements UpdateHandler {
 
     public cacheTaggedBody(body: BodyHandle) {
         this.taggedBodiesList.push(body);
+        console.log("tagged body "+body.body.name);
     }
 
     public addEventBodyMapEntry(event: MODscriptEvent, bodyId: number) {
@@ -87,7 +88,6 @@ export class EventHandler implements UpdateHandler {
         const body1id = infoFactory.aId;
         const body2id = infoFactory.bId;
 
-        //console.log("map item"+this.collisionEventBodyMap[0].bodyId);
         for (let mapItem of this.collisionEventBodyMap) {
            
             const event = mapItem.event;

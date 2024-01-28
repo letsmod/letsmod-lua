@@ -1,4 +1,4 @@
-import { GenericAction } from "MODScript/MODscriptDefs";
+import { CATs, GenericAction } from "MODScript/MODscriptDefs";
 import { MODscriptEvent } from "MODScript/MODscriptEvent";
 import { MODscriptStates } from "elements/MODScript States/MODscriptStates";
 import { BodyHandle } from "engine/BodyHandle";
@@ -7,8 +7,8 @@ import { GameplayScene } from "engine/GameplayScene";
 export class ThrowOutput extends GenericAction {
     prefabId: string; //our prefabs are strings?
 
-    constructor(eventId:MODscriptEvent, args:Partial<ThrowOutput>) {
-        super(eventId);
+    constructor(parentEvent:MODscriptEvent, args:Partial<ThrowOutput>) {
+        super(parentEvent, CATs.ThrowOutput);
         this.prefabId = args.prefabId ?? "";
 
     }

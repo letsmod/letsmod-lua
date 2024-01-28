@@ -12,10 +12,12 @@ import { SayAction } from "MODScript/Actions/SayAction";
 import { ThrowOther } from "MODScript/Actions/ThrowOther";
 import { DestroyOutput } from "MODScript/Actions/DestroyOutput";
 import { ThrowOutput } from "MODScript/Actions/ThrowOutput";
+import { SimultaneousAction } from "MODScript/Actions/SimultaneousAction";
 
 export class ActionFactory {
-    
+
     public static createAction(parentEvent: any, actionDef: ActionDefinition): GenericAction | undefined {
+
         switch (actionDef.actionType) {
             case CATs.JumpUpAction:
                 return new JumpUpAction(parentEvent, actionDef.args);
@@ -31,7 +33,7 @@ export class ActionFactory {
                 return new NavigateOther(parentEvent, actionDef.args);
             case CATs.NavigateOutput:
                 return new NavigateOutput(parentEvent, actionDef.args);
-            case CATs.WaitAction:
+            case CATs.Wait:
                 return new WaitAction(parentEvent, actionDef.args);
             case CATs.Say:
                 return new SayAction(parentEvent, actionDef.args);
@@ -44,7 +46,9 @@ export class ActionFactory {
             case CATs.ThrowOutput:
                 return new ThrowOutput(parentEvent, actionDef.args);
             case CATs.SimultaneousActions:
-                return undefined;
+                const action1 = ActionFactory.createAction(parentEvent, actionDef.args.action1 as ActionDefinition);
+                const action2 = ActionFactory.createAction(parentEvent, actionDef.args.action2 as ActionDefinition);
+                return new SimultaneousAction(parentEvent, action1, action2);
             default:
                 return undefined
         }

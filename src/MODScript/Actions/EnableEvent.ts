@@ -1,5 +1,5 @@
 import { EventHandler } from "MODScript/EventHandler";
-import { GenericAction } from "MODScript/MODscriptDefs";
+import { CATs, GenericAction } from "MODScript/MODscriptDefs";
 import { MODscriptEvent } from "MODScript/MODscriptEvent";
 import { BodyHandle } from "engine/BodyHandle";
 import { GameplayScene } from "engine/GameplayScene";
@@ -7,7 +7,7 @@ import { GameplayScene } from "engine/GameplayScene";
 export class EnableEvent extends GenericAction {
     eventIdToEnable: number;
     constructor(parentEvent: MODscriptEvent, args: Partial<EnableEvent>) {
-        super(parentEvent);
+        super(parentEvent, CATs.EnableEvent);
         this.eventIdToEnable = args.eventIdToEnable ?? 0;
     }
 

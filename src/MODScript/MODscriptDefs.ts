@@ -28,11 +28,11 @@ export abstract class GenericAction{
     protected actionIsFinished: boolean = false;
     private actionStarted: boolean = false;
     
-    constructor(parentEvent: MODscriptEvent) {
+    constructor(parentEvent: MODscriptEvent, actionType: string) {
         this.parentEvent = parentEvent;
         if(parentEvent.action)
         {
-            this.actionType = parentEvent.action.actionType;
+            this.actionType = actionType;
             this._actionId = this.parentEvent.EventId+"_"+(++GenericAction.actionIdCounter);
             this.parentEvent.addAction(this);
         }
@@ -85,7 +85,7 @@ export declare type TriggerDefinition = {
 
 export declare type ActionDefinition = {
     actionType: string;
-    args: { [key: string]: number | string };
+    args: { [key: string]: number | string | ActionDefinition };
 }
 
 export declare type EventDefinition = {
@@ -127,10 +127,10 @@ export const CATs = {
     LookOutput: "LookOutput",
     NavigateOther: "NavigateOther",
     NavigateOutput: "NavigateOutput",
-    WaitAction: "WaitAction",
     DisableEvent: "DisableEvent",
     EnableEvent: "EnableEvent",
     Say: "Say",
+    Wait: "Wait",
 
     /*** Triggers ***/
     Nearby: "Nearby",
