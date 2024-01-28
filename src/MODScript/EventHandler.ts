@@ -2,14 +2,20 @@ import { CollisionInfoFactory, UpdateHandler } from "engine/MessageHandlers";
 import { CATs, EventDefinition } from "./MODscriptDefs";
 import { MODscriptEvent } from "./MODscriptEvent";
 import { JSONparser } from "./JSONparser";
+import { BodyHandle } from "engine/BodyHandle";
 
 export class EventHandler implements UpdateHandler {
 
     jsonData: string = '';//'[{"actorName":"zombie","trigger":{"triggerType":"Nearby","args":{"condition":{"conditionType":"IsOther","args":{"actorName":"wolf"}},"maxDistance":3}},"action":{"actionType":"Say","args":{"sentence":"Hey buddy lets eat some brains!"}},"repeatable":false,"enabled":true},{"actorName":"zombie","trigger":{"triggerType":"Nearby","args":{"condition":{"conditionType":"IsOther","args":{"actorName":"wolf"}},"maxDistance":2}},"action":{"actionType":"NavigateOther","args":{"actorName":"human"}},"repeatable":false,"enabled":true},{"actorName":"human","trigger":{"triggerType":"Nearby","args":{"condition":{"conditionType":"IsOther","args":{"actorName":"zombie"}},"maxDistance":7}},"action":{"actionType":"JumpUpAction","args":{}},"repeatable":true,"enabled":true},{"actorName":"human","trigger":{"triggerType":"Nearby","args":{"condition":{"conditionType":"IsOther","args":{"actorName":"zombie"}},"maxDistance":7}},"action":{"actionType":"Say","args":{"sentence":"HEEEEELP .. A ZOOMBIE!!"}},"repeatable":false,"enabled":true},{"actorName":"zombie","trigger":{"triggerType":"Nearby","args":{"condition":{"conditionType":"IsOther","args":{"actorName":"hero"}},"maxDistance":3}},"action":{"actionType":"DestroyOther","args":{"actorName":"zombie"}},"repeatable":false,"enabled":true},{"actorName":"human","trigger":{"triggerType":"OtherDestroyed","args":{"condition":{"conditionType":"IsOther","args":{"actorName":"zombie"}}}},"action":{"actionType":"Say","args":{"sentence":"My hero! You saved me!"}},"repeatable":false,"enabled":true},{"actorName":"human","trigger":{"triggerType":"Nearby","args":{"condition":{"conditionType":"IsOther","args":{"actorName":"zombie"}},"maxDistance":3}},"action":{"actionType":"DestroyOther","args":{"actorName":"human"}},"repeatable":false,"enabled":true},{"actorName":"zombie","trigger":{"triggerType":"OtherDestroyed","args":{"condition":{"conditionType":"IsOther","args":{"actorName":"human"}}}},"action":{"actionType":"Say","args":{"sentence":"Yummi BRAINZ!"}},"repeatable":false,"enabled":true}]';
     events: MODscriptEvent[] = [];
     private collisionEventBodyMap: { event: MODscriptEvent, bodyId: number }[] = [];
+    private taggedBodiesList: BodyHandle[] = [];
     private catsInitialized: boolean = false;
     static _instance: EventHandler
+
+    public get TaggedBodiesList(): BodyHandle[] {
+        return this.taggedBodiesList;
+    }
 
     public static get instance(): EventHandler {
         if (!EventHandler._instance)
@@ -69,6 +75,11 @@ export class EventHandler implements UpdateHandler {
             event.checkEvent();
     }
 
+    public cacheTaggedBody(body: BodyHandle) {
+        this.taggedBodiesList.push(body);
+        console.log("tagged body "+body.body.name);
+    }
+
     public addEventBodyMapEntry(event: MODscriptEvent, bodyId: number) {
         this.collisionEventBodyMap.push({ event: event, bodyId: bodyId });
     }
@@ -77,7 +88,6 @@ export class EventHandler implements UpdateHandler {
         const body1id = infoFactory.aId;
         const body2id = infoFactory.bId;
 
-        //console.log("map item"+this.collisionEventBodyMap[0].bodyId);
         for (let mapItem of this.collisionEventBodyMap) {
            
             const event = mapItem.event;

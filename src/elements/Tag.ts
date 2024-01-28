@@ -1,4 +1,5 @@
 import { BodyHandle } from "engine/BodyHandle";
+import { GameplayScene } from "engine/GameplayScene";
 import { Helpers } from "engine/Helpers";
 import { LMent } from "engine/LMent";
 
@@ -7,7 +8,9 @@ export class Tag extends LMent {
 
     onInit(): void {
     }
+
     onStart(): void {
+        GameplayScene.instance?.eventHandler?.cacheTaggedBody(this.body);
     }
 
     constructor(body: BodyHandle, id: number, params: Partial<Tag> = {}) {

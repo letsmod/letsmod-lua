@@ -1,3 +1,4 @@
+import { ActionFactory } from "./FactoryClasses/ActionsFactory";
 import { ActionDefinition, CATs, ConditionDefinition, EventDefinition, TriggerDefinition, Vector3 } from "./MODscriptDefs";
 
 export class JSONparser {
@@ -61,8 +62,9 @@ export class JSONparser {
         };
     }
 
-    static parseActionDefinition(eventStr: string): ActionDefinition {
-        const actionStr = this.getStringBetween(eventStr, '"action":{', '},');
+    static parseActionDefinition(eventStr: string, subActionStr?: string): ActionDefinition {
+        
+        const actionStr = subActionStr?subActionStr:this.getStringBetween(eventStr, '"action":{', '},');
         return {
             actionType: this.parseStringValue(actionStr, 'actionType'),
             args: this.parseActionArgs(actionStr)
@@ -100,7 +102,7 @@ export class JSONparser {
             if (key.includes("elementId"))
                 args.elementId = value;
             else if (key.includes("tagId"))
-                args.tagId = value;
+                args.tagId = value.split('"').join('');
             else if (key.includes("maxDistance"))
                 args.maxDistance = value;
             else if (key.includes("teamId"))
@@ -121,21 +123,21 @@ export class JSONparser {
                 if (args.actorName === "Player")
                     args.actorName = "Adventurer";
             }
-            // else if (key.includes("condition1"))
-            //     args.condition1 = this.parseConditionDefinition(this.getStringBetween(argsString, '{', '}'));
-            // else if (key.includes("condition2"))
-            //     args.condition2 = this.parseConditionDefinition(this.getStringBetween(argsString, '{', '}'));
-            // else if (key.includes("condition"))
-            //     args.condition = this.parseConditionDefinition(this.getStringBetween(argsString, '{', '}'));                
+            else if (key.includes("condition1"))
+                 args.condition1 = this.parseConditionDefinition(this.getStringBetween(argsString, '{', '}'));
+            else if (key.includes("condition2"))
+                 args.condition2 = this.parseConditionDefinition(this.getStringBetween(argsString, '{', '}'));
+            else if (key.includes("condition"))
+                 args.condition = this.parseConditionDefinition(this.getStringBetween(argsString, '{', '}'));                
         }
         return args;
     }
 
-    static parseActionArgs(actionStr: string): { [key: string]: number | string } {
+    static parseActionArgs(actionStr: string): { [key: string]: number | string | ActionDefinition } {
         let argsString = this.getStringBetween(actionStr, '{', '}');
 
         const keyValues = argsString.split(',').map(kv => kv.split(':').map(s => s.trim()));
-        let args: { [key: string]: number | string } = {}
+        let args: { [key: string]: number | string | ActionDefinition } = {}
 
         for (const [key, value] of keyValues) {
             if (key.includes("actorName")) {
@@ -158,10 +160,10 @@ export class JSONparser {
                 args.eventId = Number(value);
             else if (key.includes("stateId"))
                 args.stateId = Number(value);
-            // else if (key.includes("action1"))
-            //     args.action1 = this.parseActionDefinition(this.getStringBetween(value, '{', '}'));
-            // else if (key.includes("action2"))
-            //     args.action2 = this.parseActionDefinition(this.getStringBetween(value, '{', '}'));
+            else if (key.includes("action1"))
+                args.action1 = this.parseActionDefinition("",this.getStringBetween(actionStr, '"action1":{', '}'));
+            else if (key.includes("action2"))
+                args.action2 = this.parseActionDefinition("",this.getStringBetween(actionStr, '"action2":{', '}'));
 
         }
         return args;

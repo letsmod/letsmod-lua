@@ -22,9 +22,9 @@ export class Nearby extends GenericTrigger {
         if (this.conditionInstance) {
             for (let actor of this.parentEvent.InvolvedActorBodies)
                 if (this.conditionInstance.checkConditionOnActor(actor, this.parentEvent)){
-                    
-                    if (actor.body.getPosition().distanceTo(this.parentEvent.EventActor.body.getPosition()) <= this.maxDistance)
-                    return { didTrigger: true, outputActor: actor };
+                    if (actor.body.getPosition().distanceTo(this.parentEvent.EventActor.body.getPosition()) <= this.maxDistance){
+                        return { didTrigger: true, outputActor: actor };
+                    }
                 }
         }
 

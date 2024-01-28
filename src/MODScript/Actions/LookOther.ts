@@ -1,4 +1,4 @@
-import { GenericAction } from "MODScript/MODscriptDefs";
+import { CATs, GenericAction } from "MODScript/MODscriptDefs";
 import { MODscriptEvent } from "MODScript/MODscriptEvent";
 import { MODscriptStates } from "elements/MODScript States/MODscriptStates";
 
@@ -11,7 +11,7 @@ export class LookOther extends GenericAction {
     targetActor: BodyHandle | undefined;
 
     constructor(parentEvent:MODscriptEvent, args:Partial<LookOther>) {
-        super(parentEvent);
+        super(parentEvent, CATs.LookOther);
         if (args.actorName)
             this.actorName = args.actorName;
         for (const actor of this.parentEvent.InvolvedActorBodies)

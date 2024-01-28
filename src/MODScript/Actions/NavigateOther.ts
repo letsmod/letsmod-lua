@@ -1,4 +1,4 @@
-import { GenericAction } from "MODScript/MODscriptDefs";
+import { CATs, GenericAction } from "MODScript/MODscriptDefs";
 import { MODscriptEvent } from "MODScript/MODscriptEvent";
 import { MODscriptStates } from "elements/MODScript States/MODscriptStates";
 import { BodyHandle } from "engine/BodyHandle";
@@ -10,7 +10,7 @@ export class NavigateOther extends GenericAction {
     targetActor: BodyHandle | undefined;
 
     constructor(parentEvent: MODscriptEvent, args: Partial<NavigateOther>) {
-        super(parentEvent);
+        super(parentEvent, CATs.NavigateOther);
         if (args.actorName)
             this.actorName = args.actorName;
         for (const actor of this.parentEvent.InvolvedActorBodies)

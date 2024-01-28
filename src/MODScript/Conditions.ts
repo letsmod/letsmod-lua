@@ -1,4 +1,4 @@
-import { GenericCondition } from "MODScript/MODscriptDefs";
+import { ConditionDefinition, GenericCondition } from "MODScript/MODscriptDefs";
 import { BodyHandle } from "engine/BodyHandle";
 import { GameplayScene } from "engine/GameplayScene";
 import { MODscriptEvent } from "./MODscriptEvent";
@@ -30,11 +30,9 @@ export class HasTag implements GenericCondition {
         this.tagId = args.tagId ?? "";
     }
 
-    checkConditionOnActor(actor: BodyHandle): boolean {
+    checkConditionOnActor(actor: BodyHandle,parentEvent:MODscriptEvent): boolean {
         for (let i of actor.getAllElements(Tag))
-            if (i.tag === this.tagId)
-                return true;
-
+            return i.tag === this.tagId;
         return false;
     }
 }
@@ -134,40 +132,37 @@ export class MaxSize implements GenericCondition {
 }
 
 export class AndCond implements GenericCondition {
+    
     condition1: GenericCondition | undefined;
     condition2: GenericCondition | undefined;
-    constructor(args: Partial<AndCond>) {
-        this.condition1 = args.condition1;
-        this.condition2 = args.condition2;
+
+    constructor(cond1: GenericCondition | undefined, cond2: GenericCondition | undefined) {
+        this.condition1 = cond1;
+        this.condition2 = cond2;
     }
 
-    checkConditionOnActor(actor: BodyHandle): boolean {
-
-
-        if (this.condition1 && this.condition2) {
-            return true;
-        }
-
-        return false;
+    checkConditionOnActor(actor: BodyHandle, parentEvent:MODscriptEvent): boolean {
+        if(!this.condition1 || !this.condition2) return false;
+        return this.condition1.checkConditionOnActor(actor, parentEvent) && this.condition2.checkConditionOnActor(actor,parentEvent);
     }
 }
 
 export class OrCond implements GenericCondition {
+
+    //TODO: This one does not work properly, fix later.
     condition1: GenericCondition | undefined;
     condition2: GenericCondition | undefined;
-    constructor(args: Partial<OrCond>) {
-        this.condition1 = args.condition1;
-        this.condition2 = args.condition2;
+
+    constructor(cond1: GenericCondition | undefined, cond2: GenericCondition | undefined) {
+        this.condition1 = cond1;
+        this.condition2 = cond2;
     }
 
-    checkConditionOnActor(actor: BodyHandle): boolean {
-
-
-        if (this.condition1 || this.condition2) {
-            return true;
-        }
-
-        return false;
+    checkConditionOnActor(actor: BodyHandle, parentEvent:MODscriptEvent): boolean {
+        const c1Result = (this.condition1 != null) && this.condition1.checkConditionOnActor(actor, parentEvent);
+        const c2Result = (this.condition2 != null) && this.condition2.checkConditionOnActor(actor, parentEvent);
+        console.log("c1Result: " + c1Result + " c2Result: " + c2Result)
+        return c1Result || c2Result;
     }
 }
 
@@ -194,6 +189,7 @@ export class IsOther implements GenericCondition {
     }
 
     checkConditionOnActor(actor: BodyHandle, parentEvent: MODscriptEvent): boolean {
+        console.log("IsOther: " + this.actorName);
         return this.targetActor ? actor.body.id === this.targetActor.body.id : false;
     }
 }

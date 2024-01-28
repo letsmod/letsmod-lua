@@ -1,11 +1,11 @@
-import { GenericAction } from "MODScript/MODscriptDefs";
+import { CATs, GenericAction } from "MODScript/MODscriptDefs";
 import { MODscriptEvent } from "MODScript/MODscriptEvent";
 import { MODscriptStates } from "elements/MODScript States/MODscriptStates";
 import { BodyHandle } from "engine/BodyHandle";
 
 export class NavigateOutput extends GenericAction {
     constructor(parentEvent: MODscriptEvent, args: Partial<NavigateOutput>) {
-        super(parentEvent);
+        super(parentEvent, CATs.NavigateOutput);
     }
 
     //Actor here is the trigger output

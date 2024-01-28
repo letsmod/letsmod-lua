@@ -32,9 +32,13 @@ export class ConditionFactory {
             case CATs.IsOnTeam:
                 return new IsOnTeam(conditionDef.args);
             case CATs.AndCond:
-                return new AndCond(conditionDef.args);
+                const cond1 = ConditionFactory.createCondition(conditionDef.args.condition1 as ConditionDefinition);
+                const cond2 = ConditionFactory.createCondition(conditionDef.args.condition2 as ConditionDefinition);
+                return new AndCond(cond1,cond2);
             case CATs.OrCond:
-                return new OrCond(conditionDef.args);
+                const orCond1 = ConditionFactory.createCondition(conditionDef.args.condition1 as ConditionDefinition);
+                const orCond2 = ConditionFactory.createCondition(conditionDef.args.condition2 as ConditionDefinition);
+                return new OrCond(orCond1,orCond2);
             case CATs.NotCond:
                 return new NotCond(conditionDef.args);
             case CATs.SeenOther:
