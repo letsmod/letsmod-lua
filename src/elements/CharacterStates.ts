@@ -37,6 +37,7 @@ export class CharacterStateMachineLMent extends StateMachineLMent {
     }
 
     onInit(): void {
+        //The body/head thing is because current NPCs are not rigged, so the head is a separate body
         const characterBodyHandle = Helpers.findBodyWithinGroup(this.body, this.characterBodyName);
         if (characterBodyHandle === undefined)
             console.log("No character body is found, setting the main body as the character body.")
@@ -348,7 +349,6 @@ export class characterPatrolState extends CharacterStateBase implements Collisio
             const currentPos = this.stateMachine.body.body.getPosition();
             this.stateMachine.body.body.setPosition(currentPos.clone().add(myFwd.multiplyScalar(-0.3)));
             this.points[this.currentPointIndex] = currentPos.clone();
-            console.log("Distance to next point: " + currentPos.distanceTo(nextPoint));
             if (currentPos.distanceTo(nextPoint) <= 2)
                 this.points[(this.currentPointIndex + 1) % this.points.length] = currentPos.clone().add(myRight.multiplyScalar(Math.random() + 3));
 

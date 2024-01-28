@@ -106,7 +106,7 @@ export class Helpers{
         console.log("x: "+v.x+", y:"+v.y+", z:"+v.z);
     }
 
-    //This is not recommended to be used continuously ...
+    //Not recommended to use this continuously.
     static findBodyInScene(name: string): BodyHandle | undefined {
         let body = GameplayScene.instance.bodies.find(b => b.body.name == name);
         if (body === undefined) {
