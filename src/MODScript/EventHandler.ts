@@ -50,14 +50,14 @@ export class EventHandler implements UpdateHandler {
     playAudioAction(actionId: string, audioText: string): boolean {
         if (this.audioPlayerBusy) return false;
 
-        console.log("Playing audio action: " + actionId);
         const index = this.audioList.findIndex(audio => audio.audioActionId === actionId);
         if (index === -1) return false;
 
         const audio = this.audioList[index];
         this.audioPlayerBusy = true;
         audio.isPlaying = true;
-        //PLAY audio file here, instead I'll just type console to check.
+        
+        //TODO:: PLAY audio file here, instead I'll just type console to check.
         console.log(audioText);
         
         if(this.audioDelayedFunction)

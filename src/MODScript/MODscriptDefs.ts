@@ -52,7 +52,6 @@ export abstract class GenericAction{
     }
 
     actionFinished(): void{
-        console.log("Action finished: "+this.actionType);
         if(this.actionIsFinished) return;
         this.actionIsFinished = true;
         this.actionStarted = false;

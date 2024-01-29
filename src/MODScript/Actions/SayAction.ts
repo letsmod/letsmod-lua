@@ -34,7 +34,7 @@ export class SayAction extends GenericAction {
             this.actionFailed();
             return;
         }
-        console.log("Monitoring");
+        console.log("Talking ...");
         if(this.audioHasPlayed && !this.eventHandler.isAudioPlaying(this.ActionId))
             this.actionFinished();
     }
