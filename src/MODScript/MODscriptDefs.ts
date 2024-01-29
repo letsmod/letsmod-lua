@@ -46,19 +46,22 @@ export abstract class GenericAction{
     }
 
     startAction(triggerOutput?: BodyHandle | undefined): void{
-        if(this.actionStarted) return;
+        if(this.actionStarted || this.actionIsFinished && !this.parentEvent.Repeatable) return;
         this.actionStarted = true;
         this.performAction(triggerOutput);
     }
 
     actionFinished(): void{
+        if(this.actionIsFinished) return;
         this.actionIsFinished = true;
         this.actionStarted = false;
         this.parentEvent.checkActionsStatus();
     }
 
     actionFailed(): void{
-        this.parentEvent.cancelEvent();
+        if(this.actionIsFinished) return;
+        if(this.actionStarted)
+            this.parentEvent.cancelEvent();
         this.actionStarted = false;
     }
 }
@@ -76,6 +79,13 @@ export declare type Vector3 = {
 export declare type ConditionDefinition = {
     conditionType: string;
     args: { [key: string]: number | Vector3 | ConditionDefinition | string};
+}
+
+export declare type AudioDefinition = {
+    audioActionId: string;
+    audioDuration: number;
+    audioFile: string;
+    isPlaying: boolean;
 }
 
 export declare type TriggerDefinition = {
