@@ -1,13 +1,20 @@
 import { CollisionInfoFactory, UpdateHandler } from "engine/MessageHandlers";
-import { CATs, EventDefinition } from "./MODscriptDefs";
+import { AudioDefinition, CATs, EventDefinition } from "./MODscriptDefs";
 import { MODscriptEvent } from "./MODscriptEvent";
 import { JSONparser } from "./JSONparser";
 import { BodyHandle } from "engine/BodyHandle";
+import { GameplayScene } from "engine/GameplayScene";
 
 export class EventHandler implements UpdateHandler {
 
     jsonData: string = '';//'[{"actorName":"zombie","trigger":{"triggerType":"Nearby","args":{"condition":{"conditionType":"IsOther","args":{"actorName":"wolf"}},"maxDistance":3}},"action":{"actionType":"Say","args":{"sentence":"Hey buddy lets eat some brains!"}},"repeatable":false,"enabled":true},{"actorName":"zombie","trigger":{"triggerType":"Nearby","args":{"condition":{"conditionType":"IsOther","args":{"actorName":"wolf"}},"maxDistance":2}},"action":{"actionType":"NavigateOther","args":{"actorName":"human"}},"repeatable":false,"enabled":true},{"actorName":"human","trigger":{"triggerType":"Nearby","args":{"condition":{"conditionType":"IsOther","args":{"actorName":"zombie"}},"maxDistance":7}},"action":{"actionType":"JumpUpAction","args":{}},"repeatable":true,"enabled":true},{"actorName":"human","trigger":{"triggerType":"Nearby","args":{"condition":{"conditionType":"IsOther","args":{"actorName":"zombie"}},"maxDistance":7}},"action":{"actionType":"Say","args":{"sentence":"HEEEEELP .. A ZOOMBIE!!"}},"repeatable":false,"enabled":true},{"actorName":"zombie","trigger":{"triggerType":"Nearby","args":{"condition":{"conditionType":"IsOther","args":{"actorName":"hero"}},"maxDistance":3}},"action":{"actionType":"DestroyOther","args":{"actorName":"zombie"}},"repeatable":false,"enabled":true},{"actorName":"human","trigger":{"triggerType":"OtherDestroyed","args":{"condition":{"conditionType":"IsOther","args":{"actorName":"zombie"}}}},"action":{"actionType":"Say","args":{"sentence":"My hero! You saved me!"}},"repeatable":false,"enabled":true},{"actorName":"human","trigger":{"triggerType":"Nearby","args":{"condition":{"conditionType":"IsOther","args":{"actorName":"zombie"}},"maxDistance":3}},"action":{"actionType":"DestroyOther","args":{"actorName":"human"}},"repeatable":false,"enabled":true},{"actorName":"zombie","trigger":{"triggerType":"OtherDestroyed","args":{"condition":{"conditionType":"IsOther","args":{"actorName":"human"}}}},"action":{"actionType":"Say","args":{"sentence":"Yummi BRAINZ!"}},"repeatable":false,"enabled":true}]';
     events: MODscriptEvent[] = [];
+    
+    audioList: AudioDefinition[] = [];
+    audioPlayerBusy: boolean = false;
+    audioGap: number = 0.5;
+    audioDelayedFunction: any;
+
     private collisionEventBodyMap: { event: MODscriptEvent, bodyId: number }[] = [];
     private taggedBodiesList: BodyHandle[] = [];
     private catsInitialized: boolean = false;
@@ -36,12 +43,45 @@ export class EventHandler implements UpdateHandler {
         }
     }
 
+    registerAudioAction(actionId: string): void {
+        this.audioList.push({ audioActionId: actionId, audioDuration: 2, audioFile: "audio/say.mp3", isPlaying: false });
+    }
+
+    playAudioAction(actionId: string, audioText: string): boolean {
+        if (this.audioPlayerBusy) return false;
+
+        console.log("Playing audio action: " + actionId);
+        const index = this.audioList.findIndex(audio => audio.audioActionId === actionId);
+        if (index === -1) return false;
+
+        const audio = this.audioList[index];
+        this.audioPlayerBusy = true;
+        audio.isPlaying = true;
+        //PLAY audio file here, instead I'll just type console to check.
+        console.log(audioText);
+        
+        if(this.audioDelayedFunction)
+            GameplayScene.instance.dispatcher.removeQueuedFunction(this.audioDelayedFunction);
+
+        this.audioDelayedFunction = GameplayScene.instance.dispatcher.queueDelayedFunction(undefined,() => {
+            this.audioPlayerBusy = false;
+            audio.isPlaying = false;
+        }, audio.audioDuration + this.audioGap);
+        
+        return true;
+    }
+
+    isAudioPlaying(actionId: string): boolean {
+        const index = this.audioList.findIndex(audio => audio.audioActionId === actionId);
+        if (index === -1) return false;
+        return this.audioList[index].isPlaying;
+    }
+
     parseDummyJson(): MODscriptEvent[] {
 
         const eventDefs = JSONparser.parseEventDefinitions(this.jsonData.split("'").join('"'));
         let events: MODscriptEvent[] = [];
         for (let i = 0; i < eventDefs.length; i++) {
-            //this.printEventDefinition(eventDefs[i]);
             events.push(new MODscriptEvent(i, eventDefs[i]));
         }
         return events;
@@ -77,7 +117,6 @@ export class EventHandler implements UpdateHandler {
 
     public cacheTaggedBody(body: BodyHandle) {
         this.taggedBodiesList.push(body);
-        console.log("tagged body "+body.body.name);
     }
 
     public addEventBodyMapEntry(event: MODscriptEvent, bodyId: number) {

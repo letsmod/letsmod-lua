@@ -15,19 +15,18 @@ export class SimultaneousAction extends GenericAction {
 
     triggerOutput: BodyHandle | undefined;
 
-    constructor(parentEvent: MODscriptEvent, action1: GenericAction | undefined, action2:GenericAction| undefined) {
+    constructor(parentEvent: MODscriptEvent, action1: GenericAction | undefined, action2: GenericAction | undefined) {
         super(parentEvent, CATs.SimultaneousActions);
 
-        if(!action1 || !action2) return;
+        if (!action1 || !action2) return;
 
         this.genericAction1 = action1;
         this.genericAction2 = action2;
     }
 
     performAction(triggerOutput?: BodyHandle | undefined): void {
-        
-        if(!this.genericAction1 || !this.genericAction2) 
-        {
+
+        if (!this.genericAction1 || !this.genericAction2) {
             this.actionFailed();
             return;
         }
@@ -40,14 +39,13 @@ export class SimultaneousAction extends GenericAction {
 
     monitorAction(): void {
 
-        if(!this.genericAction1 || !this.genericAction2) 
-        {
+        if (!this.genericAction1 || !this.genericAction2) {
             this.actionFailed();
             return;
         }
 
         if (this.genericAction1.ActionIsFinished)
-                this.genericAction2.performAction(this.triggerOutput);
+            this.genericAction2.performAction(this.triggerOutput);
 
         if (this.genericAction1.ActionIsFinished && this.genericAction2.ActionIsFinished)
             this.actionFinished();
