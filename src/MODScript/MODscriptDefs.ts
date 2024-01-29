@@ -28,11 +28,11 @@ export abstract class GenericAction{
     protected actionIsFinished: boolean = false;
     private actionStarted: boolean = false;
     
-    constructor(parentEvent: MODscriptEvent) {
+    constructor(parentEvent: MODscriptEvent, actionType: string) {
         this.parentEvent = parentEvent;
         if(parentEvent.action)
         {
-            this.actionType = parentEvent.action.actionType;
+            this.actionType = actionType;
             this._actionId = this.parentEvent.EventId+"_"+(++GenericAction.actionIdCounter);
             this.parentEvent.addAction(this);
         }
@@ -46,19 +46,22 @@ export abstract class GenericAction{
     }
 
     startAction(triggerOutput?: BodyHandle | undefined): void{
-        if(this.actionStarted) return;
+        if(this.actionStarted || this.actionIsFinished && !this.parentEvent.Repeatable) return;
         this.actionStarted = true;
         this.performAction(triggerOutput);
     }
 
     actionFinished(): void{
+        if(this.actionIsFinished) return;
         this.actionIsFinished = true;
         this.actionStarted = false;
         this.parentEvent.checkActionsStatus();
     }
 
     actionFailed(): void{
-        this.parentEvent.cancelEvent();
+        if(this.actionIsFinished) return;
+        if(this.actionStarted)
+            this.parentEvent.cancelEvent();
         this.actionStarted = false;
     }
 }
@@ -78,6 +81,13 @@ export declare type ConditionDefinition = {
     args: { [key: string]: number | Vector3 | ConditionDefinition | string};
 }
 
+export declare type AudioDefinition = {
+    audioActionId: string;
+    audioDuration: number;
+    audioFile: string;
+    isPlaying: boolean;
+}
+
 export declare type TriggerDefinition = {
     triggerType: string;
     args: { [key: string]: number | ConditionDefinition };
@@ -85,7 +95,7 @@ export declare type TriggerDefinition = {
 
 export declare type ActionDefinition = {
     actionType: string;
-    args: { [key: string]: number | string };
+    args: { [key: string]: number | string | ActionDefinition };
 }
 
 export declare type EventDefinition = {
@@ -127,10 +137,10 @@ export const CATs = {
     LookOutput: "LookOutput",
     NavigateOther: "NavigateOther",
     NavigateOutput: "NavigateOutput",
-    WaitAction: "WaitAction",
     DisableEvent: "DisableEvent",
     EnableEvent: "EnableEvent",
     Say: "Say",
+    Wait: "Wait",
 
     /*** Triggers ***/
     Nearby: "Nearby",

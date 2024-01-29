@@ -67,7 +67,6 @@ export class ScaleWaypoint extends LMent implements PhysicsSubstepHandler {
     }
 
     onEnable(): void {
-        console.log("ScaleWaypoint Enabled");
         this.startingScale = this.body.body.getScale().clone();
         this.currentScalePointIndex = 0;
         this.timeSinceLastScalePoint = 0;

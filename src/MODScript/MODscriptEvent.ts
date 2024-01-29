@@ -191,8 +191,6 @@ export class MODscriptEvent {
 
     cancelEvent(): void {
         this.isFinished = false;
-        if (this.stateMachine !== undefined)
-            this.stateMachine.switchState(MODscriptStates.idle);
     }
 
     enableEvent(): void {

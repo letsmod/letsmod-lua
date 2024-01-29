@@ -1,4 +1,4 @@
-import { GenericAction } from "MODScript/MODscriptDefs";
+import { CATs, GenericAction } from "MODScript/MODscriptDefs";
 import { MODscriptEvent } from "MODScript/MODscriptEvent";
 import { JumpUp } from "elements/JumpUp";
 
@@ -7,7 +7,7 @@ import { BodyHandle } from "engine/BodyHandle";
 export class JumpUpAction extends GenericAction {
 
     constructor(parentEvent: MODscriptEvent, args: Partial<JumpUpAction>) {
-        super(parentEvent);
+        super(parentEvent, CATs.JumpUpAction);
     }
 
     performAction(triggerOutput?: BodyHandle | undefined): void {

@@ -189,7 +189,6 @@ export class IsOther implements GenericCondition {
     }
 
     checkConditionOnActor(actor: BodyHandle, parentEvent: MODscriptEvent): boolean {
-        console.log("IsOther: " + this.actorName);
         return this.targetActor ? actor.body.id === this.targetActor.body.id : false;
     }
 }

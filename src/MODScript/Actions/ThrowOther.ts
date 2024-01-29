@@ -1,4 +1,4 @@
-import { GenericAction } from "MODScript/MODscriptDefs";
+import { CATs, GenericAction } from "MODScript/MODscriptDefs";
 import { MODscriptEvent } from "MODScript/MODscriptEvent";
 import { MODscriptStates } from "elements/MODScript States/MODscriptStates";
 import { BodyHandle } from "engine/BodyHandle";
@@ -10,8 +10,8 @@ export class ThrowOther extends GenericAction {
     actorName: string = "";
     targetActor: BodyHandle | undefined;
 
-    constructor(eventId: MODscriptEvent, args: Partial<ThrowOther>) {
-        super(eventId);
+    constructor(parentEvent: MODscriptEvent, args: Partial<ThrowOther>) {
+        super(parentEvent, CATs.ThrowOther);
         this.prefabId = args.prefabId ?? "";
         console.log("actorName: " + args.actorName);
         if (args.actorName)

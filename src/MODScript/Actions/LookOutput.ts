@@ -1,4 +1,4 @@
-import { GenericAction } from "MODScript/MODscriptDefs";
+import { CATs, GenericAction } from "MODScript/MODscriptDefs";
 import { MODscriptEvent } from "MODScript/MODscriptEvent";
 import { MODscriptStates } from "elements/MODScript States/MODscriptStates";
 import { BodyHandle } from "engine/BodyHandle";
@@ -6,7 +6,7 @@ import { BodyHandle } from "engine/BodyHandle";
 export class LookOutput extends GenericAction {
 
     constructor(parentEvent:MODscriptEvent, args:Partial<LookOutput>) {
-        super(parentEvent);
+        super(parentEvent, CATs.LookOutput);
     }
 
     //Actor here is the trigger output
