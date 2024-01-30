@@ -84,7 +84,9 @@ export declare type ConditionDefinition = {
 export declare type AudioDefinition = {
     audioActionId: string;
     audioDuration: number;
-    audioFile: string;
+    filePath: string;
+    actorThumbPath:string;
+    audioGap:number;
     isPlaying: boolean;
 }
 

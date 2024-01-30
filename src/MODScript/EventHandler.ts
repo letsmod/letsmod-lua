@@ -43,8 +43,8 @@ export class EventHandler implements UpdateHandler {
         }
     }
 
-    registerAudioAction(actionId: string): void {
-        this.audioList.push({ audioActionId: actionId, audioDuration: 2, audioFile: "audio/say.mp3", isPlaying: false });
+    registerAudioAction(audioObject: AudioDefinition): void {
+        this.audioList.push(audioObject);
     }
 
     playAudioAction(actionId: string, audioText: string): boolean {
@@ -59,6 +59,7 @@ export class EventHandler implements UpdateHandler {
         
         //TODO:: PLAY audio file here, instead I'll just type console to check.
         console.log(audioText);
+        //GameplayScene.instance.speak(audioText, audioFile, actorImage)
         
         if(this.audioDelayedFunction)
             GameplayScene.instance.dispatcher.removeQueuedFunction(this.audioDelayedFunction);
