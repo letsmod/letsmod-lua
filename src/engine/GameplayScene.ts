@@ -4,7 +4,7 @@ import { GameplayMemory } from "engine/GameplayMemory";
 import { LuaClientInterface } from "./LuaClientInterface";
 import { EventHandler } from "../MODScript/EventHandler";
 import { LMent } from "./LMent";
-import { ConditionFactory } from "MODScript/FactoryClasses/ConditionsFactory";
+import { EventDefinition } from "MODScript/MODscriptDefs";
 
 type GamePreferences = {
   defaultPlayDifficulty: "normal" | "hardcore";
@@ -32,9 +32,9 @@ export class GameplayScene {
   gamePreferences: GamePreferences = {
     defaultPlayDifficulty: "normal",
   };
+  story: EventDefinition[] = [];
 
-  private constructor() {
-  }
+  private constructor() {}
 
   setClientInterface(clientInterface: LuaClientInterface) {
     this.clientInterface = clientInterface;
@@ -42,6 +42,14 @@ export class GameplayScene {
 
   setGamePreferences(preferences: GamePreferences) {
     this.gamePreferences = preferences;
+  }
+
+  speak(...args: Parameters<LuaClientInterface["speak"]>) {
+    this.clientInterface?.speak(...args);
+  }
+
+  setGameStory(story: EventDefinition[]) {
+    this.story = story;
   }
 
   addBody(bodyNode: BodyPointer) {
@@ -83,11 +91,9 @@ export class GameplayScene {
     return this.bodyIdMap.get(id);
   }
 
-  findAllElements<U extends LMent> (T : new (...args: any[]) => U ) : U[]
-  {
-    let elements : U[] = [];
-    for (let body of this.bodies)
-    {
+  findAllElements<U extends LMent>(T: new (...args: any[]) => U): U[] {
+    let elements: U[] = [];
+    for (let body of this.bodies) {
       let bodyElements = body.getAllElements(T);
       elements.push(...bodyElements);
     }
@@ -105,8 +111,7 @@ export class GameplayScene {
 
   initializeMemory(memoryOverride: Partial<GameplayMemory>) {
     this.memory = { ...new GameplayMemory(), ...memoryOverride };
-    if(this.eventHandler)
-      this.eventHandler.initialize();
+    if (this.eventHandler) this.eventHandler.initialize();
   }
 
   preUpdate(dt: number) {
@@ -119,13 +124,13 @@ export class GameplayScene {
     for (let body of this.bodies) {
       body.startElements();
     }
-    
+
     this.dispatcher.updateFunctionQueue(dt);
   }
 
   update() {
     this.dispatcher.onUpdate(this.currentDt);
-    if (!this.eventHandler)return;
+    if (!this.eventHandler) return;
     this.eventHandler.initCATs();
     this.eventHandler.onUpdate(this.currentDt);
   }
@@ -165,7 +170,6 @@ export class GameplayScene {
       }
       body.body.destroyBody();
       body.isInScene = false;
-      
     }
 
     //ASK DON: This should still be in the involvedActors to know when it gets destroyed, otherwise the OtherDestroyed trigger won't work.
