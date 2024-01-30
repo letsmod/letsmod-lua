@@ -20,7 +20,7 @@ export class DestroyOther extends GenericAction {
     }
 
     performAction(triggerOutput?: BodyHandle | undefined): void {
-        if (!triggerOutput || !this.parentEvent || !this.parentEvent.EventActor) return;
+        if (!this.parentEvent || !this.parentEvent.EventActor) return;
 
         if (this.targetActor) {
             GameplayScene.instance.destroyBody(this.targetActor);
