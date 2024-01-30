@@ -10,34 +10,28 @@ export class SayAction extends GenericAction {
     eventHandler: EventHandler | undefined;
 
 
-    audioDuration: number;
+    durationMs: number;
+    get duration(){return this.durationMs/1000}
+
     audioId: string;
     image: string;
-    audioGap: number;
+    
+    audioGapMs: number;
+    get audioGap(){return this.audioGapMs/1000}
 
-    private audioObject: AudioDefinition | undefined;
+    isPlaying: boolean = false;
+    audioObject: AudioDefinition | undefined;
 
     constructor(parentEvent: MODscriptEvent, args: Partial<SayAction>) {
         super(parentEvent, CATs.Say);
         this.sentence = args.sentence ?? "";
-        this.audioDuration = args.audioDuration ?? 1;
+        this.durationMs = args.durationMs ?? 1;
         this.audioId = args.audioId ?? "";
         this.image = args.image ?? "";
-        this.audioGap = args.audioGap ?? 0.5;
+        this.audioGapMs = args.audioGapMs ?? 0.5;
 
         const eventHandler = GameplayScene.instance.eventHandler;
         this.eventHandler = eventHandler;
-        if (this.eventHandler) {
-            this.audioObject = {
-                audioActionId: this.ActionId,
-                audioDuration: this.audioDuration,
-                filePath: this.audioId,
-                actorThumbPath: this.image,
-                audioGap: this.audioGap,
-                isPlaying: false
-            };
-            this.eventHandler.registerAudioAction(this.audioObject);
-        }
     }
 
     performAction(triggerOutput?: BodyHandle | undefined): void {
@@ -58,6 +52,9 @@ export class SayAction extends GenericAction {
         }
          
         if(this.audioHasPlayed && !this.eventHandler.isAudioPlaying(this.ActionId))
-            this.actionFinished();
+            {
+                console.log("Say action finished for event: " + this.parentEvent.EventId);
+                this.actionFinished();
+            }
     }
 }

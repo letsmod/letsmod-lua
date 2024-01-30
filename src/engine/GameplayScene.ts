@@ -48,8 +48,12 @@ export class GameplayScene {
     this.clientInterface?.speak(...args);
   }
 
-  setGameStory(story: EventDefinition[]) {
-    this.story = story;
+
+  setGameStory(story: EventDefinition[]) {    
+    for (let key in story){
+      console.log(key + " " + story[key].actorName);
+      this.story.push(story[key]);
+  }
   }
 
   addBody(bodyNode: BodyPointer) {
