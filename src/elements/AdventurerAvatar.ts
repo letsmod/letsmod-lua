@@ -9,6 +9,7 @@ import { LMent } from "engine/LMent";
 import { Throwable } from "./Throwable";
 import { GuideBody } from "./GuideBody";
 import { CameraTarget } from "./CameraTarget";
+import { Fragile } from "./Fragile";
 
 export abstract class AdventurerState extends AnimatedState
 {
@@ -587,6 +588,7 @@ export class ClimbState extends StaggerableState
 export class LiftState extends StaggerableState
 {
   liftedItem: BodyHandle | undefined;
+  wasFragile: boolean = false;
   constructor(stateMachine: AdventurerAvatar, shapeToAnimate: ShapePointer | undefined)
   {
     super("lift", stateMachine, shapeToAnimate, "lift", /*stateMachine.baseBlendTime*/0.0);
@@ -600,6 +602,16 @@ export class LiftState extends StaggerableState
       this.liftedItem.body.setVelocity(this.stateMachine.body.body.getVelocity());
       this.liftedItem.body.setAngularVelocity(Helpers.zeroVector);
       this.stateMachine.body.body.addHoldConstraintWith(this.liftedItem.body, "item_node");
+      let fragileElement = this.liftedItem.getElement(Fragile);
+      if (fragileElement)
+      {
+        this.wasFragile = fragileElement.enabled;
+        fragileElement.enabled = false;
+      }
+      else
+      {
+        this.wasFragile = false;
+      }
     }
   }
 
@@ -607,6 +619,15 @@ export class LiftState extends StaggerableState
     if (this.liftedItem)
     {
       this.stateMachine.body.body.removeHoldConstraintWith(this.liftedItem.body);
+
+      if (this.wasFragile)
+      {
+        let fragileElement = this.liftedItem.getElement(Fragile);
+        if (fragileElement)
+        {
+          fragileElement.enabled = true;
+        }
+      }
     }
   }
 
@@ -629,6 +650,7 @@ export class LiftState extends StaggerableState
 export class PlaceState extends StaggerableState
 {
   liftedItem: BodyHandle | undefined;
+  wasFragile: boolean = false;
   constructor(stateMachine: AdventurerAvatar, shapeToAnimate: ShapePointer | undefined)
   {
     super("place", stateMachine, shapeToAnimate, "place", stateMachine.baseBlendTime);
@@ -642,6 +664,16 @@ export class PlaceState extends StaggerableState
       this.liftedItem.body.setVelocity(this.stateMachine.body.body.getVelocity());
       this.liftedItem.body.setAngularVelocity(Helpers.zeroVector);
       this.stateMachine.body.body.addHoldConstraintWith(this.liftedItem.body, "item_node");
+      let fragileElement = this.liftedItem.getElement(Fragile);
+      if (fragileElement)
+      {
+        this.wasFragile = fragileElement.enabled;
+        fragileElement.enabled = false;
+      }
+      else
+      {
+        this.wasFragile = false;
+      }
     }
   }
 
@@ -649,6 +681,15 @@ export class PlaceState extends StaggerableState
     if (this.liftedItem)
     {
       this.stateMachine.body.body.removeHoldConstraintWith(this.liftedItem.body);
+
+      if (this.wasFragile)
+      {
+        let fragileElement = this.liftedItem.getElement(Fragile);
+        if (fragileElement)
+        {
+          fragileElement.enabled = true;
+        }
+      }
     }
   }
 
@@ -672,6 +713,7 @@ export class ThrowState extends StaggerableState
 {
   timeInThrow: number = 0;
   liftedItem: BodyHandle | undefined;
+  wasFragile: boolean = false;
   constructor(stateMachine: AdventurerAvatar, shapeToAnimate: ShapePointer | undefined)
   {
     super("throw", stateMachine, shapeToAnimate, "throw", stateMachine.baseBlendTime);
@@ -685,6 +727,16 @@ export class ThrowState extends StaggerableState
       this.liftedItem.body.setVelocity(this.stateMachine.body.body.getVelocity());
       this.liftedItem.body.setAngularVelocity(Helpers.zeroVector);
       this.stateMachine.body.body.addHoldConstraintWith(this.liftedItem.body, "item_node");
+      let fragileElement = this.liftedItem.getElement(Fragile);
+      if (fragileElement)
+      {
+        this.wasFragile = fragileElement.enabled;
+        fragileElement.enabled = false;
+      }
+      else
+      {
+        this.wasFragile = false;
+      }
     }
     this.timeInThrow = 0;
   }
@@ -693,6 +745,15 @@ export class ThrowState extends StaggerableState
     if (this.liftedItem)
     {
       this.stateMachine.body.body.removeHoldConstraintWith(this.liftedItem.body);
+
+      if (this.wasFragile)
+      {
+        let fragileElement = this.liftedItem.getElement(Fragile);
+        if (fragileElement)
+        {
+          fragileElement.enabled = true;
+        }
+      }
     }
   }
 
