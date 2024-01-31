@@ -1,4 +1,4 @@
-import { GenericAction } from "MODScript/MODscriptDefs";
+import { CATs, GenericAction } from "MODScript/MODscriptDefs";
 import { MODscriptEvent } from "MODScript/MODscriptEvent";
 
 import { BodyHandle } from "engine/BodyHandle";
@@ -6,8 +6,8 @@ import { GameplayScene } from "engine/GameplayScene";
 
 export class DestroyOutput extends GenericAction {
 
-    constructor(eventId: MODscriptEvent, args: Partial<DestroyOutput>) {
-        super(eventId);
+    constructor(parentEvent: MODscriptEvent, args: Partial<DestroyOutput>) {
+        super(parentEvent, CATs.DestroyOutput);
     }
 
     performAction(triggerOutput?: BodyHandle | undefined): void {

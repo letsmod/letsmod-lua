@@ -102,6 +102,8 @@ export interface BodyPointer
 
   removeHoldConstraintWith(other: BodyPointer) : void;
 
+  getConstrainedObjects() : BodyPointer[];
+
   showHighlight() : void; // highlights the body for one frame
 
   // internal use; use gameplayScene.destroyBody / cloneBody instead

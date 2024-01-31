@@ -1,4 +1,4 @@
-import { GenericAction } from "MODScript/MODscriptDefs";
+import { CATs, GenericAction } from "MODScript/MODscriptDefs";
 import { MODscriptEvent } from "MODScript/MODscriptEvent";
 import { BodyHandle } from "engine/BodyHandle";
 import { GameplayScene } from "engine/GameplayScene";
@@ -8,8 +8,8 @@ export class DestroyOther extends GenericAction {
     actorName: string = '';
     targetActor: BodyHandle | undefined;
 
-    constructor(eventId: MODscriptEvent, args: Partial<DestroyOther>) {
-        super(eventId);
+    constructor(parentEvent: MODscriptEvent, args: Partial<DestroyOther>) {
+        super(parentEvent, CATs.DestroyOther);
         if (args.actorName)
             this.actorName = args.actorName;
         for (const actor of this.parentEvent.InvolvedActorBodies)
@@ -20,7 +20,7 @@ export class DestroyOther extends GenericAction {
     }
 
     performAction(triggerOutput?: BodyHandle | undefined): void {
-        if (!triggerOutput || !this.parentEvent || !this.parentEvent.EventActor) return;
+        if (!this.parentEvent || !this.parentEvent.EventActor) return;
 
         if (this.targetActor) {
             GameplayScene.instance.destroyBody(this.targetActor);
