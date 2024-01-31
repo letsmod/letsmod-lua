@@ -51,7 +51,7 @@ export class SayAction extends GenericAction {
             return;
         }
          
-        if(this.audioHasPlayed && !this.eventHandler.isAudioPlaying(this.ActionId))
+        if(this.audioHasPlayed && !this.isPlaying)
             {
                 console.log("Say action finished for event: " + this.parentEvent.EventId);
                 this.actionFinished();
