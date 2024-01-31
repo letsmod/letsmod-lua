@@ -1,5 +1,5 @@
 import { EventHandler } from "MODScript/EventHandler";
-import { CATs, GenericAction } from "MODScript/MODscriptDefs";
+import { AudioDefinition, CATs, GenericAction } from "MODScript/MODscriptDefs";
 import { MODscriptEvent } from "MODScript/MODscriptEvent";
 import { BodyHandle } from "engine/BodyHandle";
 import { GameplayScene } from "engine/GameplayScene";
@@ -9,33 +9,52 @@ export class SayAction extends GenericAction {
     audioHasPlayed: boolean = false;
     eventHandler: EventHandler | undefined;
 
+
+    durationMs: number;
+    get duration(){return this.durationMs/1000}
+
+    audioId: string;
+    image: string;
+    
+    audioGapMs: number;
+    get audioGap(){return this.audioGapMs/1000}
+
+    isPlaying: boolean = false;
+    audioObject: AudioDefinition | undefined;
+
     constructor(parentEvent: MODscriptEvent, args: Partial<SayAction>) {
         super(parentEvent, CATs.Say);
         this.sentence = args.sentence ?? "";
+        this.durationMs = args.durationMs ?? 1;
+        this.audioId = args.audioId ?? "";
+        this.image = args.image ?? "";
+        this.audioGapMs = args.audioGapMs ?? 0.5;
+
         const eventHandler = GameplayScene.instance.eventHandler;
         this.eventHandler = eventHandler;
-        if(this.eventHandler)
-            this.eventHandler.registerAudioAction(this.ActionId);
     }
 
     performAction(triggerOutput?: BodyHandle | undefined): void {
-        if(!this.eventHandler) {
+        if (!this.eventHandler) {
             this.actionFailed();
             return;
         }
-        this.audioHasPlayed = this.eventHandler.playAudioAction(this.ActionId,this.sentence)
+        this.audioHasPlayed = this.eventHandler.playAudioAction(this)
+    
         if(!this.audioHasPlayed)
             this.actionFailed();
     }
 
     monitorAction(): void {
-        if(!this.eventHandler) 
-        {
+        if (!this.eventHandler) {
             this.actionFailed();
             return;
         }
-        console.log("Talking ...");
-        if(this.audioHasPlayed && !this.eventHandler.isAudioPlaying(this.ActionId))
-            this.actionFinished();
+         
+        if(this.audioHasPlayed && !this.isPlaying)
+            {
+                console.log("Say action finished for event: " + this.parentEvent.EventId);
+                this.actionFinished();
+            }
     }
 }

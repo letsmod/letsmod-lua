@@ -164,6 +164,12 @@ export class JSONparser {
                 args.action1 = this.parseActionDefinition("",this.getStringBetween(actionStr, '"action1":{', '}'));
             else if (key.includes("action2"))
                 args.action2 = this.parseActionDefinition("",this.getStringBetween(actionStr, '"action2":{', '}'));
+            else if (key.includes("audioId"))
+                args.audioId = value;
+            else if (key.includes("durationMs"))
+                args.durationMs = Number(value);
+            else if(key.includes("image"))
+                args.image = value;
 
         }
         return args;

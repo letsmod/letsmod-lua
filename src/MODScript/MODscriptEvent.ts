@@ -49,7 +49,7 @@ export class MODscriptEvent {
     private involvedActorBodies: BodyHandle[] = [];
     private involvedActorIDs: number[] = [];
     private isFinished: boolean = false;
-    private eventDef: EventDefinition | undefined;
+    eventDef: EventDefinition | undefined;
 
     //Do not call these properties directly, use the getter instead because it may not be initialized.
     private _stateMachine: MODscriptStateMachineLMent | undefined;

@@ -1,4 +1,4 @@
-import { BodyHandle } from "engine/BodyHandle";
+import { BodyHandle, BodyPointer } from "engine/BodyHandle";
 import { GameplayScene } from "engine/GameplayScene";
 import { Helpers } from "engine/Helpers";
 import { LMent } from "engine/LMent";
@@ -60,12 +60,41 @@ export class ContactForce extends LMent implements CollisionHandler {
                     let forceMagnitude = this.forceValue * speedFactor;
                     let forceToApply = adjustedForceDirection.multiplyScalar(forceMagnitude);
 
+
                     if (this.scaleWithMass) {
                         let mass = other.body.getMass();
                         forceToApply.multiplyScalar(mass);
+                        other.body.applyCentralForce(forceToApply);
+    
+                        let constrainedObjects = this.convertArray(other.body.getConstrainedObjects()) as BodyPointer[];
+                        for (let constrainedObject of constrainedObjects)
+                        {
+                            let newMass = constrainedObject.getMass();
+                            forceToApply.multiplyScalar(newMass / mass);
+                            mass = newMass;
+                            constrainedObject.applyCentralForce(forceToApply);
+                        }
                     }
+                    else
+                    {
+                        let totalMass = other.body.getMass();
+    
+                        let constrainedObjects = this.convertArray(other.body.getConstrainedObjects()) as BodyPointer[];
+                        for (let constrainedObject of constrainedObjects)
+                        {
+                            totalMass += constrainedObject.getMass();
+                        }
+                        
+                        other.body.applyCentralForce(forceToApply.clone().multiplyScalar(other.body.getMass() / totalMass));
 
-                    other.body.applyCentralForce(forceToApply);
+                        for (let constrainedObject of constrainedObjects)
+                        {
+                            constrainedObject.applyCentralForce(forceToApply.clone().multiplyScalar(constrainedObject.getMass() / totalMass));
+                        }
+                    }
+                    
+                    
+                    
 
                     // Update the last force application time for this object
                     this.forceCooldowns[other.body.id] = now;
