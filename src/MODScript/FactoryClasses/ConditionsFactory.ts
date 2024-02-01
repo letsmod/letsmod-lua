@@ -9,7 +9,7 @@ export class ConditionFactory {
         switch (conditionDef.conditionType) {
             case CATs.IsOther:
                 return new IsOther(conditionDef.args);
-            case CATs.Element:
+            case CATs.HasElement:
                 return new HasElement(conditionDef.args);
             case CATs.HasTag:
                 return new HasTag(conditionDef.args);

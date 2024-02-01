@@ -110,7 +110,7 @@ export declare type EventDefinition = {
 
 export const CATs = {
     /*** Conditions ***/
-    Element: "Element",
+    HasElement: "Element",
     HasTag: "HasTag",
     IsPlayer: "IsPlayer",
     IsPhysical: "IsPhysical",
@@ -134,7 +134,7 @@ export const CATs = {
     DestroyOutput: "DestroyOutput",
     SimultaneousActions: "SimultaneousActions",
     ThrowOther: "ThrowOther",
-    ThrowOutput: "throwOutput",
+    ThrowOutput: "ThrowOutput",
     LookOther: "LookOther",
     LookOutput: "LookOutput",
     NavigateOther: "NavigateOther",
@@ -143,6 +143,7 @@ export const CATs = {
     EnableEvent: "EnableEvent",
     Say: "Say",
     Wait: "Wait",
+    Instantiate: "Instantiate",
 
     /*** Triggers ***/
     Nearby: "Nearby",

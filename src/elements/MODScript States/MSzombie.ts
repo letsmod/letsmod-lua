@@ -27,6 +27,10 @@ class MS_ZombieLookAt extends MODscriptLookAtState{
     //Override anything here
 }
 
+class MS_ZombieThrow extends MODscriptThrowState{
+    //Override anything here
+}
+
 export class MSzombie extends MODscriptStateMachineLMent{
 
     constructor(body: BodyHandle, id: number, params: Partial<MSzombie> = {}) {

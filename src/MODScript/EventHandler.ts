@@ -35,7 +35,7 @@ export class EventHandler implements UpdateHandler {
     initCATs(): void {
         if (this.catsInitialized) return;
         this.catsInitialized = true;
-        this.events = this.buildMODScriptFromEvents(GameplayScene.instance.story);
+        this.events = this.buildMODScriptFromEvents(GameplayScene.instance.story);//this.events = this.buildMODScriptFromEvents(JSONparser.parseEventDefinitions(EventHandler.instance.jsonData));
         for (let event of this.events) {
             event.setCATs();
         }
