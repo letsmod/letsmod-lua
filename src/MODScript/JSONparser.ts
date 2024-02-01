@@ -44,6 +44,12 @@ export class JSONparser {
             repeatable: this.parseBooleanValue(eventStr, 'repeatable'),
             enabled: this.parseBooleanValue(eventStr, 'enabled')
         };
+        /*            actorName: "Lady",
+            trigger: {triggerType: "Nearby", args:{condition:{conditionType:"IsOther", args:{actorName:"Hero"}},maxDistance:3}},
+            action: {actionType: "ThrowOutput", args:{prefabId:"Road Cone",force:400}},
+            repeatable: false,
+            enabled: true
+            */
         return x;
     }
 

@@ -33,7 +33,10 @@ export class MODscriptStateMachineLMent extends StateMachineLMent {
     maxSpeed: number = 0;
     FinishedActionsMap: Map<string, boolean> = new Map();
     activeActionId: string = "";
-    
+
+    prefabId: string = "";
+    force: number = 0;
+
     constructor(body: BodyHandle, id: number, params: Partial<MODscriptStateMachineLMent> = {}) {
         super(body, id, params);
         this.characterBodyName = params.characterBodyName === undefined ? "CharacterBody" : params.characterBodyName;
@@ -43,6 +46,9 @@ export class MODscriptStateMachineLMent extends StateMachineLMent {
         this.maxSpeed = params.maxSpeed === undefined ? 5 : params.maxSpeed;
         this.characterHead = this.body.body;
         this.characterBody = this.characterHead;
+
+        this.prefabId = params.prefabId ?? "";
+        this.force = params.force ?? 400;
     }
 
     onInit(): void {
@@ -64,6 +70,12 @@ export class MODscriptStateMachineLMent extends StateMachineLMent {
 
         this.activeActionId = actionId;
         this.switchState(state);
+    }
+
+    setThrowData(prefabId: string, force: number) {
+        this.prefabId = prefabId;
+        this.force = force;
+        console.log("prefabId: " + this.prefabId);
     }
 
     markComplete() {
@@ -96,6 +108,9 @@ export abstract class MODscriptStateBase extends State implements UpdateHandler 
     protected get myPosition() { return this.stateMachine.body.body.getPosition(); }
     override stateMachine: MODscriptStateMachineLMent;
 
+    protected prefabId: string = "";
+    protected force: number = 0;
+
     constructor(name: string, stateMachine: MODscriptStateMachineLMent) {
         super(name, stateMachine);
         this.stateMachine = stateMachine;
@@ -110,6 +125,9 @@ export abstract class MODscriptStateBase extends State implements UpdateHandler 
 
         this.moveForce = this.stateMachine.movementForce;
         this.movementSpeed = this.stateMachine.maxSpeed;
+
+        this.prefabId = this.stateMachine.prefabId;
+        this.force = this.stateMachine.force;
 
     }
 
@@ -260,25 +278,37 @@ export class MODscriptThrowState extends MODscriptStateBase {
     onEnterState(previousState: State | undefined): void {
         this.stopMoving();
         this.enableLookAt();
-        this.preformThrow();       
+        this.prefabId = this.stateMachine.prefabId;
+        this.force = this.stateMachine.force;
+        this.preformThrow();
     }
-    
+
     onExitState(nextState: State | undefined): void {
         this.disableLookAt();
     }
-    
+
     onUpdate(dt: number): void {
         super.onUpdate(dt);
     }
-    
+
     preformThrow() {
-        const PS = this.stateMachine.body.getElement(PrefabSpawner);
-        if (!PS){
+        let projectile = GameplayScene.instance.clonePrefab(this.prefabId);
+        if (projectile === undefined) {
+            console.log("No prefab named: " + this.prefabId + " exists in the library.");
             this.stateMachine.markFailed();
             return;
         }
-            PS.spawn();
-            this.stateMachine.markComplete();
+
+        let offset = Helpers.forwardVector.clone().applyQuaternion(this.stateMachine.body.body.getRotation());
+
+        let position = this.stateMachine.body.body.getPosition().clone().add(offset);
+        projectile.body.setPosition(position);
+        
+        let forceValue = Helpers.NewVector3(0,0.3,0.7).clone().applyQuaternion(this.stateMachine.body.body.getRotation());
+        forceValue.multiplyScalar(this.force);
+        projectile.body.applyCentralForce(forceValue);
+        this.stateMachine.markComplete();
+
     }
 
 }
