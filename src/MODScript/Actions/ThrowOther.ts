@@ -29,7 +29,6 @@ export class ThrowOther extends GenericAction {
     performAction(triggerOutput?: BodyHandle | undefined): void {
         if (!this.parentEvent || !this.parentEvent.stateMachine || !this.targetActor)
             return;
-
         this.parentEvent.stateMachine.setThrowData(this.prefabId, this.force);
         this.parentEvent.stateMachine.startState(this.ActionId, MODscriptStates.throw, undefined, this.targetActor.body.getPosition());
     }
