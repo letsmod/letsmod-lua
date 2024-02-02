@@ -5,11 +5,17 @@ import { LuaClientInterface } from "./LuaClientInterface";
 import { EventHandler } from "../MODScript/EventHandler";
 import { LMent } from "./LMent";
 import { EventDefinition } from "MODScript/MODscriptDefs";
+import { Helpers } from "./Helpers";
+import { convertArray } from "./helpers/array";
 
 type GamePreferences = {
   defaultPlayDifficulty: "normal" | "hardcore";
 };
 
+type GameStoryActors = {
+  name: string;
+  type: string;
+}[];
 export class GameplayScene {
   static _instance: GameplayScene;
   static get instance() {
@@ -33,6 +39,7 @@ export class GameplayScene {
     defaultPlayDifficulty: "normal",
   };
   story: EventDefinition[] = [];
+  gameStoryActors: GameStoryActors | undefined = undefined;
 
   private constructor() {}
 
@@ -48,12 +55,12 @@ export class GameplayScene {
     this.clientInterface?.speak(...args);
   }
 
-
-  setGameStory(story: EventDefinition[]) {    
-    for (let key in story){
-      console.log(key + " " + story[key].actorName);
-      this.story.push(story[key]);
+  setGameStory(story: EventDefinition[]) {
+    this.story = convertArray(story) || [];
   }
+
+  setGameStoryActors(actors: GameStoryActors | undefined) {
+    this.gameStoryActors = convertArray(actors);
   }
 
   addBody(bodyNode: BodyPointer) {
