@@ -5,15 +5,18 @@ import { BodyHandle } from "engine/BodyHandle";
 import { GameplayScene } from "engine/GameplayScene";
 
 export class ThrowOther extends GenericAction {
-    prefabId: string; //our prefabs are strings?
-    actorId: number = -1
+    prefabId: string;
     actorName: string = "";
-    targetActor: BodyHandle | undefined;
+    force: number = 400;
+    actorId: number = -1
+
+    private targetActor: BodyHandle | undefined;
 
     constructor(parentEvent: MODscriptEvent, args: Partial<ThrowOther>) {
         super(parentEvent, CATs.ThrowOther);
         this.prefabId = args.prefabId ?? "";
-        console.log("actorName: " + args.actorName);
+        this.force = args.force ?? 400;
+        
         if (args.actorName)
             this.actorName = args.actorName;
         for (const actor of this.parentEvent.InvolvedActorBodies)
@@ -26,9 +29,11 @@ export class ThrowOther extends GenericAction {
     performAction(triggerOutput?: BodyHandle | undefined): void {
         if (!this.parentEvent || !this.parentEvent.stateMachine || !this.targetActor)
             return;
-
+        this.parentEvent.stateMachine.setThrowData(this.prefabId, this.force);
         this.parentEvent.stateMachine.startState(this.ActionId, MODscriptStates.throw, undefined, this.targetActor.body.getPosition());
     }
+
+
 
     monitorAction(): void {
         if (!this.parentEvent || !this.parentEvent.stateMachine) return;
