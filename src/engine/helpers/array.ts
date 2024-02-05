@@ -1,4 +1,4 @@
-export function convertArray<T>(arr: T[] | undefined): T[] | undefined {
+export function convertArray<T>(arr: {[key:number] : T} | undefined): T[] | undefined {
   if (arr === undefined) {
     return undefined;
   }
