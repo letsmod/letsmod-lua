@@ -53,18 +53,20 @@ export class BallControls extends AvatarBase {
         this.initBallGuide();
     }
 
-    override onUpdate(dt?: number): void {
+    override onUpdate(dt: number): void {
         super.onUpdate(dt);
 
         this.onGroundReset();
-        if (dt)
+        if (dt > 0)
+        {
             this.Roll(dt);
+        }
     }
 
-    onGroundReset() {
+    onGroundReset(dt?:number) {
         GameplayScene.instance.dispatcher.queueDelayedFunction(this, () => {
             this.isOnGround = false;
-        }, Helpers.deltaTime);
+        }, dt ?? 1/30);
     }
 
     Roll(dt: number) {

@@ -1,6 +1,6 @@
 import { BodyHandle } from "engine/BodyHandle";
 import { StateMachineLMent, State } from "engine/StateMachineLMent";
-import { Helpers } from "engine/Helpers";
+import { Constants, Helpers } from "engine/Helpers";
 import { LookAt } from "./LookAt";
 import { CharacterStateMachineLMent, EnemyAlertState, EnemyChaseState } from "./CharacterStates";
 import { CharacterStates, characterIdleState, characterPatrolState } from "./CharacterStates";
@@ -13,13 +13,15 @@ class BouncerPatrol extends characterPatrolState {
     bounceTimer: number = 0;
     bounceAfter: number = 0.4;
     bounceForce: number = 250;
-    sound: SfxPlayer;
+    sound: SfxPlayer | undefined;
 
     constructor(stateMachine: CharacterStateMachineLMent, points: Vector3[], patrolSpeed: number, roamForce: number, sound: SfxPlayer) {
         super(stateMachine, points, patrolSpeed, roamForce);
         this.sound = this.stateMachine.body.getElementByName("Move") as SfxPlayer;
-        if(!sound)
+        if(this.sound === undefined)
+        {
             console.log("A sound with name \"Move\" is not found");
+        }
 
         
     }
@@ -30,7 +32,7 @@ class BouncerPatrol extends characterPatrolState {
         if (this.bounceTimer >= this.bounceAfter) {
             this.bounceTimer = 0;
             this.stateMachine.body.body.applyCentralForce(Helpers.upVector.multiplyScalar(this.bounceForce * this.stateMachine.body.body.getMass()));
-            if (this.sound)
+            if (this.sound !== undefined)
                 this.sound.playAudio();
 
         }
@@ -48,7 +50,7 @@ class BouncerChase extends EnemyChaseState {
             this.bounceTimer = 0;
             this.stateMachine.body.body.applyCentralForce(Helpers.upVector.multiplyScalar(this.bounceForce * this.stateMachine.body.body.getMass()));
             const sound = this.stateMachine.body.getElementByName("Move") as SfxPlayer;
-            if (sound) {
+            if (sound !== undefined) {
                 sound.playAudio();
             }
         }
@@ -83,7 +85,7 @@ export class BouncerEnemy extends CharacterStateMachineLMent {
         super.onInit();
         let point1 = this.body.body.getPosition().clone();
         let point2 = point1.clone().add(Helpers.forwardVector.multiplyScalar(this.patrolDistance).applyQuaternion(this.body.body.getRotation()))
-        let sound = this.body.getElementByName("Move") as SfxPlayer
+        let sound = this.body.getElementByName(Constants.MoveAudio) as SfxPlayer
         this.states = {
             [CharacterStates.patrol]: new BouncerPatrol(this, [point1, point2], this.patrolSpeed, this.movementForce, sound),
             [CharacterStates.chase]: new BouncerChase(this, this.chaseSpeed, this.movementForce),

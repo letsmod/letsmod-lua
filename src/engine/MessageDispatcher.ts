@@ -9,6 +9,7 @@ import {
 import { LMent } from "./LMent";
 import { BodyHandle } from "./BodyHandle";
 import { GameplayScene } from "./GameplayScene";
+import { EventHandler } from "MODScript/EventHandler";
 
 export type ListenerType<key extends keyof HandlerTypeMap> = LMent & HandlerTypeMap[key];
 
@@ -254,6 +255,9 @@ export class MessageDispatcher
         }
       }
     }
+
+    if(this.scene.eventHandler)
+      this.scene.eventHandler.onCollision(infoFactory);
   }
 
   // ButtonHandler
@@ -418,8 +422,6 @@ export class MessageDispatcher
 
   // InteractHandler
 
-  // TBD: determine how to assign interactors to interactables such that the highest priority one in range is chosen
-
   onInteract(interactor : BodyHandle)
   {
     let listeners = this.listeners["interact"].slice();
@@ -438,6 +440,11 @@ export class MessageDispatcher
     }
 
     return false;
+  }
+
+  getInteractables()
+  {
+    return this.listeners["interact"].filter((listener) => listener.enabled);
   }
 
   // ActorDestructionHandler

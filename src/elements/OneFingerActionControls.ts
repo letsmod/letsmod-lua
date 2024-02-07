@@ -1,6 +1,6 @@
 import { BodyHandle } from "engine/BodyHandle";
 import { GameplayScene } from "engine/GameplayScene";
-import { AimGetstureHandler, ButtonHandler, CollisionInfo, DragGestureHandler, SwipeGestureHandler, TapGestureHandler } from "engine/MessageHandlers";
+import { AimGetstureHandler, CollisionInfo, DragGestureHandler, SwipeGestureHandler, TapGestureHandler } from "engine/MessageHandlers";
 import { AvatarBase } from "./AvatarBase";
 import { ShapeStateController } from "./ShapeStateController";
 import { Helpers } from "engine/Helpers";
@@ -19,15 +19,13 @@ export class OneFingerActionControls extends AvatarBase implements DragGestureHa
   autoJumpMinDistance: number;
   jumpVelo: number;
   coyoteTime: number;
-  attackCombo: {prefabName: string, cooldown: number, cancelWindow: number, bodyVelocity: Vector3, topAnimation: string, bottomAnimation: string}[];
+  attackCombo: {prefabName: string, animKey: string, animBlendTime: number, cooldown: number, cancelWindow: number, bodyVelocity: Vector3}[];
   attackResetTime: number;
   attackInputLeeway: number;
   aimJumpCancelLength: number;
   aimJumpMaxSpeed: number;
 
   private lastOnGround = Infinity;
-  private topAnim: ShapeStateController | undefined;
-  private bottomAnim: ShapeStateController | undefined;
   private myGuideElement: GuideBody | undefined;
   private cameraRotationDelayTimer: number = 0;
   private dashTimer: number;
@@ -82,31 +80,14 @@ export class OneFingerActionControls extends AvatarBase implements DragGestureHa
 
   override onStart(): void {
     super.onStart();
-    let controllerLments = this.body.getAllElements(ShapeStateController);
-    let topAnimFound = false;
-    let bottomAnimFound = false;
-
-    for (let c of controllerLments)
-      if (c.name === "TopBody") {
-        topAnimFound = true;
-        this.topAnim = c;
-      } else if (c.name === "BottomBody") {
-        bottomAnimFound = true;
-        this.bottomAnim = c;
-      }
-
-    if (!topAnimFound)
-      console.error("No ShapeStateController of the name \"TopBody\" is found on body.");
-    if (!bottomAnimFound)
-      console.error("No ShapeStateController of the name \"BottomBody\" is found on body.");
   }
 
   override onUpdate(dt: number): void {
-    super.onUpdate();
+    super.onUpdate(dt);
 
     if (this.lastOnGround > this.coyoteTime && this.attackCooldown <= this.attackCancelWindow) {
-      this.playTopAnimation("Jump");
-      this.playBottomAnimation("Jump");
+      // fall state goes here
+      // this.playAnimation("jump", 1/10);
     }
     else if (this.dashTimer <= 0 && this.attackCooldown <= this.attackCancelWindow)
     {
@@ -119,6 +100,7 @@ export class OneFingerActionControls extends AvatarBase implements DragGestureHa
           let velocity = this.body.body.getVelocity();
           velocity.y = this.jumpVelo;
           this.body.body.setVelocity(velocity);
+          this.playAnimation("jump", 2/10);
         }
       }
       
@@ -236,8 +218,7 @@ export class OneFingerActionControls extends AvatarBase implements DragGestureHa
     if (this.dragDx == 0 && this.dragDy == 0) {
       accel = this.deceleration * dt;
       if (this.lastOnGround < this.coyoteTime) {
-        this.playTopAnimation("Idle");
-        this.playBottomAnimation("Idle");
+        this.playAnimation("idle", 1/10);
       }
     }
     else {
@@ -246,8 +227,7 @@ export class OneFingerActionControls extends AvatarBase implements DragGestureHa
       //Don :: For some reason, it gets some angular velocity while walking, I wrote this line to prevent it, thoughts?
       this.body.body.setAngularVelocity(Helpers.zeroVector);
       if (this.lastOnGround < this.coyoteTime) {
-        this.playTopAnimation("Walk");
-        this.playBottomAnimation("Walk");
+        this.playAnimation("walk", 1/10);
       }
 
     }
@@ -312,8 +292,7 @@ export class OneFingerActionControls extends AvatarBase implements DragGestureHa
       this.attackCancelWindow = attack.cancelWindow;
       let velocity = Helpers.zeroVector.copy(attack.bodyVelocity).applyQuaternion(this.body.body.getRotation());
       this.body.body.setVelocity(velocity);
-      this.playTopAnimation(attack.topAnimation);
-      this.playBottomAnimation(attack.bottomAnimation);
+      this.playAnimation(attack.animKey, attack.animBlendTime);
       let prefab = GameplayScene.instance.clonePrefab(attack.prefabName);
       if (prefab)
       {
@@ -361,6 +340,7 @@ export class OneFingerActionControls extends AvatarBase implements DragGestureHa
       this.body.body.setVelocity(swipeVec);
 
       this.dashTimer = this.dashDuration;
+      this.playAnimation("dash", 1/10);
     }
   }
 
@@ -394,15 +374,13 @@ export class OneFingerActionControls extends AvatarBase implements DragGestureHa
     this.aimDy = 0;
   }
 
-  playTopAnimation(state: string) {
-    if (this.topAnim !== undefined)
-      this.topAnim.playState(state);
-    // else console.error("No TopBody ShapeStateAnimator is found on this body.");
-  }
-
-  playBottomAnimation(state: string) {
-    if (this.bottomAnim !== undefined)
-      this.bottomAnim.playState(state);
-    // else console.error("No BottomBody ShapeStateAnimator is found on this body.");
+  playAnimation(animKey: string, blendTime : number) {
+    let shapes = this.convertArray(this.body.body.getShapes());
+    if (shapes)
+    {
+      shapes.forEach((shape) => {
+        shape.playAnimation(animKey, blendTime);
+      });  
+    }
   }
 }

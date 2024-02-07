@@ -103,8 +103,8 @@ export class WingSuitControls extends AvatarBase implements ButtonHandler, DragG
     this.staminaBarControl.ResetBar();
   }
 
-  override onUpdate(): void {
-    super.onUpdate();
+  override onUpdate(dt: number): void {
+    super.onUpdate(dt);
 
     this.onGroundResetter();
     this.move();
@@ -141,7 +141,7 @@ export class WingSuitControls extends AvatarBase implements ButtonHandler, DragG
   }
 
   walkAccelerate() {
-    let accel = this.walkAcc * Helpers.deltaTime;
+    let accel = this.walkAcc /GameplayScene.instance.memory.frameRate;
     if (this.isOnGround)
       this.playAnimation("Walk");
     let newVelocity = this.body.body.getVelocity().clone().add(this.walkDeltaVelocity(accel));
@@ -149,7 +149,7 @@ export class WingSuitControls extends AvatarBase implements ButtonHandler, DragG
   }
 
   walkDecelerate() {
-    let accel = this.walkDec * Helpers.deltaTime;
+    let accel = this.walkDec /GameplayScene.instance.memory.frameRate;
     if (this.isOnGround)
       this.playAnimation("Idle");
     let newVelocity = this.body.body.getVelocity().clone().add(this.walkDeltaVelocity(accel));
@@ -177,7 +177,7 @@ export class WingSuitControls extends AvatarBase implements ButtonHandler, DragG
     let pitch = Helpers.GetPitch(currentRot);
     if (this.dragDy == 0) return;
 
-    let angle = this.leanSpeed * -this.dragDy * Helpers.deltaTime;
+    let angle = this.leanSpeed * -this.dragDy /GameplayScene.instance.memory.frameRate;
     if (Helpers.Deg(pitch) + angle > this.maxLean)
       angle = 0;
     else if (Helpers.Deg(pitch) + angle <= 0)
@@ -238,7 +238,7 @@ export class WingSuitControls extends AvatarBase implements ButtonHandler, DragG
   onGroundResetter() {
     GameplayScene.instance.dispatcher.queueDelayedFunction(this, () => {
       this.isOnGround = false;
-    }, Helpers.deltaTime);
+    }, 1/GameplayScene.instance.memory.frameRate);
   }
 
   playAnimation(state: string) {

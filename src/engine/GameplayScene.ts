@@ -2,11 +2,20 @@ import { BodyPointer, BodyHandle } from "./BodyHandle";
 import { MessageDispatcher } from "engine/MessageDispatcher";
 import { GameplayMemory } from "engine/GameplayMemory";
 import { LuaClientInterface } from "./LuaClientInterface";
+import { EventHandler } from "../MODScript/EventHandler";
+import { LMent } from "./LMent";
+import { EventDefinition } from "MODScript/MODscriptDefs";
+import { Helpers } from "./Helpers";
+import { convertArray } from "./helpers/array";
 
 type GamePreferences = {
   defaultPlayDifficulty: "normal" | "hardcore";
 };
 
+type GameStoryActors = {
+  name: string;
+  type: string;
+}[];
 export class GameplayScene {
   static _instance: GameplayScene;
   static get instance() {
@@ -25,17 +34,35 @@ export class GameplayScene {
   memory: GameplayMemory = new GameplayMemory();
   clientInterface: LuaClientInterface | undefined = undefined;
   currentDt: number = 0;
+  eventHandler: EventHandler | undefined;
   gamePreferences: GamePreferences = {
     defaultPlayDifficulty: "normal",
   };
+  story: EventDefinition[] = [];
+  gameStoryActors: GameStoryActors | undefined = undefined;
+
   private constructor() {}
 
   setClientInterface(clientInterface: LuaClientInterface) {
     this.clientInterface = clientInterface;
   }
+
   setGamePreferences(preferences: GamePreferences) {
     this.gamePreferences = preferences;
   }
+
+  speak(...args: Parameters<LuaClientInterface["speak"]>) {
+    this.clientInterface?.speak(...args);
+  }
+
+  setGameStory(story: EventDefinition[]) {
+    this.story = convertArray(story) || [];
+  }
+
+  setGameStoryActors(actors: GameStoryActors | undefined) {
+    this.gameStoryActors = convertArray(actors);
+  }
+
   addBody(bodyNode: BodyPointer) {
     let handle = new BodyHandle(bodyNode);
     handle.isInScene = true;
@@ -75,6 +102,15 @@ export class GameplayScene {
     return this.bodyIdMap.get(id);
   }
 
+  findAllElements<U extends LMent>(T: new (...args: any[]) => U): U[] {
+    let elements: U[] = [];
+    for (let body of this.bodies) {
+      let bodyElements = body.getAllElements(T);
+      elements.push(...bodyElements);
+    }
+    return elements;
+  }
+
   clear() {
     this.bodies = [];
     this.bodyIdMap.clear();
@@ -86,6 +122,7 @@ export class GameplayScene {
 
   initializeMemory(memoryOverride: Partial<GameplayMemory>) {
     this.memory = { ...new GameplayMemory(), ...memoryOverride };
+    if (this.eventHandler) this.eventHandler.initialize();
   }
 
   preUpdate(dt: number) {
@@ -104,6 +141,9 @@ export class GameplayScene {
 
   update() {
     this.dispatcher.onUpdate(this.currentDt);
+    if (!this.eventHandler) return;
+    this.eventHandler.initCATs();
+    this.eventHandler.onUpdate(this.currentDt);
   }
 
   cloneBody(body: BodyHandle): BodyHandle | undefined {
@@ -142,6 +182,13 @@ export class GameplayScene {
       body.body.destroyBody();
       body.isInScene = false;
     }
+
+    //ASK DON: This should still be in the involvedActors to know when it gets destroyed, otherwise the OtherDestroyed trigger won't work.
+    // if (this.eventHandler !== undefined)
+    //   for (let e of this.eventHandler.events) {
+    //     if (e.InvolvedActorIDs.includes(body.body.id))
+    //       e.removeInvolvedActor(body);
+    //   }
   }
 
   testErrorHandler() {

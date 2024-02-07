@@ -20,7 +20,7 @@ export class ScoreItem extends Collectible {
         if (clientInterface !== undefined)
             clientInterface.addScore(this.scoreValue);
         const sound = this.body.getElementByTypeName("SfxPlayer") as SfxPlayer;
-        if (sound) {
+        if (sound !== undefined) {
             sound.playAudio();
         }
     }
