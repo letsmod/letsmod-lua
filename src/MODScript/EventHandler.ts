@@ -29,6 +29,12 @@ export class EventHandler implements UpdateHandler {
     }
 
     initialize(): void {
+        this.audioPlayerBusy = false;
+        this.audioList = [];
+        this.audioDelayedFunction = undefined;
+        this.collisionEventBodyMap = [];
+        this.taggedBodiesList = [];
+        this.events = [];
         this.catsInitialized = false;
     }
 
