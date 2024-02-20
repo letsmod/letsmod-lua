@@ -63,4 +63,6 @@ export {MSzombie} from "./MODScript States/MSzombie";
 export {JumpUp} from "./JumpUp";
 export {JSONelement} from "./JSONelement";
 export {AdventurerAvatar} from "./AdventurerAvatar";
+export {AbstractGadget} from "./AbstractGadget";
 export {Throwable} from "./Throwable";
+export {LauncherGadget} from "./LauncherGadget";
