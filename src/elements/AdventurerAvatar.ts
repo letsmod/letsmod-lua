@@ -6,10 +6,11 @@ import { Quaternion, Vector3 } from "three";
 import { Helpers } from "engine/Helpers";
 import { GameplayScene } from "engine/GameplayScene";
 import { LMent } from "engine/LMent";
-import { Throwable } from "./Throwable";
+import { AbstractGadget } from "./AbstractGadget";
 import { GuideBody } from "./GuideBody";
 import { CameraTarget } from "./CameraTarget";
 import { Fragile } from "./Fragile";
+import { Throwable } from "./Throwable";
 
 export abstract class AdventurerState extends AnimatedState
 {
@@ -763,11 +764,15 @@ export class ThrowState extends StaggerableState
 
     if (this.timeInThrow >= this.stateMachine.throwReleaseTime && this.liftedItem)
     {
-      let throwable = this.liftedItem.getElement(Throwable);
-      if (throwable)
+      let gadget = this.liftedItem.getElement(AbstractGadget);
+      if (gadget)
       {
         this.stateMachine.body.body.removeHoldConstraintWith(this.liftedItem.body);
-        throwable.doThrow();
+        let direction = gadget.activate();
+        if (direction)
+        {
+          this.stateMachine.setFacingAbsolute(direction.x, direction.z);
+        }
       }
       this.liftedItem = undefined;
     }
@@ -846,7 +851,22 @@ export class IdleHoldingState extends StaggerableState
   {
     if (this.wasJustJogging > 0)
     {
-      this.stateMachine.switchState("throw");
+      if (this.liftedItem?.getElement(Throwable))
+      {
+        this.stateMachine.switchState("throw");
+      }
+      else
+      {
+        let gadget = this.liftedItem?.getElement(AbstractGadget);
+        if (gadget)
+        {
+          let direction = gadget.activate();
+          if (direction)
+          {
+            this.stateMachine.setFacingAbsolute(direction.x, direction.z);
+          }
+        }
+      }
     }
     else
     {
@@ -857,7 +877,22 @@ export class IdleHoldingState extends StaggerableState
   onSwipe(dx: number, dy: number)
   {
     this.stateMachine.setFacing(-dx, -dy);
-    this.stateMachine.switchState("throw");
+    if (this.liftedItem?.getElement(Throwable))
+    {
+      this.stateMachine.switchState("throw");
+    }
+    else
+    {
+      let gadget = this.liftedItem?.getElement(AbstractGadget);
+      if (gadget)
+      {
+        let direction = gadget.activate();
+        if (direction)
+        {
+          this.stateMachine.setFacingAbsolute(direction.x, direction.z);
+        }
+      }
+    }
   }
 }
 
@@ -950,13 +985,43 @@ export class JogHoldingState extends StaggerableState
 
   onTap()
   {
-    this.stateMachine.switchState("throw");
+    if (this.liftedItem?.getElement(Throwable))
+    {
+      this.stateMachine.switchState("throw");
+    }
+    else
+    {
+      let gadget = this.liftedItem?.getElement(AbstractGadget);
+      if (gadget)
+      {
+        let direction = gadget.activate();
+        if (direction)
+        {
+          this.stateMachine.setFacingAbsolute(direction.x, direction.z);
+        }
+      }
+    }
   }
 
   onSwipe(dx: number, dy: number)
   {
     this.stateMachine.setFacing(-dx, -dy);
-    this.stateMachine.switchState("throw");
+    if (this.liftedItem?.getElement(Throwable))
+    {
+      this.stateMachine.switchState("throw");
+    }
+    else
+    {
+      let gadget = this.liftedItem?.getElement(AbstractGadget);
+      if (gadget)
+      {
+        let direction = gadget.activate();
+        if (direction)
+        {
+          this.stateMachine.setFacingAbsolute(direction.x, direction.z);
+        }
+      }
+    }
   }
 
   onActorDestroyed(actor: BodyHandle): void {
@@ -1363,7 +1428,7 @@ export class AdventurerAvatar extends AvatarBase
     }
   }
 
-  pickUpItem(item: Throwable)
+  pickUpItem(item: AbstractGadget)
   {
     if (!this.canInteract())
     {
@@ -1449,6 +1514,13 @@ export class AdventurerAvatar extends AvatarBase
     }
 
     let angle = Math.atan2(dx, dy) + cameraTheta;
+    let quat = Helpers.NewQuaternion().setFromAxisAngle(Helpers.upVector, angle);
+    this.body.body.setRotation(quat);
+  }
+
+  setFacingAbsolute(dx : number, dy: number)
+  {
+    let angle = Math.atan2(dx, dy);
     let quat = Helpers.NewQuaternion().setFromAxisAngle(Helpers.upVector, angle);
     this.body.body.setRotation(quat);
   }
