@@ -6,6 +6,7 @@ import { Constants, Helpers } from "engine/Helpers";
 import { CollisionHandler, CollisionInfo, UpdateHandler } from "engine/MessageHandlers";
 import { State, StateMachineLMent } from "engine/StateMachineLMent";
 import { Quaternion, Vector3 } from "three";
+import { SfxPlayer } from "./SfxPlayer";
 
 export enum CharacterStates {
     idle = "idle",
@@ -297,14 +298,16 @@ export class characterInteractState extends CharacterStateBase {
 export class characterPatrolState extends CharacterStateBase implements CollisionHandler {
     points: Vector3[] = [];
     currentPointIndex: number = 0;
+    sound : SfxPlayer | undefined;
     private blockedRoadCounter: number = 0;
     get activePoint() { return this.points[this.currentPointIndex] };
-
-    constructor(stateMachine: CharacterStateMachineLMent, points: Vector3[], patrolSpeed: number, movementForce: number) {
+    
+    constructor(stateMachine: CharacterStateMachineLMent, points: Vector3[], patrolSpeed: number, movementForce: number, sound: SfxPlayer) {
         super(CharacterStates.patrol, stateMachine);
         this.points = points;
         this.movementSpeed = patrolSpeed;
         this.moveForce = movementForce;
+        this.sound = sound;
     }
 
     onEnterState(previousState: State | undefined) {
@@ -411,11 +414,14 @@ export class EnemyAlertState extends characterAlertState {
 
 export class EnemyChaseState extends CharacterStateBase {
 
-    constructor(stateMachine: CharacterStateMachineLMent, chaseSpeed: number, movementForce: number) {
-        super(CharacterStates.chase, stateMachine);
+    sound: SfxPlayer | undefined;
 
+    constructor(stateMachine: CharacterStateMachineLMent, chaseSpeed: number, movementForce: number, sound: SfxPlayer) {
+        super(CharacterStates.chase, stateMachine);
+        
         this.movementSpeed = chaseSpeed;
         this.moveForce = movementForce;
+        this.sound = sound;
     }
 
     onEnterState(previousState: State | undefined) {

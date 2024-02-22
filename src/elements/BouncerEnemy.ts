@@ -13,18 +13,6 @@ class BouncerPatrol extends characterPatrolState {
     bounceTimer: number = 0;
     bounceAfter: number = 0.4;
     bounceForce: number = 250;
-    sound: SfxPlayer | undefined;
-
-    constructor(stateMachine: CharacterStateMachineLMent, points: Vector3[], patrolSpeed: number, roamForce: number, sound: SfxPlayer) {
-        super(stateMachine, points, patrolSpeed, roamForce);
-        this.sound = this.stateMachine.body.getElementByName("Move") as SfxPlayer;
-        if(this.sound === undefined)
-        {
-            console.log("A sound with name \"Move\" is not found");
-        }
-
-        
-    }
 
 
     override playStateAnimation(dt: number): void {
@@ -44,14 +32,14 @@ class BouncerChase extends EnemyChaseState {
     bounceAfter: number = 0.4;
     bounceForce: number = 250;
 
+
     override playStateAnimation(dt: number): void {
         this.bounceTimer += dt;
         if (this.bounceTimer >= this.bounceAfter) {
             this.bounceTimer = 0;
             this.stateMachine.body.body.applyCentralForce(Helpers.upVector.multiplyScalar(this.bounceForce * this.stateMachine.body.body.getMass()));
-            const sound = this.stateMachine.body.getElementByName("Move") as SfxPlayer;
-            if (sound !== undefined) {
-                sound.playAudio();
+            if (this.sound !== undefined) {
+                this.sound.playAudio();
             }
         }
     }
@@ -88,7 +76,7 @@ export class BouncerEnemy extends CharacterStateMachineLMent {
         let sound = this.body.getElementByName(Constants.MoveAudio) as SfxPlayer
         this.states = {
             [CharacterStates.patrol]: new BouncerPatrol(this, [point1, point2], this.patrolSpeed, this.movementForce, sound),
-            [CharacterStates.chase]: new BouncerChase(this, this.chaseSpeed, this.movementForce),
+            [CharacterStates.chase]: new BouncerChase(this, this.chaseSpeed, this.movementForce, sound),
             [CharacterStates.alert]: new EnemyAlertState(this, this.alertCooldown, this.alertWarmUp, CharacterStates.chase),
             [CharacterStates.idle]: new characterIdleState(this, this.idleDelay)
         }
