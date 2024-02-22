@@ -5,6 +5,7 @@ import { HitPoints, DamageType } from "./HitPoints";
 import { CollisionHandler, CollisionInfo } from "engine/MessageHandlers";
 import { Vector3 } from "three";
 import { Helpers } from "engine/Helpers";
+import { AvatarBase } from "./AvatarBase";
 
 export class ContactDamage extends LMent implements CollisionHandler {
     damageValue: number;
@@ -46,10 +47,20 @@ export class ContactDamage extends LMent implements CollisionHandler {
 
             if (this.dotMinimum === undefined || dotProduct >= this.dotMinimum) {
                 if (hpElement && (this.contactCooldowns[other.body.id] === undefined || now - this.contactCooldowns[other.body.id] >= this.cooldown)) {
+                    this.damagingPlayerCheck(other);
                     hpElement.damage(this.damageValue, this.damageType, this.teamFlags);
                     this.contactCooldowns[other.body.id] = now;
                 }
             }
+        }
+    }
+
+    damagingPlayerCheck(otherBody: BodyHandle) {
+        const player = GameplayScene.instance.memory.player;
+        if (player && player.body.id === otherBody.body.id) {
+            const avatarLment = player.getElement(AvatarBase);
+            if (avatarLment)
+                avatarLment.RepetitiveEnemyCheck(this.body);
         }
     }
 }

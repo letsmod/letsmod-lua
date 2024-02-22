@@ -20,7 +20,7 @@ import { GuideBody } from "./GuideBody";
 import { SfxPlayer } from "./SfxPlayer";
 
 export class AvatarBase extends StateMachineLMent implements UpdateHandler, HitPointChangeHandler, CollisionHandler {
-  public static safeSteps: {pos: Vector3, rotation: Quaternion} [] = [];
+  public static safeSteps: { pos: Vector3, rotation: Quaternion }[] = [];
   private maxSafeSteps: number = 500;
   private reviveMinDistance: number = 0;
   private reviveCounter: number = 3;
@@ -35,6 +35,9 @@ export class AvatarBase extends StateMachineLMent implements UpdateHandler, HitP
   protected camGuide: GuideBody | undefined;
   private hpDelayedFunc: any | undefined;
   public respawnDelay: number = 1;
+  public lastHazardousBodyId: number = -1;
+  public deathCountByHazard: number = 0;
+  public isVulnerable: boolean = true;
   gender: string;
 
   constructor(body: BodyHandle, id: number, params: Partial<AvatarBase> = {}) {
@@ -45,10 +48,9 @@ export class AvatarBase extends StateMachineLMent implements UpdateHandler, HitP
     this.respawnDelay = params.respawnDelay === undefined ? 1 : params.respawnDelay;
   }
 
-  validateGender(){
-    if(!this.gender)return;
-    if(this.gender !== Constants.Male && this.gender !== Constants.Female)
-    {
+  validateGender() {
+    if (!this.gender) return;
+    if (this.gender !== Constants.Male && this.gender !== Constants.Female) {
       console.log("Gender can be either Male or Female, male will be used by default.");
       this.gender = Constants.Male;
     }
@@ -81,11 +83,10 @@ export class AvatarBase extends StateMachineLMent implements UpdateHandler, HitP
   onStart(): void {
     this.initRotation();
     this.body.body.setAngularVelocity(Helpers.zeroVector);
-    AvatarBase.safeSteps.push({pos: this.body.body.getPosition().clone(), rotation: this.body.body.getRotation().clone()});
+    AvatarBase.safeSteps.push({ pos: this.body.body.getPosition().clone(), rotation: this.body.body.getRotation().clone() });
     this.addSafeStep();
     this.camGuide = GameplayScene.instance.findAllElements(GuideBody).find((g) => g.guideName === Constants.MainCamera);
-    if (this.camGuide)
-    {
+    if (this.camGuide) {
       this.camTarget = this.camGuide.body.getElement(CameraTarget);
     }
   }
@@ -97,15 +98,13 @@ export class AvatarBase extends StateMachineLMent implements UpdateHandler, HitP
 
   onActorDestroyed(actor: BodyHandle): void {
     super.onActorDestroyed(actor);
-    if (actor === this.body)
-    {
+    if (actor === this.body) {
       this.lose();
     }
   }
 
   sinkCheck() {
-    if (this.body.body.getPosition().y < 0)
-    {
+    if (this.body.body.getPosition().y < 0) {
       this.lose();
     }
   }
@@ -151,14 +150,14 @@ export class AvatarBase extends StateMachineLMent implements UpdateHandler, HitP
     }
 
     //Disable camera guide element to stop the camera from following the player.
-    if (this.camGuide)
-    {
+    if (this.camGuide) {
       this.camGuide.enabled = false;
     }
 
     let hp = this.body.getElement(HitPoints);
     if (hp)
       hp.enabled = false;
+    this.isVulnerable = false;
   }
 
   deathAnim() {
@@ -185,17 +184,15 @@ export class AvatarBase extends StateMachineLMent implements UpdateHandler, HitP
       return;
     }
 
-    for (let h of HazardZone.AllZones)
-    {
-      if (this.body.body.getPosition().distanceTo(h.body.body.getPosition()) < h.radius)
-      {
+    for (let h of HazardZone.AllZones) {
+      if (this.body.body.getPosition().distanceTo(h.body.body.getPosition()) < h.radius) {
         return;
       }
     }
 
     if (AvatarBase.safeSteps.length > this.maxSafeSteps)
       AvatarBase.safeSteps.splice(1, 1);
-    AvatarBase.safeSteps.push({pos: this.body.body.getPosition().clone(), rotation: this.body.body.getRotation().clone()});
+    AvatarBase.safeSteps.push({ pos: this.body.body.getPosition().clone(), rotation: this.body.body.getRotation().clone() });
   }
 
   revive() {
@@ -221,8 +218,7 @@ export class AvatarBase extends StateMachineLMent implements UpdateHandler, HitP
   }
 
   postReviveCallback() {
-    if (this.camTarget)
-    {
+    if (this.camTarget) {
       this.camTarget.enabled = true;
     }
 
@@ -239,23 +235,23 @@ export class AvatarBase extends StateMachineLMent implements UpdateHandler, HitP
       visibilityFlicker.enabled = true;
 
       //Enabling HP when flickering is done
-      if (this.hpDelayedFunc)
-      {
+      if (this.hpDelayedFunc) {
         GameplayScene.instance.dispatcher.removeQueuedFunction(this.hpDelayedFunc);
       }
-      
+
       this.hpDelayedFunc = GameplayScene.instance.dispatcher.queueDelayedFunction(this, () => {
         let hp = this.body.getElement(HitPoints);
         if (hp) {
           hp.reset();
           hp.enabled = true;
+          this.isVulnerable = true;
+
         }
       }, visibilityFlicker.duration);
     }
 
     //Enable the camera guide to follow the player again.
-    if (this.camGuide) 
-    {
+    if (this.camGuide) {
       this.camGuide.enabled = true;
       this.camGuide.body.getAllElements(GuideBody).forEach((g) => {
         g.shouldSnap = true;
@@ -285,13 +281,26 @@ export class AvatarBase extends StateMachineLMent implements UpdateHandler, HitP
     this.body.body.setRotation(step.rotation.clone());
 
     //Remove all safe steps after the current one.
-    if (AvatarBase.safeSteps.length > 1)
-    {
-      AvatarBase.safeSteps.splice(index, AvatarBase.safeSteps.length - index);
+    if (AvatarBase.safeSteps.length > 1) {
+      AvatarBase.safeSteps.splice(index, AvatarBase.safeSteps.length - index - 1);
     }
   }
 
   UnequipAvatar() {
     GameplayScene.instance.destroyBody(this.body);
+  }
+
+  RepetitiveEnemyCheck(body: BodyHandle) {
+    if(!this.isVulnerable) return;
+    if (body.body.id !== this.lastHazardousBodyId) {
+      this.lastHazardousBodyId = body.body.id;
+      this.deathCountByHazard = 0;
+    }
+    else {
+      this.deathCountByHazard++;
+      console.log("Death count by hazard: " + this.deathCountByHazard);
+      if (this.deathCountByHazard >= 2)
+        GameplayScene.instance.destroyBody(body);
+    }
   }
 }
