@@ -67,8 +67,11 @@ export class SfxPlayer extends LMent implements UpdateHandler, TriggerHandler {
         if (distance < this.playDistance && this.loopTimer <= 0) {
             const clientInterface = GameplayScene.instance.clientInterface;
             if (!clientInterface || this.loopTimer > 0) return;
-            this.randomizeAudio();
-            clientInterface.playAudio(this.audio, this.id.toString());
+            if (this.randomMax && this.randomMin)
+                this.randomizeAudio();
+            else
+                clientInterface.playAudio(this.audio);
+            console.log(this.audio);
             this.loopTimer = this.delay;
         }
     }
@@ -78,6 +81,7 @@ export class SfxPlayer extends LMent implements UpdateHandler, TriggerHandler {
         if (!clientInterface) return;
         if (!this.randomMax || !this.randomMin) return;
         const random = Math.floor(Math.random() * (this.randomMax) + (this.randomMin));
-        clientInterface.playAudio(this.audio + random, this.id.toString());
+        clientInterface.playAudio(this.audio + random);
+        //console.log(this.audio + random);   
     }
 }

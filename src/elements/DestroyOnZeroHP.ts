@@ -3,6 +3,7 @@ import { LMent } from "engine/LMent";
 import { GameplayScene } from "engine/GameplayScene";
 import { HitPointChangeHandler } from "engine/MessageHandlers";
 import { SfxPlayer } from "./SfxPlayer";
+import { Constants } from "engine/Helpers";
 
 export class DestroyOnZeroHP extends LMent implements HitPointChangeHandler {
   private destroyed: boolean;
@@ -29,7 +30,7 @@ export class DestroyOnZeroHP extends LMent implements HitPointChangeHandler {
   onHitPointChange(source: BodyHandle, previousHP: number, currentHP: number): void {
     if (source == this.body && currentHP <= 0 && !this.destroyed) {
       if (this.destructionDelay <= 0) {
-        const sound = this.body.getElementByName("Death") as SfxPlayer;
+        const sound = this.body.getElementByName(Constants.DeathAudio) as SfxPlayer;
         if (sound !== undefined) {
           sound.playAudio();
         }

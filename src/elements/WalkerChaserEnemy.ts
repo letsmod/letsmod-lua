@@ -1,14 +1,18 @@
 import { BodyHandle } from "engine/BodyHandle";
 import { StateMachineLMent, State } from "engine/StateMachineLMent";
-import { Helpers } from "engine/Helpers";
+import { Constants, Helpers } from "engine/Helpers";
 import { LookAt } from "./LookAt";
 import {EnemyChaseState, EnemyAlertState, CharacterStates, characterIdleState, characterPatrolState, CharacterStateMachineLMent } from "./CharacterStates";
+import { SfxPlayer } from "./SfxPlayer";
 
 class WalkerPatrol extends characterPatrolState {
 
     override playStateAnimation(dt: number): void {
         if (this.anim)
             this.anim.playState("walk");
+
+        if (this.sound !== undefined)
+            this.sound.playAudio();
     }
 
     override alertCondition(): boolean {
@@ -21,6 +25,9 @@ class WalkerChase extends EnemyChaseState {
     override playStateAnimation(dt: number): void {
         if (this.anim)
             this.anim.playState("chase");
+
+        if (this.sound !== undefined)
+            this.sound.playAudio();
     }
 }
 
@@ -73,11 +80,13 @@ export class WalkerChaserEnemy extends CharacterStateMachineLMent {
         super.onInit();
         
         let point1 = this.body.body.getPosition().clone();
-        let point2 = point1.clone().add(Helpers.forwardVector.multiplyScalar(this.patrolDistance).applyQuaternion(this.body.body.getRotation()))
+        let point2 = point1.clone().add(Helpers.forwardVector.multiplyScalar(this.patrolDistance).applyQuaternion(this.body.body.getRotation()));
+        let moveSound = this.body.getElementByName(Constants.MoveAudio) as SfxPlayer;
+        let chaseSound = this.body.getElementByName(Constants.ChaseAudio) as SfxPlayer;
 
         this.states = {
-            [CharacterStates.patrol]: new WalkerPatrol(this, [point1, point2], this.patrolSpeed,this.movementForce),
-            [CharacterStates.chase]: new WalkerChase(this, this.chaseSpeed, this.movementForce),
+            [CharacterStates.patrol]: new WalkerPatrol(this, [point1, point2], this.patrolSpeed, this.movementForce, moveSound),
+            [CharacterStates.chase]: new WalkerChase(this, this.chaseSpeed, this.movementForce, chaseSound),
             [CharacterStates.alert]: new WalkerAlert(this,this.alertCooldown,this.alertWarmUp,CharacterStates.chase),
             [CharacterStates.idle]: new WalkerIdle(this,this.idleCooldown)
         }
