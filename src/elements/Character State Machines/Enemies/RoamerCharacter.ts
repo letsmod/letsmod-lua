@@ -1,9 +1,11 @@
 import { BodyHandle } from "engine/BodyHandle";
-import { CharacterStateMachineLMent, CharacterStates, characterAlertState, characterIdleState, characterInteractState, characterPatrolState } from "./CharacterStates";
+import { CharacterStateMachineLMent, CharacterStates, characterAlertState, characterIdleState, characterInteractState, characterPatrolState } from "../CharacterStates";
 import { State, StateMachineLMent } from "engine/StateMachineLMent";
-import { LookAt } from "./LookAt";
+import { LookAt } from "../../LookAt";
 import { Helpers } from "engine/Helpers";
 import { Vector3 } from "three";
+
+////TODO: ANAS PLEASE UPDATE THIS TO USE THE NEW STATE MACHINE SYSTEM
 
 class RoamerPatrol extends characterPatrolState {
     private randomIdleTimer: number;
@@ -13,7 +15,7 @@ class RoamerPatrol extends characterPatrolState {
     private initialPoint: Vector3;
 
     constructor(stateMachine: CharacterStateMachineLMent, patrolAreaBounds: { min: Vector3, max: Vector3 }, idleDurationRange: { min: number, max: number }, patrolSpeed: number, roamForce: number, initialposition: Vector3) {
-        super(stateMachine, [], patrolSpeed, roamForce);
+        super(stateMachine, [], patrolSpeed);
         patrolAreaBounds.min = Helpers.ParamToVec3(patrolAreaBounds.min);
         patrolAreaBounds.max = Helpers.ParamToVec3(patrolAreaBounds.max);
         this.initialPoint = initialposition;
@@ -50,11 +52,11 @@ class RoamerPatrol extends characterPatrolState {
         return Math.random() * (range.max - range.min) + range.min;
     }
 
-    override playStateAnimation(dt: number): void {
+    override playCustomAnimation(dt: number): void {
         if (this.isIdle) {
-            if (this.anim) this.anim.playState("idle");
+            if (this.customAnimator) this.customAnimator.playState("idle");
         } else {
-            if (this.anim) this.anim.playState("walk");
+            if (this.customAnimator) this.customAnimator.playState("walk");
         }
     }
 
@@ -70,7 +72,7 @@ class RoamerPatrol extends characterPatrolState {
         } else {
             super.onUpdate(dt);
             let distance = this.myPosition.distanceTo(this.activePoint);
-            if (distance <= this.reachDestinationThreshold) {
+            if (distance <= this.stateMachine.moveReachThreshold) {
                 this.isIdle = true;
                 this.randomIdleTimer = this.getRandomIdleDuration(this.idleDurationRange);
             }
@@ -79,18 +81,18 @@ class RoamerPatrol extends characterPatrolState {
 }
 
 class RoamerIdle extends characterIdleState {
-    override playStateAnimation(dt: number): void {
-        if (this.anim)
-            this.anim.playState("idle");
+    override playCustomAnimation(dt: number): void {
+        if (this.customAnimator)
+            this.customAnimator.playState("idle");
     }
 
 }
 
 class RoamerAlert extends characterAlertState {
 
-    override playStateAnimation(dt: number): void {
-        if (this.anim)
-            this.anim.playState("alert");
+    override playCustomAnimation(dt: number): void {
+        if (this.customAnimator)
+            this.customAnimator.playState("alert");
     }
 }
 
@@ -98,34 +100,34 @@ class RoamerInteract extends characterInteractState {
     constructor(character: CharacterStateMachineLMent, patrolspeed: number, roamForce: number) {
         super(character);
 
-        this.movementSpeed = patrolspeed;
+        this.currentMaxSpeed = patrolspeed;
         this.moveForce = roamForce;
     }
     override  onEnterState(previousState: State | undefined): void {
         super.onEnterState(previousState);
-        if (this.lookAt)
-            this.lookAt.lookAway = true;
+        if (this.lookAtElement)
+            this.lookAtElement.lookAway = true;
     }
 
     override onExitState(nextState: State | undefined): void {
         super.onExitState(nextState);
-        if (this.lookAt)
-            this.lookAt.lookAway = false;
+        if (this.lookAtElement)
+            this.lookAtElement.lookAway = false;
     }
 
-    override playStateAnimation(dt: number): void {
-        if (this.anim)
-            this.anim.playState("interact");
+    override playCustomAnimation(dt: number): void {
+        if (this.customAnimator)
+            this.customAnimator.playState("interact");
     }
 
     override onUpdate(dt: number): void {
         super.onUpdate(dt);
-        if (this.alertCondition()) {
+        // if (this.alertCondition()) {
 
-            this.moveForward();
-            this.playStateAnimation(dt);
-        }
-        else this.stateMachine.switchState(CharacterStates.alert);
+        //     this.moveForwardNormally();
+        //     this.playCustomAnimation(dt);
+        // }
+        // else this.stateMachine.switchState(CharacterStates.alert);
     }
 }
 
@@ -163,7 +165,7 @@ export class RoamerCharacter extends CharacterStateMachineLMent {
         this.states = {
             [CharacterStates.patrol]: new RoamerPatrol(this, this.patrolAreaBounds, this.idleDurationRange, this.patrolSpeed, this.movementForce, this.initialPosition),
             [CharacterStates.alert]: new RoamerAlert(this),
-            [CharacterStates.idle]: new RoamerIdle(this, this.idleCooldown),
+            [CharacterStates.idle]: new RoamerIdle(this),
             [CharacterStates.interactWithPlayer]: new RoamerInteract(this, this.patrolSpeed, this.roamForce)
         }
 
