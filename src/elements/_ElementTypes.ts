@@ -52,7 +52,7 @@ export {GoalItem} from "./GoalItem";
 export {HideShadow} from "./HideShadow";
 export {Climbable} from "./Climbable";
 export {RotationalWaypoint} from "./RotationalWaypoint";
-export {RoamerCharacter} from "./Character State Machines/Enemies/RoamerCharacter";
+export {Chicken} from "./Character State Machines/Enemies/Chicken";
 export {SfxPlayer} from "./SfxPlayer";
 export {IdleNPC} from "./Character State Machines/IdleNPC";
 export {ScaleWaypoint} from "./ScaleWaypoint";

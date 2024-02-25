@@ -60,6 +60,7 @@ export class CharacterStateMachineLMent extends StateMachineLMent {
     has3DMovement: boolean = false;
     normalMoveAnim: string;
     fastMoveAnim: string;
+    interactAnim: string;
     idleAnim: string;
     alertAnim: string;
     throwAnim: string;
@@ -90,6 +91,7 @@ export class CharacterStateMachineLMent extends StateMachineLMent {
         this.characterBody = this.body.body;
         this.normalMoveAnim = params.normalMoveAnim === undefined ? "custom" : params.normalMoveAnim;
         this.fastMoveAnim = params.fastMoveAnim === undefined ? "custom" : params.fastMoveAnim;
+        this.interactAnim = params.interactAnim === undefined ? "custom" : params.interactAnim;
         this.idleAnim = params.idleAnim === undefined ? "custom" : params.idleAnim;
         this.alertAnim = params.alertAnim === undefined ? "custom" : params.alertAnim;
         this.throwAnim = params.throwAnim === undefined ? "custom" : params.throwAnim;
@@ -462,9 +464,9 @@ export class characterPatrolState extends CharacterStateBase implements Collisio
         let distance = this.stateMachine.body.body.getPosition().clone().multiply(Helpers.xzVector).distanceTo(this.activePoint.clone().multiply(Helpers.xzVector));
         if (this.stateMachine.has3DMovement)
             distance = this.stateMachine.body.body.getPosition().distanceTo(this.activePoint);
-
+        
         if (distance <= this.stateMachine.moveReachThreshold)
-            this.sub_idle();
+            this.enterSubIdle();
         else if (this.lookAtElement && this.lookAtElement.lookAtComplete(0.1))
             this.moveForwardNormally();
     }
@@ -482,11 +484,10 @@ export class characterPatrolState extends CharacterStateBase implements Collisio
         this.points[this.currentPointIndex] = currentPos.clone();
         if (currentPos.distanceTo(nextPoint) <= 2)
             this.points[(this.currentPointIndex + 1) % this.points.length] = currentPos.clone().add(myRight.multiplyScalar(Math.random() + 3));
-
-        this.sub_idle();
+        this.enterSubIdle();
     }
 
-    sub_idle() {
+    enterSubIdle() {
         if (this._inSubIdle) return;
         this._inSubIdle = true;
         this.stopMoving();
@@ -497,16 +498,22 @@ export class characterPatrolState extends CharacterStateBase implements Collisio
         if (this.subIdleFunc)
             GameplayScene.instance.dispatcher.removeQueuedFunction(this.subIdleFunc);
         this.subIdleFunc = GameplayScene.instance.dispatcher.queueDelayedFunction(this.stateMachine, () => {
-            this.currentPointIndex++;
-            this.animName = this.patrolAnimName;
-            this.playShapeAnimation();
-            this.enableLookAt();
-            if (this.currentPointIndex >= this.points.length)
-                this.currentPointIndex = 0;
-            if (this.lookAtElement)
-                this.lookAtElement.changeTargetByVector(this.activePoint);
+            this.subIdleAction();
             this._inSubIdle = false;
         }, this.patrolWait);
+    }
+
+    subIdleAction() {
+        //Override by children if needed
+        this.currentPointIndex++;
+        this.animName = this.patrolAnimName;
+        this.playShapeAnimation();
+
+        this.enableLookAt();
+        if (this.currentPointIndex >= this.points.length)
+            this.currentPointIndex = 0;
+        if (this.lookAtElement)
+            this.lookAtElement.changeTargetByVector(this.activePoint);
     }
 
     onExitState(nextState: State | undefined): void {
