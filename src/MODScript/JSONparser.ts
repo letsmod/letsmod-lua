@@ -37,19 +37,16 @@ export class JSONparser {
 
     static parseSingleEvent(eventStr: string): EventDefinition {
         const x = {
-            //actorId: this.parseNumberValue(eventStr, 'actorId'),
+            id: this.parseNumberValue(eventStr, 'id'),
+            order: this.parseNumberValue(eventStr, 'order'),
             actorName: this.parseStringValue(eventStr, 'actorName'),
+            actorType: this.parseStringValue(eventStr, 'actorType'),
             trigger: this.parseTriggerDefinition(eventStr),
             action: this.parseActionDefinition(eventStr),
             repeatable: this.parseBooleanValue(eventStr, 'repeatable'),
             enabled: this.parseBooleanValue(eventStr, 'enabled')
         };
-        /*            actorName: "Lady",
-            trigger: {triggerType: "Nearby", args:{condition:{conditionType:"IsOther", args:{actorName:"Hero"}},maxDistance:3}},
-            action: {actionType: "ThrowOutput", args:{prefabId:"Road Cone",force:400}},
-            repeatable: false,
-            enabled: true
-            */
+
         return x;
     }
 
@@ -156,6 +153,16 @@ export class JSONparser {
                 args.actorId = Number(value);
             else if (key.includes("sentence"))
                 args.sentence = value;
+            else if (key.includes("speakId"))
+                args.speakId = value;
+            else if (key.includes("audioId"))
+                args.audioId = value.replace('https','https:');
+            else if(key.includes("image"))
+                args.image = value.replace('https','https:');
+            else if (key.includes("duration"))
+                args.durationMs = Number(value);
+            else if (key.includes("audioGapMs"))
+                args.durationMs = Number(value);
             else if (key.includes("prefabId"))
                 args.prefabId = Number(value);
             else if (key.includes("prefabName"))
@@ -169,13 +176,7 @@ export class JSONparser {
             else if (key.includes("action1"))
                 args.action1 = this.parseActionDefinition("",this.getStringBetween(actionStr, '"action1":{', '}'));
             else if (key.includes("action2"))
-                args.action2 = this.parseActionDefinition("",this.getStringBetween(actionStr, '"action2":{', '}'));
-            else if (key.includes("audioId"))
-                args.audioId = value;
-            else if (key.includes("durationMs"))
-                args.durationMs = Number(value);
-            else if(key.includes("image"))
-                args.image = value;
+                args.action2 = this.parseActionDefinition("",this.getStringBetween(actionStr, '"action2":{', '}'));           
 
         }
         return args;

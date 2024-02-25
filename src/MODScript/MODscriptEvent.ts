@@ -2,10 +2,10 @@ import { BodyHandle } from "engine/BodyHandle";
 import { TriggerDefinition, ActionDefinition, GenericTrigger, GenericAction, EventDefinition, ConditionDefinition, GenericCondition, CATs } from "./MODscriptDefs";
 import { ActionFactory } from "./FactoryClasses/ActionsFactory";
 import { TriggerFactory } from "./FactoryClasses/TriggersFactory";
-import { MODscriptStateMachineLMent, MODscriptStates } from "elements/MODScript States/MODscriptStates";
 import { Constants, Helpers } from "engine/Helpers";
 import { GameplayScene } from "engine/GameplayScene";
 import { CollisionInfo } from "engine/MessageHandlers";
+import { CharacterStateMachineLMent, CharacterStates } from "elements/Character State Machines/CharacterStates";
 
 export class MODscriptEvent {
 
@@ -35,9 +35,9 @@ export class MODscriptEvent {
     public get InvolvedActorBodies(): BodyHandle[] { return this.involvedActorBodies; }
 
 
-    public get stateMachine(): MODscriptStateMachineLMent | undefined {
+    public get stateMachine(): CharacterStateMachineLMent | undefined {
         if (this._stateMachine === undefined && this.EventActor !== undefined) {
-            this._stateMachine = this.EventActor.getElement(MODscriptStateMachineLMent);
+            this._stateMachine = this.EventActor.getElement(CharacterStateMachineLMent);
             if (this._stateMachine === undefined)
                 console.log("Cannot find MODscript State Machine on actor: " + this.actorId);
         }
@@ -52,7 +52,7 @@ export class MODscriptEvent {
     eventDef: EventDefinition | undefined;
 
     //Do not call these properties directly, use the getter instead because it may not be initialized.
-    private _stateMachine: MODscriptStateMachineLMent | undefined;
+    private _stateMachine: CharacterStateMachineLMent | undefined;
     private _eventActor: BodyHandle | undefined;
 
     constructor(id: number, eventDef: EventDefinition) {
@@ -186,7 +186,7 @@ export class MODscriptEvent {
     completeEvent(): void {
         this.isFinished = true;
         if (!this.repeatable && this.stateMachine !== undefined)
-            this.stateMachine.switchState(MODscriptStates.idle);
+            this.stateMachine.switchState(CharacterStates.idle);
     }
 
     cancelEvent(): void {
@@ -200,6 +200,6 @@ export class MODscriptEvent {
     disableEvent(): void {
         this.enabled = false;
         if (this.stateMachine !== undefined)
-            this.stateMachine.switchState(MODscriptStates.idle);
+            this.stateMachine.switchState(CharacterStates.idle);
     }
 }
