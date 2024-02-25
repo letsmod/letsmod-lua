@@ -1,9 +1,10 @@
 import { Helpers } from "engine/Helpers";
-import { CharacterStateMachineLMent, CharacterStates, EnemyAlertState, EnemyChargeState, EnemyChaseState, characterIdleState, characterPatrolState } from "../CharacterStates";
+import { CharacterStateMachineLMent, CharacterStates, characterIdleState, characterPatrolState } from "../CharacterStates";
 import { BodyHandle } from "engine/BodyHandle";
 import { GameplayScene } from "engine/GameplayScene";
 import { State } from "engine/StateMachineLMent";
 import { Enemy } from "./Enemy";
+import { EnemyAlertState, EnemyChargeState, EnemyChaseState } from "../EnemyStates";
 
 
 ////TODO: ANAS PLEASE UPDATE THIS TO USE THE NEW STATE MACHINE SYSTEM
