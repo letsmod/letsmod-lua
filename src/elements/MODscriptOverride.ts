@@ -7,7 +7,6 @@ export class MODscriptOverride extends LMent {
 
     onInit(): void {
         EventHandler.instance.jsonData = this.json;
-        //console.log("JSON data: "+this.json)
     }
 
     onStart(): void {

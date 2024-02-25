@@ -1,8 +1,9 @@
 import { BodyHandle } from "engine/BodyHandle";
 import { Helpers } from "engine/Helpers";
-import { EnemyAlertState, EnemyChargeState, characterPatrolState, CharacterStates, StateTransitionManager, StateTransitionRule } from "../CharacterStates";
+import { characterPatrolState, CharacterStates, StateTransitionManager, StateTransitionRule } from "../CharacterStates";
 import { CollisionInfo } from "engine/MessageHandlers";
 import { Enemy } from "./Enemy";
+import { EnemyAlertState, EnemyChargeState } from "../EnemyStates";
 
 class FlyingPatrol extends characterPatrolState {
 
