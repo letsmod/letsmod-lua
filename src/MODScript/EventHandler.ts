@@ -4,9 +4,10 @@ import { MODscriptEvent } from "./MODscriptEvent";
 import { BodyHandle } from "engine/BodyHandle";
 import { GameplayScene } from "engine/GameplayScene";
 import { SayAction } from "./Actions/SayAction";
+import { JSONparser } from "./JSONparser";
 
 export class EventHandler implements UpdateHandler {
-    jsonData: string = ""; //'[{"actorName":"zombie","trigger":{"triggerType":"Nearby","args":{"condition":{"conditionType":"IsOther","args":{"actorName":"wolf"}},"maxDistance":3}},"action":{"actionType":"Say","args":{"sentence":"Hey buddy lets eat some brains!"}},"repeatable":false,"enabled":true},{"actorName":"zombie","trigger":{"triggerType":"Nearby","args":{"condition":{"conditionType":"IsOther","args":{"actorName":"wolf"}},"maxDistance":2}},"action":{"actionType":"NavigateOther","args":{"actorName":"human"}},"repeatable":false,"enabled":true},{"actorName":"human","trigger":{"triggerType":"Nearby","args":{"condition":{"conditionType":"IsOther","args":{"actorName":"zombie"}},"maxDistance":7}},"action":{"actionType":"JumpUpAction","args":{}},"repeatable":true,"enabled":true},{"actorName":"human","trigger":{"triggerType":"Nearby","args":{"condition":{"conditionType":"IsOther","args":{"actorName":"zombie"}},"maxDistance":7}},"action":{"actionType":"Say","args":{"sentence":"HEEEEELP .. A ZOOMBIE!!"}},"repeatable":false,"enabled":true},{"actorName":"zombie","trigger":{"triggerType":"Nearby","args":{"condition":{"conditionType":"IsOther","args":{"actorName":"hero"}},"maxDistance":3}},"action":{"actionType":"DestroyOther","args":{"actorName":"zombie"}},"repeatable":false,"enabled":true},{"actorName":"human","trigger":{"triggerType":"OtherDestroyed","args":{"condition":{"conditionType":"IsOther","args":{"actorName":"zombie"}}}},"action":{"actionType":"Say","args":{"sentence":"My hero! You saved me!"}},"repeatable":false,"enabled":true},{"actorName":"human","trigger":{"triggerType":"Nearby","args":{"condition":{"conditionType":"IsOther","args":{"actorName":"zombie"}},"maxDistance":3}},"action":{"actionType":"DestroyOther","args":{"actorName":"human"}},"repeatable":false,"enabled":true},{"actorName":"zombie","trigger":{"triggerType":"OtherDestroyed","args":{"condition":{"conditionType":"IsOther","args":{"actorName":"human"}}}},"action":{"actionType":"Say","args":{"sentence":"Yummi BRAINZ!"}},"repeatable":false,"enabled":true}]';
+    jsonData: string = "";
     events: MODscriptEvent[] = [];
 
     audioList: AudioDefinition[] = [];
@@ -41,11 +42,52 @@ export class EventHandler implements UpdateHandler {
     initCATs(): void {
         if (this.catsInitialized) return;
         this.catsInitialized = true;
-        this.events = this.buildMODScriptFromEvents(GameplayScene.instance.story);//this.events = this.buildMODScriptFromEvents(JSONparser.parseEventDefinitions(EventHandler.instance.jsonData));
+        //In case jsonData is not empty, it means that the MODscriptOverride Element is present in the scene which will parse the JSON inside the element instead of the real MODscript.
+        if(this.jsonData != ""){
+            console.log("           !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! NOT A JOKE !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+            console.log("WARNING 3 :: JSON data is overridden by the MODscriptOverride Element, Make sure to delete that element from the scene to use the real MODscript.")
+            console.log("WARNING 2 :: JSON data is overridden by the MODscriptOverride Element, Make sure to delete that element from the scene to use the real MODscript.")
+            console.log("WARNING 1 :: JSON data is overridden by the MODscriptOverride Element, Make sure to delete that element from the scene to use the real MODscript.")
+            console.log("                                                              **********")
+            this.events = this.parseDummyJson();
+        } else this.events = this.buildMODScriptFromEvents(GameplayScene.instance.story);
+        
         for (let event of this.events) {
             event.setCATs();
         }
     }
+
+    /**************** These are for CATs Team to be able to debug MODscript issues ****************/
+    parseDummyJson(): MODscriptEvent[] {
+
+        const eventDefs = JSONparser.parseEventDefinitions(this.jsonData.split("'").join('"'));
+        let events: MODscriptEvent[] = [];
+        for (let i = 0; i < eventDefs.length; i++) {
+            events.push(new MODscriptEvent(i, eventDefs[i]));
+            //this.printEventDefinition(eventDefs[i]);
+        }
+        return events;
+    }
+
+    //For debugging purposes.
+    printEventDefinition(eventDef: EventDefinition) {
+        this.printObject(eventDef, "");
+    }
+
+    //For debugging purposes.
+    printObject(obj: any, indent: string) {
+        for (const key in obj) {
+            if (!obj.hasOwnProperty(key)) continue;
+
+            if (typeof obj[key] === "object" && obj[key] !== null) {
+                console.log(`${indent}${key}:`);
+                this.printObject(obj[key], indent + "  ");
+            } else {
+                console.log(`${indent}${key}: ${obj[key]}`);
+            }
+        }
+    }
+    /*******************************************************************************************/
 
     playAudioAction(sayAction: SayAction): boolean {
 
@@ -82,25 +124,6 @@ export class EventHandler implements UpdateHandler {
             events.push(new MODscriptEvent(i, eventDefs[i]));
         }
         return events;
-    }
-
-    //For debugging purposes.
-    printEventDefinition(eventDef: EventDefinition) {
-        this.printObject(eventDef, "");
-    }
-
-    //For debugging purposes.
-    printObject(obj: any, indent: string) {
-        for (const key in obj) {
-            if (!obj.hasOwnProperty(key)) continue;
-
-            if (typeof obj[key] === "object" && obj[key] !== null) {
-                console.log(`${indent}${key}:`);
-                this.printObject(obj[key], indent + "  ");
-            } else {
-                console.log(`${indent}${key}: ${obj[key]}`);
-            }
-        }
     }
 
     public getEvent(eventId: number): MODscriptEvent | undefined {

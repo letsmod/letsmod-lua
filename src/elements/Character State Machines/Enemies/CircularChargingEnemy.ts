@@ -1,26 +1,29 @@
 import { Helpers } from "engine/Helpers";
-import { CharacterStateMachineLMent, CharacterStates, EnemyAlertState, EnemyChargeState, EnemyChaseState, characterIdleState, characterPatrolState } from "./CharacterStates";
+import { CharacterStateMachineLMent, CharacterStates, EnemyAlertState, EnemyChargeState, EnemyChaseState, characterIdleState, characterPatrolState } from "../CharacterStates";
 import { BodyHandle } from "engine/BodyHandle";
 import { GameplayScene } from "engine/GameplayScene";
-import { WalkerChaserEnemy } from "./WalkerChaserEnemy";
 import { State } from "engine/StateMachineLMent";
+import { Enemy } from "./Enemy";
+
+
+////TODO: ANAS PLEASE UPDATE THIS TO USE THE NEW STATE MACHINE SYSTEM
 
 class CircularAttackState extends EnemyChargeState {
 
     constructor(stateMachine: CharacterStateMachineLMent, chargeSpeed: number, movementForce: number) {
-        super(stateMachine, chargeSpeed, movementForce);
+        super(stateMachine);
     }
 
-    override playStateAnimation(dt: number): void {
-        if (this.anim)
-            this.anim.playState("charge");
+    override playCustomAnimation(dt: number): void {
+        if (this.customAnimator)
+            this.customAnimator.playState("charge");
     }
     override onEnterState(previousState: State | undefined): void {
-        this.has3DMovement = true;
+        this.stateMachine.has3DMovement = true;
         super.onEnterState(previousState);
-        if (this.lookAt)
-            this.lookAt.enabled = true;
-        this.reachDestinationThreshold = 1;
+        if (this.lookAtElement)
+            this.lookAtElement.enabled = true;
+        this.stateMachine.moveReachThreshold = 1;
     }
 
     getPlayerPosition() {
@@ -31,29 +34,23 @@ class CircularAttackState extends EnemyChargeState {
 
 class WalkerPatrol extends characterPatrolState {
 
-    override playStateAnimation(dt: number): void {
-        if (this.anim)
-            this.anim.playState("walk");
+    override playCustomAnimation(dt: number): void {
+        if (this.customAnimator)
+            this.customAnimator.playState("walk");
     }
 
-    override alertCondition(): boolean {
-        return super.alertCondition();
-    }
     override onEnterState(previousState: State | undefined): void {
         super.onEnterState(previousState);
-        if (this.lookAt)
-            this.lookAt.speed = 0.2;
+        if (this.lookAtElement)
+            this.lookAtElement.speed = 0.2;
     }
 }
 
 class WalkerChase extends EnemyChaseState {
 
-    override playStateAnimation(dt: number): void {
-        if (this.anim)
-            this.anim.playState("chase");
-    }
-    override alertCondition(): boolean {
-        return super.alertCondition();
+    override playCustomAnimation(dt: number): void {
+        if (this.customAnimator)
+            this.customAnimator.playState("chase");
     }
 }
 
@@ -65,14 +62,14 @@ class WalkerAlert extends EnemyAlertState {
     private random: boolean = false;
 
     constructor(stateMachine: CharacterStateMachineLMent, circularForce: number, alertCooldown: number, alertWarmUp: number, attackState: CharacterStates, approachingSpeed: number) {
-        super(stateMachine, alertCooldown, alertWarmUp, attackState);
+        super(stateMachine);
         this.circularForce = circularForce;
         this.approachingSpeed = approachingSpeed;
     }
 
-    override playStateAnimation(dt: number): void {
-        if (this.anim)
-            this.anim.playState("alert")
+    override playCustomAnimation(dt: number): void {
+        if (this.customAnimator)
+            this.customAnimator.playState("alert")
     }
 
     performCircularMotion() {
@@ -121,20 +118,15 @@ class WalkerAlert extends EnemyAlertState {
         this.random = Math.random() < 0.5;
 
         if (this.random)
-            if (this.lookAt){
-                this.lookAt.speed = 1;
-                this.lookAt.enabled = false;
+            if (this.lookAtElement){
+                this.lookAtElement.speed = 1;
+                this.lookAtElement.enabled = false;
             }
     }
     onExitState(nextState: State | undefined): void {
         super.onExitState(nextState);
-        if (this.lookAt)
-            this.lookAt.enabled = true;
-    }
-
-
-    override alertCondition(): boolean {
-        return super.alertCondition();
+        if (this.lookAtElement)
+            this.lookAtElement.enabled = true;
     }
 
     onUpdate(dt: number): void {
@@ -148,17 +140,13 @@ class WalkerAlert extends EnemyAlertState {
 
 
 class WalkerIdle extends characterIdleState {
-    override playStateAnimation(dt: number): void {
-        if (this.anim)
-            this.anim.playState("idle");
-    }
-
-    override alertCondition(): boolean {
-        return super.alertCondition() && this.playerInSight();
+    override playCustomAnimation(dt: number): void {
+        if (this.customAnimator)
+            this.customAnimator.playState("idle");
     }
 }
 
-export class CircularChargingEnemy extends WalkerChaserEnemy {
+export class CircularChargingEnemy extends Enemy {
     chargeSpeed: number;
     movementForce: number;
     alertCooldown: number;
@@ -184,14 +172,14 @@ export class CircularChargingEnemy extends WalkerChaserEnemy {
         super.onInit();
 
         let point1 = this.body.body.getPosition().clone();
-        let point2 = point1.clone().add(Helpers.forwardVector.multiplyScalar(this.patrolDistance).applyQuaternion(this.body.body.getRotation()))
+        //let point2 = point1.clone().add(Helpers.forwardVector.multiplyScalar(this.patrolDistance).applyQuaternion(this.body.body.getRotation()))
 
         this.states = {
-            [CharacterStates.charge]: new CircularAttackState(this, this.chargeSpeed, this.movementForce),
-            [CharacterStates.patrol]: new WalkerPatrol(this, [point1, point2], this.patrolSpeed, this.movementForce),
-            [CharacterStates.chase]: new WalkerChase(this, this.chaseSpeed, this.movementForce),
-            [CharacterStates.alert]: new WalkerAlert(this, this.circularForce, this.alertCooldown, this.alertWarmUp, this.attackState, this.approachingSpeed),
-            [CharacterStates.idle]: new WalkerIdle(this, this.idleCooldown)
+            // [CharacterStates.charge]: new CircularAttackState(this, this.chargeSpeed, this.movementForce),
+            // [CharacterStates.patrol]: new WalkerPatrol(this, [point1, point2], this.patrolSpeed),
+            // //[CharacterStates.chase]: new WalkerChase(this, this.chaseSpeed),
+            // [CharacterStates.alert]: new WalkerAlert(this, this.circularForce, this.alertCooldown, this.alertWarmUp, this.attackState, this.approachingSpeed),
+            // [CharacterStates.idle]: new WalkerIdle(this)
         }
     }
 }
