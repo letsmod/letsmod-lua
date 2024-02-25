@@ -1,7 +1,7 @@
 import { BodyHandle } from "engine/BodyHandle";
 import { Helpers } from "engine/Helpers";
 import { CharacterStateMachineLMent, CharacterStates, characterIdleState } from "elements/Character State Machines/CharacterStates";
-import { MODscriptNavigateState, MODscriptLookAtState } from "../MODscriptStates";
+import { MODscriptNavigateState, MODscriptLookAtState, MODscriptTalkState } from "../MODscriptStates";
 
 
 export abstract class Enemy extends CharacterStateMachineLMent {
@@ -20,6 +20,7 @@ export abstract class Enemy extends CharacterStateMachineLMent {
             [CharacterStates.navigate]: new MODscriptNavigateState(this, this.normalMoveAnim),
             [CharacterStates.idle]: new characterIdleState(this,this.idleAnim),
             [CharacterStates.lookAt]: new MODscriptLookAtState(this),
+            [CharacterStates.talk]: new MODscriptTalkState(this,this.talkAnim)
         }
 
         this.switchState(CharacterStates.idle);
@@ -30,7 +31,5 @@ export abstract class Enemy extends CharacterStateMachineLMent {
         
         this.body.body.setAngularVelocity(Helpers.zeroVector);
     }
-
-    
 
 }

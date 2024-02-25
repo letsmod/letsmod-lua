@@ -1,10 +1,11 @@
 import { BodyHandle } from "engine/BodyHandle";
 import { Helpers } from "engine/Helpers";
 
-import { CharacterStates, EnemyAlertState, EnemyChaseState, StateTransitionManager, StateTransitionRule, characterPatrolState } from "elements/Character State Machines/CharacterStates";
+import { CharacterStates, StateTransitionManager, StateTransitionRule, characterPatrolState } from "elements/Character State Machines/CharacterStates";
 import { UpdateHandler } from "engine/MessageHandlers";
 import { Enemy } from "./Enemy";
 import { MODscriptThrowState } from "../MODscriptStates";
+import { EnemyAlertState, EnemyChaseState } from "../EnemyStates";
 
 
 class ZombiePatrol extends characterPatrolState {
@@ -106,12 +107,6 @@ export class Zombie extends Enemy implements UpdateHandler {
         }
 
         this.switchState(CharacterStates.patrol);
-    }
-
-    onStart() {
-        this.body.body.lockRotation(true, false, true);
-        this.body.body.setAngularVelocity(Helpers.zeroVector);
-        this.body.body.setVelocity(Helpers.zeroVector);
     }
     
 }

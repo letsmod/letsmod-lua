@@ -1,8 +1,9 @@
 import { BodyHandle } from "engine/BodyHandle";
-import { CharacterStates, EnemyAlertState, EnemyChaseState, StateTransitionManager, StateTransitionRule, characterPatrolState } from "../CharacterStates";
+import { CharacterStates, StateTransitionManager, StateTransitionRule, characterPatrolState } from "../CharacterStates";
 import { Enemy } from "./Enemy";
 import { Slime } from "elements/Character State Machines/Enemies/Slime";
 import { MODscriptThrowState } from "../MODscriptStates";
+import { EnemyAlertState, EnemyChaseState } from "../EnemyStates";
 
 export class SkullEnemy extends Enemy {
 
