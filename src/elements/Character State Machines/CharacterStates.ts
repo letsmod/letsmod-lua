@@ -255,8 +255,6 @@ export abstract class CharacterStateBase extends AnimatedState implements Update
 
         this.moveForce = this.stateMachine.movementForce;
 
-        console.log("Sound Name: ", soundName);
-
         this.sound = this.stateMachine.body.getElementByName(soundName) as SfxPlayer;
     }
 
