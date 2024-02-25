@@ -100,3 +100,4 @@ export class WalkerChaserEnemy extends CharacterStateMachineLMent {
         this.body.body.setVelocity(Helpers.zeroVector);
     }
 }
+

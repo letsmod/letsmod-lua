@@ -1,18 +1,31 @@
 import { CATs, GenericAction } from "MODScript/MODscriptDefs";
 import { MODscriptEvent } from "MODScript/MODscriptEvent";
-import { MODscriptStates } from "elements/MODScript States/MODscriptStates";
+import { CharacterStates } from "elements/Character State Machines/CharacterStates";
+import { MODscriptNavigateState } from "elements/Character State Machines/MODscriptStates";
 import { BodyHandle } from "engine/BodyHandle";
 
 export class NavigateOutput extends GenericAction {
+
+    navigateState: MODscriptNavigateState | undefined;
+
     constructor(parentEvent: MODscriptEvent, args: Partial<NavigateOutput>) {
         super(parentEvent, CATs.NavigateOutput);
+        this.navigateState = this.parentEvent.stateMachine?.states[CharacterStates.navigate] as MODscriptNavigateState;
+
     }
 
     //Actor here is the trigger output
     performAction(triggerOutput?: BodyHandle | undefined): void {
         if (!triggerOutput || !this.parentEvent || !this.parentEvent.stateMachine) return;
 
-        this.parentEvent.stateMachine.startState(this.ActionId, MODscriptStates.navigate, triggerOutput.body.getPosition(), triggerOutput.body.getPosition());
+        if(this.navigateState === undefined) {
+            console.log("No navigate state found")
+            this.actionFailed();
+            return;
+        }
+
+        this.navigateState.setNavTarget(triggerOutput.body.getPosition());
+        this.parentEvent.stateMachine.startState(this.ActionId, CharacterStates.navigate, triggerOutput.body.getPosition());
 
     }
 
