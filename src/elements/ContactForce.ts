@@ -1,9 +1,10 @@
 import { BodyHandle, BodyPointer } from "engine/BodyHandle";
 import { GameplayScene } from "engine/GameplayScene";
-import { Helpers } from "engine/Helpers";
+import { Constants, Helpers } from "engine/Helpers";
 import { LMent } from "engine/LMent";
 import { CollisionHandler, CollisionInfo } from "engine/MessageHandlers";
 import { Vector3 } from "three";
+import { SfxPlayer } from "./SfxPlayer";
 
 export class ContactForce extends LMent implements CollisionHandler {
     forceValue: number;
@@ -14,6 +15,8 @@ export class ContactForce extends LMent implements CollisionHandler {
     forceCooldowns: { [key: number]: number }; // Map for cooldowns
     maxSpeed: number;
     contactDirection: Vector3;
+
+    sound: SfxPlayer | undefined;
 
     constructor(body: BodyHandle, id: number, params: Partial<ContactForce> = {}) {
         super(body, id, params);
@@ -31,6 +34,8 @@ export class ContactForce extends LMent implements CollisionHandler {
         GameplayScene.instance.dispatcher.addListener("collision", this);
         this.forceDirection = Helpers.ParamToVec3(this.forceDirection);
         this.contactDirection = Helpers.ParamToVec3(this.contactDirection).clone().applyQuaternion(this.body.body.getRotation());
+
+        this.sound = this.body.getElementByName(Constants.ForceAudio) as SfxPlayer;
     }
 
     onStart(): void {
@@ -65,6 +70,9 @@ export class ContactForce extends LMent implements CollisionHandler {
                         let mass = other.body.getMass();
                         forceToApply.multiplyScalar(mass);
                         other.body.applyCentralForce(forceToApply);
+                        if (this.sound !== undefined) {
+                            this.sound.playAudio();
+                        }
     
                         let constrainedObjects = this.convertArray(other.body.getConstrainedObjects()) as BodyPointer[];
                         for (let constrainedObject of constrainedObjects)
@@ -73,6 +81,10 @@ export class ContactForce extends LMent implements CollisionHandler {
                             forceToApply.multiplyScalar(newMass / mass);
                             mass = newMass;
                             constrainedObject.applyCentralForce(forceToApply);
+
+                            if (this.sound !== undefined) {
+                                this.sound.playAudio();
+                            }
                         }
                     }
                     else
@@ -87,9 +99,16 @@ export class ContactForce extends LMent implements CollisionHandler {
                         
                         other.body.applyCentralForce(forceToApply.clone().multiplyScalar(other.body.getMass() / totalMass));
 
+                        if (this.sound !== undefined) {
+                            this.sound.playAudio();
+                        }
+
                         for (let constrainedObject of constrainedObjects)
                         {
                             constrainedObject.applyCentralForce(forceToApply.clone().multiplyScalar(constrainedObject.getMass() / totalMass));
+                            if (this.sound !== undefined) {
+                                this.sound.playAudio();
+                            }
                         }
                     }
                     

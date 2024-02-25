@@ -225,6 +225,8 @@ export const Constants = {
     /*** Audio Constants ***/
     DeathAudio: "Death",
     MoveAudio: "Move",
+    ChaseAudio: "Chase",
+    ForceAudio: "Force",
 
     
   };
