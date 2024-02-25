@@ -2,11 +2,12 @@ import { LookAt } from "elements/LookAt";
 import { ShapeStateController } from "elements/ShapeStateController";
 import { BodyHandle, BodyPointer } from "engine/BodyHandle";
 import { GameplayScene } from "engine/GameplayScene";
-import { Helpers } from "engine/Helpers";
+import { Constants, Helpers } from "engine/Helpers";
 import { CollisionHandler, CollisionInfo, UpdateHandler } from "engine/MessageHandlers";
 import { AnimatedState, State, StateMachineLMent } from "engine/StateMachineLMent";
 import { Vector3 } from "three";
 import { GroundCheck } from "elements/GroundCheck";
+import { SfxPlayer } from "elements/SfxPlayer";
 
 export enum CharacterStates {
     idle = "idle",
@@ -228,13 +229,14 @@ export abstract class CharacterStateBase extends AnimatedState implements Update
     protected customAnimator: ShapeStateController | undefined;
 
     protected lookAtElement: LookAt | undefined;
+    protected sound: SfxPlayer | undefined;
     protected groundCheckElement: GroundCheck | undefined;
     protected moveForce: number = 0;
 
     protected get myPosition() { return this.stateMachine.body.body.getPosition(); }
     override stateMachine: CharacterStateMachineLMent;
 
-    constructor(name: string, stateMachine: CharacterStateMachineLMent, animName: string, animBlendTime: number) {
+    constructor(name: string, stateMachine: CharacterStateMachineLMent, animName: string, animBlendTime: number, soundName: string = "") {
         super(name, stateMachine, undefined, animName, animBlendTime);
         this.stateMachine = stateMachine;
 
@@ -252,6 +254,8 @@ export abstract class CharacterStateBase extends AnimatedState implements Update
         this.customAnimator = this.stateMachine.body.getElement(ShapeStateController);
 
         this.moveForce = this.stateMachine.movementForce;
+
+        this.sound = this.stateMachine.body.getElementByName(soundName) as SfxPlayer;
     }
 
     stopMoving() {
@@ -333,7 +337,11 @@ export abstract class CharacterStateBase extends AnimatedState implements Update
         /* Override by children if needed */
     }
 
-    onEnterState(previousState: State | undefined): void { super.onEnterState(previousState); }
+    onEnterState(previousState: State | undefined): void { 
+        super.onEnterState(previousState);
+        if(this.sound !== undefined)
+            this.sound.playAudio();
+     }
 
     onExitState(nextState: State | undefined): void { }
 }
@@ -423,13 +431,14 @@ export class characterPatrolState extends CharacterStateBase implements Collisio
     waitAnimName: string = "idle";
     patrolAnimName: string = "jog";
 
+
     public get inSubIdle(): boolean { return this._inSubIdle; }
     private _inSubIdle: boolean = false;
     private subIdleFunc: any | undefined;
     get activePoint() { return this.points[this.currentPointIndex] };
 
-    constructor(stateMachine: CharacterStateMachineLMent, points: Vector3[], patrolWait: number, patrolAnimName: string = "walk", waitAnimName: string = "idle", animBlendTime: number = 0.25) {
-        super(CharacterStates.patrol, stateMachine, patrolAnimName, animBlendTime);
+    constructor(stateMachine: CharacterStateMachineLMent, points: Vector3[], patrolWait: number, patrolAnimName: string = "walk", waitAnimName: string = "idle", animBlendTime: number = 0.25  ) {
+        super(CharacterStates.patrol, stateMachine, patrolAnimName, animBlendTime,Constants.MoveAudio);
         this.points = points;
         this.patrolWait = patrolWait;
         this.waitAnimName = waitAnimName;
