@@ -1,28 +1,23 @@
 import { BodyHandle } from "engine/BodyHandle";
-import { CharacterStateMachineLMent, CharacterStates, characterAlertState, characterIdleState, characterInteractState, characterPatrolState } from "../CharacterStates";
-import { State, StateMachineLMent } from "engine/StateMachineLMent";
+import { State } from "engine/StateMachineLMent";
 import { LookAt } from "../../LookAt";
 import { Helpers } from "engine/Helpers";
 import { Vector3 } from "three";
-
-////TODO: ANAS PLEASE UPDATE THIS TO USE THE NEW STATE MACHINE SYSTEM
+import { CharacterStateMachineLMent, characterPatrolState, characterAlertState, characterInteractState, CharacterStates, StateTransitionRule, StateTransitionManager } from "../CharacterStates";
 
 class RoamerPatrol extends characterPatrolState {
-    private randomIdleTimer: number;
-    private isIdle: boolean;
     private patrolAreaBounds: { min: Vector3, max: Vector3 };
     private idleDurationRange: { min: number, max: number };
     private initialPoint: Vector3;
 
-    constructor(stateMachine: CharacterStateMachineLMent, patrolAreaBounds: { min: Vector3, max: Vector3 }, idleDurationRange: { min: number, max: number }, patrolSpeed: number, roamForce: number, initialposition: Vector3) {
-        super(stateMachine, [], patrolSpeed);
+    constructor(stateMachine: CharacterStateMachineLMent, patrolAreaBounds: { min: Vector3, max: Vector3 }, idleDurationRange: { min: number, max: number }, patrolSpeed: number, roamForce: number, initialposition: Vector3, patrolAnim: string = "custom", waitPatrolAnim: string = "custom") {
+        super(stateMachine, [], patrolSpeed, patrolAnim,waitPatrolAnim);
         patrolAreaBounds.min = Helpers.ParamToVec3(patrolAreaBounds.min);
         patrolAreaBounds.max = Helpers.ParamToVec3(patrolAreaBounds.max);
         this.initialPoint = initialposition;
         this.patrolAreaBounds = patrolAreaBounds;
-        this.isIdle = false;
         this.idleDurationRange = idleDurationRange;
-        this.randomIdleTimer = this.getRandomIdleDuration(this.idleDurationRange);
+        this.patrolWait = this.getRandomIdleDuration(this.idleDurationRange);
         this.setRandomPatrolPoint(this.patrolAreaBounds);
     }
 
@@ -53,40 +48,26 @@ class RoamerPatrol extends characterPatrolState {
     }
 
     override playCustomAnimation(dt: number): void {
-        if (this.isIdle) {
-            if (this.customAnimator) this.customAnimator.playState("idle");
-        } else {
-            if (this.customAnimator) this.customAnimator.playState("walk");
+        if (this.customAnimator) {
+            if (this.inSubIdle) {
+                this.customAnimator.playState("idle");
+            } else {
+                this.customAnimator.playState("walk");
+            }
         }
     }
 
     override onUpdate(dt: number): void {
-        if (this.isIdle) {
-            this.randomIdleTimer -= dt;
-            if (this.randomIdleTimer <= 0) {
-                this.isIdle = false;
-                if(this.currentPointIndex == this.points.length - 1)
-                    this.setRandomPatrolPoint(this.patrolAreaBounds);
-                this.randomIdleTimer = this.getRandomIdleDuration(this.idleDurationRange);
-            }
-        } else {
-            super.onUpdate(dt);
-            let distance = this.myPosition.distanceTo(this.activePoint);
-            if (distance <= this.stateMachine.moveReachThreshold) {
-                this.isIdle = true;
-                this.randomIdleTimer = this.getRandomIdleDuration(this.idleDurationRange);
-            }
-        }
+        super.onUpdate(dt);
+    }
+    subIdleAction(): void {
+        super.subIdleAction();
+        this.patrolWait = this.getRandomIdleDuration(this.idleDurationRange);
+        if (this.currentPointIndex == this.points.length - 1)
+            this.setRandomPatrolPoint(this.patrolAreaBounds);
     }
 }
 
-class RoamerIdle extends characterIdleState {
-    override playCustomAnimation(dt: number): void {
-        if (this.customAnimator)
-            this.customAnimator.playState("idle");
-    }
-
-}
 
 class RoamerAlert extends characterAlertState {
 
@@ -94,11 +75,12 @@ class RoamerAlert extends characterAlertState {
         if (this.customAnimator)
             this.customAnimator.playState("alert");
     }
+
 }
 
 class RoamerInteract extends characterInteractState {
-    constructor(character: CharacterStateMachineLMent, patrolspeed: number, roamForce: number) {
-        super(character);
+    constructor(character: CharacterStateMachineLMent, patrolspeed: number, roamForce: number, interactAnim: string = "custom") {
+        super(character, interactAnim);
 
         this.currentMaxSpeed = patrolspeed;
         this.moveForce = roamForce;
@@ -120,40 +102,67 @@ class RoamerInteract extends characterInteractState {
             this.customAnimator.playState("interact");
     }
 
-    override onUpdate(dt: number): void {
-        super.onUpdate(dt);
-        // if (this.alertCondition()) {
-
-        //     this.moveForwardNormally();
-        //     this.playCustomAnimation(dt);
-        // }
-        // else this.stateMachine.switchState(CharacterStates.alert);
+    override interactAction(): void {
+        super.interactAction();
+        this.moveForwradFast();
     }
 }
 
-export class RoamerCharacter extends CharacterStateMachineLMent {
-    idleCooldown: number;
-    patrolDistance: number;
-    patrolSpeed: number;
-    roamForce: number;
-    movementForce: number;
+export class Chicken extends CharacterStateMachineLMent {
     patrolAreaBounds: { min: Vector3, max: Vector3 };
     idleDurationRange: { min: number, max: number };
     private initialPosition: Vector3;
 
     private lookAtElement: LookAt | undefined;
 
-    constructor(body: BodyHandle, id: number, params: Partial<RoamerCharacter> = {}) {
+    //NOTE: The parent class has more properties as below:
+    /*
+        movementForce
+        maxNormalSpeed
+        maxFastSpeed
+        alertZoneRadius
+        interactZoneRadius
+        sightDotValue
+        normalMoveAnim
+        fastMoveAnim
+        interactAnim
+        idleAnim
+        alertAnim
+        alertCooldown
+        alertWarmUp
+    */
+
+    constructor(body: BodyHandle, id: number, params: Partial<Chicken> = {}) {
         super(body, id, params);
 
-        this.patrolDistance = params.patrolDistance === undefined ? 5 : params.patrolDistance;
-        this.patrolSpeed = params.patrolSpeed === undefined ? 1 : params.patrolSpeed;
-        this.roamForce = params.roamForce === undefined ? 1.2 : params.roamForce;
-        this.idleCooldown = params.idleCooldown === undefined ? 1 : params.idleCooldown;
         this.movementForce = params.movementForce === undefined ? 100 : params.movementForce;
         this.patrolAreaBounds = params.patrolAreaBounds || { min: Helpers.NewVector3(-10, 0, -10), max: Helpers.NewVector3(10, 0, 10) };
         this.idleDurationRange = params.idleDurationRange || { min: 1, max: 5 };
         this.initialPosition = Helpers.NewVector3(0, 0, 0);
+
+        const rules: StateTransitionRule[] = [
+            {
+                fromState: CharacterStates.alert,
+                toState: CharacterStates.patrol,
+                condition: () => { return !this.playerInAlertRange(); }
+            },
+            {
+                fromState: CharacterStates.patrol,
+                toState: CharacterStates.alert,
+                condition: () => { return this.playerInAlertRange() }
+            },
+            {
+                fromState: CharacterStates.alert,
+                toState: CharacterStates.interactWithPlayer,
+                condition: () => { return this.playerInInteractRange() }
+            },
+            {
+                fromState: CharacterStates.interactWithPlayer,
+                toState: CharacterStates.alert,
+                condition: () => { return !this.playerInInteractRange() }
+            },
+        ];
+        this.transitionManager = new StateTransitionManager(rules);
     }
 
 
@@ -163,10 +172,9 @@ export class RoamerCharacter extends CharacterStateMachineLMent {
         this.initialPosition = this.body.body.getPosition().clone();
 
         this.states = {
-            [CharacterStates.patrol]: new RoamerPatrol(this, this.patrolAreaBounds, this.idleDurationRange, this.patrolSpeed, this.movementForce, this.initialPosition),
-            [CharacterStates.alert]: new RoamerAlert(this),
-            [CharacterStates.idle]: new RoamerIdle(this),
-            [CharacterStates.interactWithPlayer]: new RoamerInteract(this, this.patrolSpeed, this.roamForce)
+            [CharacterStates.patrol]: new RoamerPatrol(this, this.patrolAreaBounds, this.idleDurationRange, this.maxNormalSpeed, this.movementForce, this.initialPosition),
+            [CharacterStates.alert]: new RoamerAlert(this, "custom"),
+            [CharacterStates.interactWithPlayer]: new RoamerInteract(this, this.maxNormalSpeed, this.maxFastSpeed)
         }
 
         this.switchState(CharacterStates.patrol);
