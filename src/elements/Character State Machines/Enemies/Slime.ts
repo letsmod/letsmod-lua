@@ -1,11 +1,12 @@
 import { BodyHandle } from "engine/BodyHandle";
-import { Helpers } from "engine/Helpers";
+import { Constants, Helpers } from "engine/Helpers";
 
 import { CharacterStates, StateTransitionManager, StateTransitionRule, characterPatrolState } from "elements/Character State Machines/CharacterStates";
 import { UpdateHandler } from "engine/MessageHandlers";
 import { Enemy } from "./Enemy";
 import { MODscriptThrowState } from "../MODscriptStates";
 import { EnemyChaseState, EnemyAlertState } from "../EnemyStates";
+import { SfxPlayer } from "elements/SfxPlayer";
 
 
 class SlimePatrol extends characterPatrolState {
@@ -14,6 +15,9 @@ class SlimePatrol extends characterPatrolState {
     bounceAfter: number = 0.4;
     bounceForce: number = 250;
 
+
+    
+
     override playCustomAnimation(dt: number): void {
         if (this.inSubIdle) return;
         this.bounceTimer += dt;
@@ -21,6 +25,9 @@ class SlimePatrol extends characterPatrolState {
             this.bounceTimer = 0;
             this.stateMachine.body.body.applyCentralForce(Helpers.upVector.multiplyScalar(this.bounceForce * this.stateMachine.body.body.getMass()));
             this.stateMachine.body.body.setAngularVelocity(Helpers.zeroVector);
+
+            if(this.sound !== undefined)
+                this.sound.playAudio();
         }
     }
 }
@@ -36,6 +43,9 @@ class SlimeChase extends EnemyChaseState {
             this.bounceTimer = 0;
             this.stateMachine.body.body.applyCentralForce(Helpers.upVector.multiplyScalar(this.bounceForce * this.stateMachine.body.body.getMass()));
             this.stateMachine.body.body.setAngularVelocity(Helpers.zeroVector);
+
+            if(this.sound !== undefined)
+                this.sound.playAudio();
         }
     }
 }

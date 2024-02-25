@@ -1,9 +1,10 @@
 import { GameplayScene } from "engine/GameplayScene";
-import { Helpers } from "engine/Helpers";
+import { Constants, Helpers } from "engine/Helpers";
 import { CollisionHandler, CollisionInfo } from "engine/MessageHandlers";
 import { State } from "engine/StateMachineLMent";
 import { Vector3 } from "three";
 import { characterAlertState, CharacterStateMachineLMent, CharacterStateBase, CharacterStates } from "./CharacterStates";
+import { SfxPlayer } from "elements/SfxPlayer";
 
 export class EnemyAlertState extends characterAlertState {
 
@@ -20,8 +21,7 @@ export class EnemyAlertState extends characterAlertState {
 export class EnemyChaseState extends CharacterStateBase {
 
     constructor(stateMachine: CharacterStateMachineLMent, animName: string = "jog", animBlendTime: number = 0.25) {
-        super(CharacterStates.chase, stateMachine, animName, animBlendTime);
-
+        super(CharacterStates.chase, stateMachine, animName, animBlendTime,Constants.ChaseAudio);
     }
 
     onEnterState(previousState: State | undefined) {

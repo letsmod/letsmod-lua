@@ -4,6 +4,9 @@ import { Enemy } from "./Enemy";
 import { Slime } from "elements/Character State Machines/Enemies/Slime";
 import { MODscriptThrowState } from "../MODscriptStates";
 import { EnemyAlertState, EnemyChaseState } from "../EnemyStates";
+import { Constants } from "engine/Helpers";
+import { SfxPlayer } from "elements/SfxPlayer";
+
 
 export class SkullEnemy extends Enemy {
 
@@ -66,6 +69,7 @@ export class SkullEnemy extends Enemy {
         super.onInit();
         let point1 = this.body.body.getPosition().clone();
         let initQuat = this.body.body.getRotation().clone();
+
         this.states = {
             [CharacterStates.throw]: new MODscriptThrowState(this, this.throwForce),
             [CharacterStates.patrol]: new characterPatrolState(this, [point1],0,this.normalMoveAnim,this.idleAnim),

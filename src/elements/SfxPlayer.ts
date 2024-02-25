@@ -8,6 +8,7 @@ export class SfxPlayer extends LMent implements UpdateHandler, TriggerHandler {
 
     playDistance: number;
     audio: string;
+    audioId: string = "";
     loop: boolean = true;
     delay: number = 0;
     triggerId: string;
@@ -27,6 +28,9 @@ export class SfxPlayer extends LMent implements UpdateHandler, TriggerHandler {
         this.receivesTriggersWhenDisabled = true;
         this.randomMax = params.randomMax;
         this.randomMin = params.randomMin;
+
+        if (params.audioId !== undefined)
+            this.audioId = params.audioId;
     }
 
     hasSubtype(trigger: string): boolean {
@@ -69,11 +73,25 @@ export class SfxPlayer extends LMent implements UpdateHandler, TriggerHandler {
             if (!clientInterface || this.loopTimer > 0) return;
             if (this.randomMax && this.randomMin)
                 this.randomizeAudio();
+            else if (this.audioId !== "")
+                clientInterface.playAudio(this.audio, this.audioId);
             else
                 clientInterface.playAudio(this.audio);
-            console.log(this.audio);
             this.loopTimer = this.delay;
         }
+        else if (distance > this.playDistance) {
+            this.stopAudio();
+        }
+    }
+
+    stopAudio() {
+        const clientInterface = GameplayScene.instance.clientInterface;
+        if (!clientInterface) return;
+        if (this.audioId === "") return;
+
+        clientInterface.stopAudio(this.audioId);
+        this.loopTimer = 0;
+        
     }
 
     randomizeAudio() {
@@ -81,7 +99,9 @@ export class SfxPlayer extends LMent implements UpdateHandler, TriggerHandler {
         if (!clientInterface) return;
         if (!this.randomMax || !this.randomMin) return;
         const random = Math.floor(Math.random() * (this.randomMax) + (this.randomMin));
-        clientInterface.playAudio(this.audio + random);
-        //console.log(this.audio + random);   
+        if (this.audioId !== "")
+            clientInterface.playAudio(this.audio + random, this.audioId);
+        else
+            clientInterface.playAudio(this.audio + random);
     }
 }
