@@ -1,6 +1,6 @@
 import { CATs, GenericAction } from "MODScript/MODscriptDefs";
 import { MODscriptEvent } from "MODScript/MODscriptEvent";
-import { CharacterStates } from "elements/Character State Machines/CharacterStates";
+import { CharacterStateNames } from "elements/Character State Machines/CharacterStates";
 import { MODscriptNavigateState } from "elements/Character State Machines/MODscriptStates";
 import { BodyHandle } from "engine/BodyHandle";
 
@@ -10,7 +10,7 @@ export class NavigateOutput extends GenericAction {
 
     constructor(parentEvent: MODscriptEvent, args: Partial<NavigateOutput>) {
         super(parentEvent, CATs.NavigateOutput);
-        this.navigateState = this.parentEvent.stateMachine?.states[CharacterStates.navigate] as MODscriptNavigateState;
+        this.navigateState = this.parentEvent.stateMachine?.states[CharacterStateNames.navigate] as MODscriptNavigateState;
 
     }
 
@@ -25,7 +25,7 @@ export class NavigateOutput extends GenericAction {
         }
 
         this.navigateState.setNavTarget(triggerOutput.body.getPosition());
-        this.parentEvent.stateMachine.startState(this.ActionId, CharacterStates.navigate, triggerOutput.body.getPosition());
+        this.parentEvent.stateMachine.startState(this.ActionId, CharacterStateNames.navigate, triggerOutput.body.getPosition());
 
     }
 

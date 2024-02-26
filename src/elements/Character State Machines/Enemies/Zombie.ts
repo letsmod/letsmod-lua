@@ -1,13 +1,10 @@
 import { BodyHandle } from "engine/BodyHandle";
 import { Constants, Helpers } from "engine/Helpers";
 
-import { CharacterStates, StateTransitionManager, StateTransitionRule, characterPatrolState } from "elements/Character State Machines/CharacterStates";
+import { CharacterStateNames, StateTransitionManager, StateTransitionRule, characterPatrolState } from "elements/Character State Machines/CharacterStates";
 import { UpdateHandler } from "engine/MessageHandlers";
-import { Enemy } from "./Enemy";
-import { MODscriptThrowState } from "../MODscriptStates";
+import { AbstractEnemyLMent } from "./AbstractEnemyLMent";
 import { EnemyAlertState, EnemyChaseState } from "../EnemyStates";
-import { SfxPlayer } from "elements/SfxPlayer";
-
 
 class ZombiePatrol extends characterPatrolState {
 
@@ -40,9 +37,8 @@ class ZombieAlert extends EnemyAlertState {
 }
 
 
-export class Zombie extends Enemy implements UpdateHandler {
+export class Zombie extends AbstractEnemyLMent implements UpdateHandler {
 
-    throwForce: number;
     patrolWait: number;
     patrolDistance: number;
 
@@ -64,35 +60,33 @@ export class Zombie extends Enemy implements UpdateHandler {
 
     constructor(body: BodyHandle, id: number, params: Partial<Zombie> = {}) {
         super(body, id, params);
-        this.throwForce = params.throwForce === undefined ? 400 : params.throwForce;
         this.patrolWait = params.patrolWait === undefined ? 1 : params.patrolWait;
         this.patrolDistance = params.patrolDistance === undefined ? 5 : params.patrolDistance;
-        this.movementForce = params.movementForce === undefined ? 100 : params.movementForce;
 
         const rules: StateTransitionRule[] = [
             {
-                fromState: CharacterStates.alert,
-                toState: CharacterStates.patrol,
+                fromState: CharacterStateNames.alert,
+                toState: CharacterStateNames.patrol,
                 condition: () => { return !this.playerInAlertRange() && !this.alertIsCoolingDown; }
             },
             {
-                fromState: CharacterStates.alert,
-                toState: CharacterStates.chase,
+                fromState: CharacterStateNames.alert,
+                toState: CharacterStateNames.chase,
                 condition: () => { return this.playerInAlertRange() && !this.alertIsWarmingUp; }
             },
             {
-                fromState: CharacterStates.patrol,
-                toState: CharacterStates.alert,
+                fromState: CharacterStateNames.patrol,
+                toState: CharacterStateNames.alert,
                 condition: () => { return this.playerInAlertRange() && this.playerInSight() }
             },
             {
-                fromState: CharacterStates.patrol,
-                toState: CharacterStates.chase,
+                fromState: CharacterStateNames.patrol,
+                toState: CharacterStateNames.chase,
                 condition: () => { return this.playerInAlertRange() && this.alertCooldownTimer > 0 }
             },
             {
-                fromState: CharacterStates.chase,
-                toState: CharacterStates.alert,
+                fromState: CharacterStateNames.chase,
+                toState: CharacterStateNames.alert,
                 condition: () => { return !this.playerInAlertRange() && !this.alertIsCoolingDown }
             }
         ];
@@ -107,13 +101,13 @@ export class Zombie extends Enemy implements UpdateHandler {
         let point2 = point1.clone().add(Helpers.forwardVector.multiplyScalar(this.patrolDistance).applyQuaternion(this.body.body.getRotation()));
 
         this.states = {
-            [CharacterStates.throw]: new MODscriptThrowState(this, this.throwForce),
-            [CharacterStates.patrol]: new ZombiePatrol(this, [point1, point2], this.patrolWait, this.normalMoveAnim, this.idleAnim),
-            [CharacterStates.chase]: new ZombieChase(this, this.fastMoveAnim),
-            [CharacterStates.alert]: new ZombieAlert(this, this.idleAnim),
+            ...this.MODscriptStates,
+            [CharacterStateNames.patrol]: new ZombiePatrol(this, [point1, point2], this.patrolWait, this.normalMoveAnim, this.idleAnim),
+            [CharacterStateNames.chase]: new ZombieChase(this, this.fastMoveAnim),
+            [CharacterStateNames.alert]: new ZombieAlert(this, this.idleAnim),
         }
 
-        this.switchState(CharacterStates.patrol);
+        this.switchState(CharacterStateNames.patrol);
     }
 
 }
