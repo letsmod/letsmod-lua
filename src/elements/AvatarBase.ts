@@ -298,7 +298,6 @@ export class AvatarBase extends StateMachineLMent implements UpdateHandler, HitP
     }
     else {
       this.deathCountByHazard++;
-      console.log("Death count by hazard: " + this.deathCountByHazard);
       if (this.deathCountByHazard >= 2)
         GameplayScene.instance.destroyBody(body);
     }

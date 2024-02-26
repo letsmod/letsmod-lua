@@ -3,8 +3,9 @@ import { Constants, Helpers } from "engine/Helpers";
 import { CollisionHandler, CollisionInfo } from "engine/MessageHandlers";
 import { State } from "engine/StateMachineLMent";
 import { Vector3 } from "three";
-import { characterAlertState, CharacterStateMachineLMent, CharacterStateBase, CharacterStates } from "./CharacterStates";
+import { characterAlertState, CharacterStateBase, CharacterStateNames } from "./CharacterStates";
 import { SfxPlayer } from "elements/SfxPlayer";
+import { CharacterStateMachineLMent } from "./CharacterStateMachineLMent";
 
 export class EnemyAlertState extends characterAlertState {
 
@@ -21,7 +22,7 @@ export class EnemyAlertState extends characterAlertState {
 export class EnemyChaseState extends CharacterStateBase {
 
     constructor(stateMachine: CharacterStateMachineLMent, animName: string = "jog", animBlendTime: number = 0.25) {
-        super(CharacterStates.chase, stateMachine, animName, animBlendTime,Constants.ChaseAudio);
+        super(CharacterStateNames.chase, stateMachine, animName, animBlendTime,Constants.ChaseAudio);
     }
 
     onEnterState(previousState: State | undefined) {
@@ -45,7 +46,7 @@ export class EnemyChargeState extends CharacterStateBase implements CollisionHan
     targetPosition: Vector3 = Helpers.zeroVector;
 
     constructor(stateMachine: CharacterStateMachineLMent, animName: string = "run", animBlendTime: number = 0.25) {
-        super(CharacterStates.chase, stateMachine, animName, animBlendTime);
+        super(CharacterStateNames.chase, stateMachine, animName, animBlendTime);
 
     }
 
@@ -71,7 +72,7 @@ export class EnemyChargeState extends CharacterStateBase implements CollisionHan
             this.moveForwradFast();
             this.playCustomAnimation(dt);
         }
-        else this.stateMachine.switchState(CharacterStates.alert);
+        else this.stateMachine.switchState(CharacterStateNames.alert);
 
     }
 
@@ -79,6 +80,6 @@ export class EnemyChargeState extends CharacterStateBase implements CollisionHan
         const myFwd = Helpers.forwardVector.applyQuaternion(this.stateMachine.body.body.getRotation());
         const dotVal = info.getDeltaVSelf().normalize().dot(myFwd);
         if (dotVal < -.5)
-            this.stateMachine.switchState(CharacterStates.alert);
+            this.stateMachine.switchState(CharacterStateNames.alert);
     }
 }

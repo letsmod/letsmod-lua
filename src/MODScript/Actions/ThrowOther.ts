@@ -1,7 +1,7 @@
 import { CATs, GenericAction } from "MODScript/MODscriptDefs";
 import { MODscriptEvent } from "MODScript/MODscriptEvent";
 import { ThrowState } from "elements/AdventurerAvatar";
-import { CharacterStates } from "elements/Character State Machines/CharacterStates";
+import { CharacterStateNames } from "elements/Character State Machines/CharacterStates";
 import { MODscriptThrowState } from "elements/Character State Machines/MODscriptStates";
 import { BodyHandle } from "engine/BodyHandle";
 import { GameplayScene } from "engine/GameplayScene";
@@ -24,7 +24,7 @@ export class ThrowOther extends GenericAction {
                 this.actorId = actor.body.id;
                 this.targetActor = actor;
             }
-        this.throwState = this.parentEvent.stateMachine?.states[CharacterStates.throw] as MODscriptThrowState;
+        this.throwState = this.parentEvent.stateMachine?.states[CharacterStateNames.throw] as MODscriptThrowState;
     }
 
     performAction(triggerOutput?: BodyHandle | undefined): void {
@@ -37,7 +37,7 @@ export class ThrowOther extends GenericAction {
         }
         this.throwState.setThrowablePrefab(this.prefabId);
 
-        this.parentEvent.stateMachine.startState(this.ActionId, CharacterStates.throw, this.targetActor.body.getPosition());
+        this.parentEvent.stateMachine.startState(this.ActionId, CharacterStateNames.throw, this.targetActor.body.getPosition());
     }
 
 

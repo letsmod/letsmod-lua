@@ -1,8 +1,8 @@
 import { BodyHandle } from "engine/BodyHandle";
 import { Helpers } from "engine/Helpers";
-import { characterPatrolState, CharacterStates, StateTransitionManager, StateTransitionRule } from "../CharacterStates";
+import { characterPatrolState, CharacterStateNames, StateTransitionManager, StateTransitionRule } from "../CharacterStates";
 import { CollisionInfo } from "engine/MessageHandlers";
-import { Enemy } from "./Enemy";
+import { AbstractEnemyLMent } from "./AbstractEnemyLMent";
 import { EnemyAlertState, EnemyChargeState } from "../EnemyStates";
 
 class FlyingPatrol extends characterPatrolState {
@@ -29,11 +29,11 @@ class FlyingCharge extends EnemyChargeState{
     }
 
     onCollision(info: CollisionInfo): void {
-        this.stateMachine.switchState(CharacterStates.alert);
+        this.stateMachine.switchState(CharacterStateNames.alert);
     }
 }
 
-export class Mosquito extends Enemy {
+export class Mosquito extends AbstractEnemyLMent {
     
     patrolDistance: number;
     patrolWait: number;
@@ -63,28 +63,28 @@ export class Mosquito extends Enemy {
 
         const rules: StateTransitionRule[] = [
             {
-                fromState: CharacterStates.alert,
-                toState: CharacterStates.patrol,
+                fromState: CharacterStateNames.alert,
+                toState: CharacterStateNames.patrol,
                 condition: () => { return !this.playerInAlertRange() && !this.alertIsCoolingDown; }
             },
             {
-                fromState: CharacterStates.alert,
-                toState: CharacterStates.charge,
+                fromState: CharacterStateNames.alert,
+                toState: CharacterStateNames.charge,
                 condition: () => { return this.playerInAlertRange() && !this.alertIsWarmingUp; }
             },
             {
-                fromState: CharacterStates.patrol,
-                toState: CharacterStates.alert,
+                fromState: CharacterStateNames.patrol,
+                toState: CharacterStateNames.alert,
                 condition: () => { return this.playerInAlertRange() }
             },
             {
-                fromState: CharacterStates.patrol,
-                toState: CharacterStates.charge,
+                fromState: CharacterStateNames.patrol,
+                toState: CharacterStateNames.charge,
                 condition: () => { return this.playerInAlertRange() && this.alertCooldownTimer > 0 }
             },
             {
-                fromState: CharacterStates.charge,
-                toState: CharacterStates.alert,
+                fromState: CharacterStateNames.charge,
+                toState: CharacterStateNames.alert,
                 condition: () => { return !this.playerInAlertRange() && !this.alertIsCoolingDown }
             }
         ];
@@ -98,12 +98,13 @@ export class Mosquito extends Enemy {
         let point2 = point1.clone().add(Helpers.forwardVector.multiplyScalar(this.patrolDistance).applyQuaternion(this.body.body.getRotation()))
 
         this.states = {
-            [CharacterStates.patrol]: new FlyingPatrol(this, [point1, point2], this.patrolWait,this.normalMoveAnim,this.idleAnim),
-            [CharacterStates.alert]: new FlyingAlert(this,this.alertAnim),
-            [CharacterStates.charge]: new FlyingCharge(this, this.attackAnim)
+            ...this.MODscriptStates,
+            [CharacterStateNames.patrol]: new FlyingPatrol(this, [point1, point2], this.patrolWait,this.normalMoveAnim,this.idleAnim),
+            [CharacterStateNames.alert]: new FlyingAlert(this,this.alertAnim),
+            [CharacterStateNames.charge]: new FlyingCharge(this, this.attackAnim)
         }
 
-        this.switchState(CharacterStates.patrol);
+        this.switchState(CharacterStateNames.patrol);
     }
 
     onStart() {

@@ -2,14 +2,15 @@ import { GameplayScene } from "engine/GameplayScene";
 import { Helpers } from "engine/Helpers";
 import { State } from "engine/StateMachineLMent";
 import { Vector3 } from "three";
-import { CharacterStateBase, CharacterStateMachineLMent, CharacterStates } from "./CharacterStates";
+import { CharacterStateBase, CharacterStateNames } from "./CharacterStates";
+import { CharacterStateMachineLMent } from "./CharacterStateMachineLMent";
 
 export class MODscriptNavigateState extends CharacterStateBase {
 
     navTarget: Vector3 = Helpers.zeroVector;
 
     constructor(stateMachine: CharacterStateMachineLMent, animName: string = "walk", animBlendTime: number = 0.25) {
-        super(CharacterStates.navigate, stateMachine, animName, animBlendTime);
+        super(CharacterStateNames.navigate, stateMachine, animName, animBlendTime);
     }
 
     onEnterState(previousState: State | undefined) {
@@ -44,7 +45,7 @@ export class MODscriptNavigateState extends CharacterStateBase {
 export class MODscriptLookAtState extends CharacterStateBase {
 
     constructor(stateMachine: CharacterStateMachineLMent, animBlendTime: number = 0.25) {
-        super(CharacterStates.idle, stateMachine, "idle", animBlendTime);
+        super(CharacterStateNames.idle, stateMachine, "idle", animBlendTime);
     }
 
     onEnterState(previousState: State | undefined): void {
@@ -73,7 +74,7 @@ export class MODscriptThrowState extends CharacterStateBase {
     throwablePrefabId: string = "";
 
     constructor(stateMachine: CharacterStateMachineLMent, throwForce: number, animName: string = "throw", animBlendTime: number = 0.25) {
-        super(CharacterStates.throw, stateMachine, animName, animBlendTime);
+        super(CharacterStateNames.throw, stateMachine, animName, animBlendTime);
         this.throwForce = throwForce;
     }
 
@@ -118,7 +119,7 @@ export class MODscriptThrowState extends CharacterStateBase {
 export class MODscriptTalkState extends CharacterStateBase {
 
     constructor(stateMachine: CharacterStateMachineLMent, animName: string = "talk", animBlendTime: number = 0.25) {
-        super(CharacterStates.idle, stateMachine, animName, animBlendTime);
+        super(CharacterStateNames.idle, stateMachine, animName, animBlendTime);
     }
 
     onEnterState(previousState: State | undefined): void {
