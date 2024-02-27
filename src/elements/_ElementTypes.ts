@@ -61,8 +61,8 @@ export {CircularChargingEnemy} from "./Character State Machines/Enemies/Circular
 export {JumpUp} from "./JumpUp";
 export {MODscriptOverride} from "./MODscriptOverride";
 export {AdventurerAvatar} from "./AdventurerAvatar";
-export {AbstractGadget} from "./AbstractGadget";
+export {AbstractGadget} from "./Gadgets/AbstractGadget";
 export {Throwable} from "./Throwable";
-export {LauncherGadget} from "./LauncherGadget";
+export {LauncherGadget} from "./Gadgets/LauncherGadget";
 export {Zombie} from "./Character State Machines/Enemies/Zombie";
 export {GroundCheck} from "./GroundCheck";

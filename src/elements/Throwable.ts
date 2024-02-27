@@ -1,7 +1,7 @@
 import { BodyHandle } from "engine/BodyHandle";
 import { GameplayScene } from "engine/GameplayScene";
 import { Helpers } from "engine/Helpers";
-import { AbstractGadget } from "./AbstractGadget";
+import { AbstractGadget } from "./Gadgets/AbstractGadget";
 import { DamageTeam, HitPoints } from "./HitPoints";
 
 export class Throwable extends AbstractGadget {

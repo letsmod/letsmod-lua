@@ -1,7 +1,7 @@
 import { BodyHandle } from "engine/BodyHandle";
 import { LMent } from "engine/LMent";
 import { InteractHandler, UpdateHandler } from "engine/MessageHandlers";
-import { AdventurerAvatar } from "./AdventurerAvatar";
+import { AdventurerAvatar } from "../AdventurerAvatar";
 import { GameplayScene } from "engine/GameplayScene";
 import { Helpers } from "engine/Helpers";
 import { Vector, Vector3 } from "three";
