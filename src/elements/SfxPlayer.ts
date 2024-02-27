@@ -12,6 +12,7 @@ export class SfxPlayer extends LMent implements UpdateHandler, TriggerHandler {
     loop: boolean = true;
     delay: number = 0;
     triggerId: string;
+    triggerId2: string;
     randomMax: number | undefined;
     randomMin: number | undefined;
     receivesTriggersWhenDisabled?: boolean | undefined;
@@ -25,6 +26,7 @@ export class SfxPlayer extends LMent implements UpdateHandler, TriggerHandler {
         this.delay = params.delay === undefined ? 1 : params.delay;
         this.enabled = Helpers.ValidateParams(this.audio, this, "audio");
         this.triggerId = params.triggerId === undefined ? Helpers.NA : params.triggerId;
+        this.triggerId2 = params.triggerId2 === undefined ? Helpers.NA : params.triggerId2;
         this.receivesTriggersWhenDisabled = true;
         this.randomMax = params.randomMax;
         this.randomMin = params.randomMin;
@@ -34,11 +36,20 @@ export class SfxPlayer extends LMent implements UpdateHandler, TriggerHandler {
     }
 
     hasSubtype(trigger: string): boolean {
-        return trigger === this.triggerId;
+        return trigger === this.triggerId || trigger === this.triggerId2;
     }
 
     onTrigger(source: LMent, triggerId: string): void {
-        this.playAudio();
+        if(triggerId === this.triggerId)
+        {
+            console.log("triggered Active");
+            this.playAudio();
+        }
+        else if(triggerId === this.triggerId2)
+        {
+            console.log("triggered Inactive");
+            this.stopAudio();
+        }
     }
 
     onInit(): void {
