@@ -12,7 +12,7 @@ export class SfxPlayer extends LMent implements UpdateHandler, TriggerHandler {
     loop: boolean = true;
     delay: number = 0;
     triggerId: string;
-    triggerId2: string;
+    stopTriggerId: string;
     randomMax: number | undefined;
     randomMin: number | undefined;
     receivesTriggersWhenDisabled?: boolean | undefined;
@@ -26,7 +26,7 @@ export class SfxPlayer extends LMent implements UpdateHandler, TriggerHandler {
         this.delay = params.delay === undefined ? 1 : params.delay;
         this.enabled = Helpers.ValidateParams(this.audio, this, "audio");
         this.triggerId = params.triggerId === undefined ? Helpers.NA : params.triggerId;
-        this.triggerId2 = params.triggerId2 === undefined ? Helpers.NA : params.triggerId2;
+        this.stopTriggerId = params.stopTriggerId === undefined ? Helpers.NA : params.stopTriggerId;
         this.receivesTriggersWhenDisabled = true;
         this.randomMax = params.randomMax;
         this.randomMin = params.randomMin;
@@ -36,20 +36,14 @@ export class SfxPlayer extends LMent implements UpdateHandler, TriggerHandler {
     }
 
     hasSubtype(trigger: string): boolean {
-        return trigger === this.triggerId || trigger === this.triggerId2;
+        return trigger === this.triggerId || trigger === this.stopTriggerId;
     }
 
     onTrigger(source: LMent, triggerId: string): void {
-        if(triggerId === this.triggerId)
-        {
-            console.log("triggered Active");
+        if (triggerId === this.triggerId)
             this.playAudio();
-        }
-        else if(triggerId === this.triggerId2)
-        {
-            console.log("triggered Inactive");
+        else if (triggerId === this.stopTriggerId)
             this.stopAudio();
-        }
     }
 
     onInit(): void {
@@ -102,7 +96,7 @@ export class SfxPlayer extends LMent implements UpdateHandler, TriggerHandler {
 
         clientInterface.stopAudio(this.audioId);
         this.loopTimer = 0;
-        
+
     }
 
     randomizeAudio() {
