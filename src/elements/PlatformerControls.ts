@@ -125,7 +125,6 @@ export class PlatformerControls extends AvatarBase implements ButtonHandler {
 
   decelerate() {
     if (this.dragDx != 0 || this.dragDy != 0) return;
-    console.log("Meh");
     let accel = this.deceleration /GameplayScene.instance.memory.frameRate
     if (this.isOnGround) {
       this.playTopAnimation("Idle");

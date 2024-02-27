@@ -6,11 +6,11 @@ import { Quaternion, Vector3 } from "three";
 import { Helpers } from "engine/Helpers";
 import { GameplayScene } from "engine/GameplayScene";
 import { LMent } from "engine/LMent";
-import { AbstractGadget } from "./AbstractGadget";
 import { GuideBody } from "./GuideBody";
 import { CameraTarget } from "./CameraTarget";
 import { Fragile } from "./Fragile";
 import { Throwable } from "./Throwable";
+import { AbstractGadget } from "./Gadgets/AbstractGadget";
 
 export abstract class AdventurerState extends AnimatedState
 {

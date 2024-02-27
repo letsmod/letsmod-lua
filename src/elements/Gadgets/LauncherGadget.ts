@@ -3,7 +3,7 @@ import { GameplayScene } from "engine/GameplayScene";
 import { Helpers } from "engine/Helpers";
 import { AbstractGadget } from "./AbstractGadget";
 import { Vector3 } from "three";
-import { DamageTeam, HitPoints } from "./HitPoints";
+import { DamageTeam, HitPoints } from "../HitPoints";
 
 export class LauncherGadget extends AbstractGadget {
   launchSpeedHorizontal : number;

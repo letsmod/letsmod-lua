@@ -80,7 +80,6 @@ export class CharacterStateMachineLMent extends StateMachineLMent {
     }
 
     onStart(): void {
-        console.log("Meh");
         this.body.body.lockRotation(true, false, true);
         this.body.body.setAngularVelocity(Helpers.zeroVector);
         this.body.body.setVelocity(Helpers.zeroVector);
