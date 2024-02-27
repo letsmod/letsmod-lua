@@ -1,12 +1,9 @@
 import { BodyHandle } from "engine/BodyHandle";
-import { Constants, Helpers } from "engine/Helpers";
-
-import { CharacterStates, StateTransitionManager, StateTransitionRule, characterPatrolState } from "elements/Character State Machines/CharacterStates";
+import { Helpers } from "engine/Helpers";
+import { CharacterStateNames, StateTransitionManager, StateTransitionRule, characterPatrolState } from "elements/Character State Machines/CharacterStates";
 import { UpdateHandler } from "engine/MessageHandlers";
-import { Enemy } from "./Enemy";
-import { MODscriptThrowState } from "../MODscriptStates";
+import { AbstractEnemyLMent } from "./AbstractEnemyLMent";
 import { EnemyChaseState, EnemyAlertState } from "../EnemyStates";
-import { SfxPlayer } from "elements/SfxPlayer";
 
 
 class SlimePatrol extends characterPatrolState {
@@ -51,9 +48,8 @@ class SlimeChase extends EnemyChaseState {
 }
 
 
-export class Slime extends Enemy implements UpdateHandler {
+export class Slime extends AbstractEnemyLMent implements UpdateHandler {
 
-    throwForce: number;
     patrolWait: number;
     patrolDistance: number;
 
@@ -75,36 +71,34 @@ export class Slime extends Enemy implements UpdateHandler {
 
     constructor(body: BodyHandle, id: number, params: Partial<Slime> = {}) {
         super(body, id, params);
-        this.throwForce = params.throwForce === undefined ? 400 : params.throwForce;
         this.patrolWait = params.patrolWait === undefined ? 1 : params.patrolWait;
         this.patrolDistance = params.patrolDistance === undefined ? 5 : params.patrolDistance;
-        this.movementForce = params.movementForce === undefined ? 100 : params.movementForce;
         this.moveReachThreshold = 0.5;
 
         const rules: StateTransitionRule[] = [
             {
-                fromState: CharacterStates.alert,
-                toState: CharacterStates.patrol,
+                fromState: CharacterStateNames.alert,
+                toState: CharacterStateNames.patrol,
                 condition: () => { return !this.playerInAlertRange() && !this.alertIsCoolingDown; }
             },
             {
-                fromState: CharacterStates.alert,
-                toState: CharacterStates.chase,
+                fromState: CharacterStateNames.alert,
+                toState: CharacterStateNames.chase,
                 condition: () => { return this.playerInAlertRange() && !this.alertIsWarmingUp; }
             },
             {
-                fromState: CharacterStates.patrol,
-                toState: CharacterStates.alert,
+                fromState: CharacterStateNames.patrol,
+                toState: CharacterStateNames.alert,
                 condition: () => { return this.playerInAlertRange() }
             },
             {
-                fromState: CharacterStates.patrol,
-                toState: CharacterStates.chase,
+                fromState: CharacterStateNames.patrol,
+                toState: CharacterStateNames.chase,
                 condition: () => { return this.playerInAlertRange() && this.alertCooldownTimer > 0 }
             },
             {
-                fromState: CharacterStates.chase,
-                toState: CharacterStates.alert,
+                fromState: CharacterStateNames.chase,
+                toState: CharacterStateNames.alert,
                 condition: () => { return !this.playerInAlertRange() && !this.alertIsCoolingDown }
             }
         ];
@@ -119,12 +113,12 @@ export class Slime extends Enemy implements UpdateHandler {
         let point2 = point1.clone().add(Helpers.forwardVector.multiplyScalar(this.patrolDistance).applyQuaternion(this.body.body.getRotation()))
 
         this.states = {
-            [CharacterStates.throw]: new MODscriptThrowState(this, this.throwForce),
-            [CharacterStates.patrol]: new SlimePatrol(this, [point1, point2], this.patrolWait, this.normalMoveAnim, this.idleAnim),
-            [CharacterStates.chase]: new SlimeChase(this, this.fastMoveAnim),
-            [CharacterStates.alert]: new EnemyAlertState(this, this.idleAnim),
+            ...this.MODscriptStates,
+            [CharacterStateNames.patrol]: new SlimePatrol(this, [point1, point2], this.patrolWait, this.normalMoveAnim, this.idleAnim),
+            [CharacterStateNames.chase]: new SlimeChase(this, this.fastMoveAnim),
+            [CharacterStateNames.alert]: new EnemyAlertState(this, this.idleAnim),
         }
 
-        this.switchState(CharacterStates.patrol);
+        this.switchState(CharacterStateNames.patrol);
     }
 }

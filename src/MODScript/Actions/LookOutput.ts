@@ -1,6 +1,6 @@
 import { CATs, GenericAction } from "MODScript/MODscriptDefs";
 import { MODscriptEvent } from "MODScript/MODscriptEvent";
-import { CharacterStates } from "elements/Character State Machines/CharacterStates";
+import { CharacterStateNames } from "elements/Character State Machines/CharacterStates";
 import { BodyHandle } from "engine/BodyHandle";
 
 export class LookOutput extends GenericAction {
@@ -13,7 +13,7 @@ export class LookOutput extends GenericAction {
     performAction(triggerOutput?: BodyHandle | undefined): void {
         if(!triggerOutput || !this.parentEvent || !this.parentEvent.stateMachine) return;
 
-        this.parentEvent.stateMachine.startState(this.ActionId, CharacterStates.lookAt, triggerOutput.body.getPosition());
+        this.parentEvent.stateMachine.startState(this.ActionId, CharacterStateNames.lookAt, triggerOutput.body.getPosition());
         
 
     }

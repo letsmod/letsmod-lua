@@ -5,7 +5,8 @@ import { TriggerFactory } from "./FactoryClasses/TriggersFactory";
 import { Constants, Helpers } from "engine/Helpers";
 import { GameplayScene } from "engine/GameplayScene";
 import { CollisionInfo } from "engine/MessageHandlers";
-import { CharacterStateMachineLMent, CharacterStates } from "elements/Character State Machines/CharacterStates";
+import { CharacterStateNames } from "elements/Character State Machines/CharacterStates";
+import { CharacterStateMachineLMent } from "elements/Character State Machines/CharacterStateMachineLMent";
 
 export class MODscriptEvent {
 
@@ -186,7 +187,7 @@ export class MODscriptEvent {
     completeEvent(): void {
         this.isFinished = true;
         if (!this.repeatable && this.stateMachine !== undefined)
-            this.stateMachine.switchState(CharacterStates.idle);
+            this.stateMachine.switchState(CharacterStateNames.idle);
     }
 
     cancelEvent(): void {
@@ -200,6 +201,6 @@ export class MODscriptEvent {
     disableEvent(): void {
         this.enabled = false;
         if (this.stateMachine !== undefined)
-            this.stateMachine.switchState(CharacterStates.idle);
+            this.stateMachine.switchState(CharacterStateNames.idle);
     }
 }

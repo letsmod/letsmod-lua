@@ -1,22 +1,17 @@
 import { BodyHandle } from "engine/BodyHandle";
-import { CharacterStates, StateTransitionManager, StateTransitionRule, characterPatrolState } from "../CharacterStates";
-import { Enemy } from "./Enemy";
+import { CharacterStateNames, StateTransitionManager, StateTransitionRule, characterPatrolState } from "../CharacterStates";
+import { AbstractEnemyLMent } from "./AbstractEnemyLMent";
 import { Slime } from "elements/Character State Machines/Enemies/Slime";
-import { MODscriptThrowState } from "../MODscriptStates";
 import { EnemyAlertState, EnemyChaseState } from "../EnemyStates";
-import { Constants } from "engine/Helpers";
-import { SfxPlayer } from "elements/SfxPlayer";
 
-
-export class SkullEnemy extends Enemy {
-
-    throwForce: number;
+export class SkullEnemy extends AbstractEnemyLMent {
 
     //NOTE: The parent class has more properties as below:
     /*
         movementForce
         maxNormalSpeed
         maxFastSpeed
+        throwForce
         alertZoneRadius
         interactZoneRadius
         sightDotValue
@@ -30,34 +25,33 @@ export class SkullEnemy extends Enemy {
 
     constructor(body: BodyHandle, id: number, params: Partial<Slime> = {}) {
         super(body, id, params);
-        this.throwForce = params.throwForce === undefined ? 400 : params.throwForce;
         this.movementForce = 100;
         this.moveReachThreshold = 0.5;
 
         const rules: StateTransitionRule[] = [
             {
-                fromState: CharacterStates.alert,
-                toState: CharacterStates.patrol,
+                fromState: CharacterStateNames.alert,
+                toState: CharacterStateNames.patrol,
                 condition: () => { return !this.playerInAlertRange() && !this.alertIsCoolingDown; }
             },
             {
-                fromState: CharacterStates.alert,
-                toState: CharacterStates.chase,
+                fromState: CharacterStateNames.alert,
+                toState: CharacterStateNames.chase,
                 condition: () => { return this.playerInAlertRange() && !this.alertIsWarmingUp; }
             },
             {
-                fromState: CharacterStates.patrol,
-                toState: CharacterStates.alert,
+                fromState: CharacterStateNames.patrol,
+                toState: CharacterStateNames.alert,
                 condition: () => { return this.playerInAlertRange() }
             },
             {
-                fromState: CharacterStates.patrol,
-                toState: CharacterStates.chase,
+                fromState: CharacterStateNames.patrol,
+                toState: CharacterStateNames.chase,
                 condition: () => { return this.playerInAlertRange() && this.alertCooldownTimer > 0 }
             },
             {
-                fromState: CharacterStates.chase,
-                toState: CharacterStates.alert,
+                fromState: CharacterStateNames.chase,
+                toState: CharacterStateNames.alert,
                 condition: () => { return !this.playerInAlertRange() && !this.alertIsCoolingDown }
             }
         ];
@@ -71,12 +65,12 @@ export class SkullEnemy extends Enemy {
         let initQuat = this.body.body.getRotation().clone();
 
         this.states = {
-            [CharacterStates.throw]: new MODscriptThrowState(this, this.throwForce),
-            [CharacterStates.patrol]: new characterPatrolState(this, [point1],0,this.normalMoveAnim,this.idleAnim),
-            [CharacterStates.chase]: new EnemyChaseState(this,this.fastMoveAnim),
-            [CharacterStates.alert]: new EnemyAlertState(this,this.idleAnim)
+            ...this.MODscriptStates,
+            [CharacterStateNames.patrol]: new characterPatrolState(this, [point1], 0, this.normalMoveAnim, this.idleAnim),
+            [CharacterStateNames.chase]: new EnemyChaseState(this, this.fastMoveAnim),
+            [CharacterStateNames.alert]: new EnemyAlertState(this, this.idleAnim)
         }
 
-        this.switchState(CharacterStates.patrol);
+        this.switchState(CharacterStateNames.patrol);
     }
 }

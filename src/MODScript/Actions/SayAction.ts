@@ -1,7 +1,7 @@
 import { EventHandler } from "MODScript/EventHandler";
 import { AudioDefinition, CATs, GenericAction } from "MODScript/MODscriptDefs";
 import { MODscriptEvent } from "MODScript/MODscriptEvent";
-import { CharacterStates } from "elements/Character State Machines/CharacterStates";
+import { CharacterStateNames } from "elements/Character State Machines/CharacterStates";
 import { BodyHandle } from "engine/BodyHandle";
 import { GameplayScene } from "engine/GameplayScene";
 
@@ -45,7 +45,7 @@ export class SayAction extends GenericAction {
         if(!this.audioHasPlayed)
             this.actionFailed();
         else if(this.parentEvent.stateMachine)
-            this.parentEvent.stateMachine.startState(this.ActionId, CharacterStates.talk, GameplayScene.instance.memory.player?.body.getPosition());
+            this.parentEvent.stateMachine.startState(this.ActionId, CharacterStateNames.talk, GameplayScene.instance.memory.player?.body.getPosition());
     }
 
     monitorAction(): void {

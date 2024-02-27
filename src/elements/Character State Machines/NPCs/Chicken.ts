@@ -3,7 +3,8 @@ import { State } from "engine/StateMachineLMent";
 import { LookAt } from "../../LookAt";
 import { Helpers } from "engine/Helpers";
 import { Vector3 } from "three";
-import { CharacterStateMachineLMent, characterPatrolState, characterAlertState, characterInteractState, CharacterStates, StateTransitionRule, StateTransitionManager } from "../CharacterStates";
+import { characterPatrolState, characterAlertState, characterInteractState, CharacterStateNames, StateTransitionRule, StateTransitionManager } from "../CharacterStates";
+import { CharacterStateMachineLMent } from "../CharacterStateMachineLMent";
 
 class RoamerPatrol extends characterPatrolState {
     private patrolAreaBounds: { min: Vector3, max: Vector3 };
@@ -24,27 +25,23 @@ class RoamerPatrol extends characterPatrolState {
     setRandomPatrolPoint(bounds: { min: Vector3, max: Vector3 }) {
 
         const point1 = Helpers.NewVector3(
-            this.initialPoint.x + this.randomInRange(bounds.min.x, bounds.max.x),
-            this.initialPoint.y + this.randomInRange(bounds.min.y, bounds.max.y),
-            this.initialPoint.z + this.randomInRange(bounds.min.z, bounds.max.z)
+            this.initialPoint.x + Helpers.randomRange(bounds.min.x, bounds.max.x),
+            this.initialPoint.y + Helpers.randomRange(bounds.min.y, bounds.max.y),
+            this.initialPoint.z + Helpers.randomRange(bounds.min.z, bounds.max.z)
         );
 
         const point2 = Helpers.NewVector3(
-            this.initialPoint.x + this.randomInRange(bounds.min.x, bounds.max.x),
-            this.initialPoint.y + this.randomInRange(bounds.min.y, bounds.max.y),
-            this.initialPoint.z + this.randomInRange(bounds.min.z, bounds.max.z)
+            this.initialPoint.x + Helpers.randomRange(bounds.min.x, bounds.max.x),
+            this.initialPoint.y + Helpers.randomRange(bounds.min.y, bounds.max.y),
+            this.initialPoint.z + Helpers.randomRange(bounds.min.z, bounds.max.z)
         );
 
         this.points = [point1, point2];
         this.onEnterState(undefined);
     }
 
-    randomInRange(min: number, max: number) {
-        return Math.random() * (max - min) + min;
-    }
-
     getRandomIdleDuration(range: { min: number, max: number }) {
-        return Math.random() * (range.max - range.min) + range.min;
+        return Helpers.randomRange(range.min, range.max);
     }
 
     override playCustomAnimation(dt: number): void {
@@ -67,7 +64,6 @@ class RoamerPatrol extends characterPatrolState {
             this.setRandomPatrolPoint(this.patrolAreaBounds);
     }
 }
-
 
 class RoamerAlert extends characterAlertState {
 
@@ -113,8 +109,6 @@ export class Chicken extends CharacterStateMachineLMent {
     idleDurationRange: { min: number, max: number };
     private initialPosition: Vector3;
 
-    private lookAtElement: LookAt | undefined;
-
     //NOTE: The parent class has more properties as below:
     /*
         movementForce
@@ -135,54 +129,45 @@ export class Chicken extends CharacterStateMachineLMent {
     constructor(body: BodyHandle, id: number, params: Partial<Chicken> = {}) {
         super(body, id, params);
 
-        this.movementForce = params.movementForce === undefined ? 100 : params.movementForce;
         this.patrolAreaBounds = params.patrolAreaBounds || { min: Helpers.NewVector3(-10, 0, -10), max: Helpers.NewVector3(10, 0, 10) };
         this.idleDurationRange = params.idleDurationRange || { min: 1, max: 5 };
         this.initialPosition = Helpers.NewVector3(0, 0, 0);
 
         const rules: StateTransitionRule[] = [
             {
-                fromState: CharacterStates.alert,
-                toState: CharacterStates.patrol,
+                fromState: CharacterStateNames.alert,
+                toState: CharacterStateNames.patrol,
                 condition: () => { return !this.playerInAlertRange(); }
             },
             {
-                fromState: CharacterStates.patrol,
-                toState: CharacterStates.alert,
+                fromState: CharacterStateNames.patrol,
+                toState: CharacterStateNames.alert,
                 condition: () => { return this.playerInAlertRange() }
             },
             {
-                fromState: CharacterStates.alert,
-                toState: CharacterStates.interactWithPlayer,
+                fromState: CharacterStateNames.alert,
+                toState: CharacterStateNames.interactWithPlayer,
                 condition: () => { return this.playerInInteractRange() }
             },
             {
-                fromState: CharacterStates.interactWithPlayer,
-                toState: CharacterStates.alert,
+                fromState: CharacterStateNames.interactWithPlayer,
+                toState: CharacterStateNames.alert,
                 condition: () => { return !this.playerInInteractRange() }
             },
         ];
         this.transitionManager = new StateTransitionManager(rules);
     }
 
-
-
     onInit(): void {
         super.onInit();
         this.initialPosition = this.body.body.getPosition().clone();
 
         this.states = {
-            [CharacterStates.patrol]: new RoamerPatrol(this, this.patrolAreaBounds, this.idleDurationRange, this.maxNormalSpeed, this.movementForce, this.initialPosition),
-            [CharacterStates.alert]: new RoamerAlert(this, "custom"),
-            [CharacterStates.interactWithPlayer]: new RoamerInteract(this, this.maxNormalSpeed, this.maxFastSpeed)
+            [CharacterStateNames.patrol]: new RoamerPatrol(this, this.patrolAreaBounds, this.idleDurationRange, this.maxNormalSpeed, this.movementForce, this.initialPosition),
+            [CharacterStateNames.alert]: new RoamerAlert(this, "custom"),
+            [CharacterStateNames.interactWithPlayer]: new RoamerInteract(this, this.maxNormalSpeed, this.maxFastSpeed)
         }
 
-        this.switchState(CharacterStates.patrol);
-    }
-
-    onStart(): void {
-        this.body.body.lockRotation(true, false, true);
-        this.body.body.setAngularVelocity(Helpers.zeroVector);
-        this.body.body.setVelocity(Helpers.zeroVector);
+        this.switchState(CharacterStateNames.patrol);
     }
 }

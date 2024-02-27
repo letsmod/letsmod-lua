@@ -1,10 +1,11 @@
 import { Helpers } from "engine/Helpers";
-import { CharacterStateMachineLMent, CharacterStates, characterIdleState, characterPatrolState } from "../CharacterStates";
+import { CharacterStateNames, characterIdleState, characterPatrolState } from "../CharacterStates";
 import { BodyHandle } from "engine/BodyHandle";
 import { GameplayScene } from "engine/GameplayScene";
 import { State } from "engine/StateMachineLMent";
-import { Enemy } from "./Enemy";
+import { AbstractEnemyLMent } from "./AbstractEnemyLMent";
 import { EnemyAlertState, EnemyChargeState, EnemyChaseState } from "../EnemyStates";
+import { CharacterStateMachineLMent } from "../CharacterStateMachineLMent";
 
 
 ////TODO: ANAS PLEASE UPDATE THIS TO USE THE NEW STATE MACHINE SYSTEM
@@ -62,7 +63,7 @@ class WalkerAlert extends EnemyAlertState {
     approachingSpeed: number;
     private random: boolean = false;
 
-    constructor(stateMachine: CharacterStateMachineLMent, circularForce: number, alertCooldown: number, alertWarmUp: number, attackState: CharacterStates, approachingSpeed: number) {
+    constructor(stateMachine: CharacterStateMachineLMent, circularForce: number, alertCooldown: number, alertWarmUp: number, attackState: CharacterStateNames, approachingSpeed: number) {
         super(stateMachine);
         this.circularForce = circularForce;
         this.approachingSpeed = approachingSpeed;
@@ -147,12 +148,12 @@ class WalkerIdle extends characterIdleState {
     }
 }
 
-export class CircularChargingEnemy extends Enemy {
+export class CircularChargingEnemy extends AbstractEnemyLMent {
     chargeSpeed: number;
     movementForce: number;
     alertCooldown: number;
     alertWarmUp: number;
-    attackState: CharacterStates;
+    attackState: CharacterStateNames;
     circularForce: number;
     approachingSpeed: number;
 
@@ -163,7 +164,7 @@ export class CircularChargingEnemy extends Enemy {
         this.movementForce = params.movementForce === undefined ? 5 : params.movementForce;
         this.alertCooldown = params.alertCooldown === undefined ? 0 : params.alertCooldown;
         this.alertWarmUp = params.alertWarmUp === undefined ? Math.random() * (6 - 3) + 3 : params.alertWarmUp;
-        this.attackState = params.attackState === undefined ? CharacterStates.charge : params.attackState;
+        this.attackState = params.attackState === undefined ? CharacterStateNames.charge : params.attackState;
         this.circularForce = params.circularForce === undefined ? 100 : params.circularForce;
         this.approachingSpeed = params.approachingSpeed === undefined ? 100 : params.approachingSpeed;
         this.alertZoneRadius = params.alertZoneRadius === undefined ? 10 : params.alertZoneRadius;

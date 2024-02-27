@@ -8,8 +8,9 @@ import { AnimatedState, State, StateMachineLMent } from "engine/StateMachineLMen
 import { Vector3 } from "three";
 import { GroundCheck } from "elements/GroundCheck";
 import { SfxPlayer } from "elements/SfxPlayer";
+import { CharacterStateMachineLMent } from "./CharacterStateMachineLMent";
 
-export enum CharacterStates {
+export enum CharacterStateNames {
     idle = "idle",
     interactWithPlayer = "interactWithPlayer",
     patrol = "patrol",
@@ -25,8 +26,8 @@ export enum CharacterStates {
 }
 
 export interface StateTransitionRule {
-    fromState: CharacterStates;
-    toState: CharacterStates;
+    fromState: CharacterStateNames;
+    toState: CharacterStateNames;
     condition: () => boolean;
 }
 
@@ -45,177 +46,6 @@ export class StateTransitionManager {
             }
         }
     }
-}
-
-export class CharacterStateMachineLMent extends StateMachineLMent {
-
-    /*** Args ****/
-    movementForce: number;
-    maxNormalSpeed: number;
-    maxFastSpeed: number;
-    alertZoneRadius: number;
-    interactZoneRadius: number;
-    sightDotValue: number;
-    moveReachThreshold: number;
-    has3DMovement: boolean = false;
-    normalMoveAnim: string;
-    fastMoveAnim: string;
-    interactAnim: string;
-    idleAnim: string;
-    alertAnim: string;
-    throwAnim: string;
-    talkAnim: string;
-    alertCooldown: number;
-    alertWarmUp: number;
-
-    transitionManager: StateTransitionManager | undefined;
-    characterBody: BodyPointer;
-
-    /*** MODscript Related Fields ***/
-    lookAtTarget: Vector3 = Helpers.zeroVector;
-    FinishedActionsMap: Map<string, boolean> = new Map();
-    activeActionId: string = "";
-
-    /*** Alert Time Management ***/
-    protected alertIsWarmingUp: boolean = false;
-    protected alertWarmUpTimer: number = 0;
-    protected alertIsCoolingDown: boolean = false;
-    protected alertCooldownTimer: number = 0;
-
-    constructor(body: BodyHandle, id: number, params: Partial<CharacterStateMachineLMent> = {}) {
-        super(body, id, params);
-        this.alertZoneRadius = params.alertZoneRadius === undefined ? 6 : params.alertZoneRadius;
-        this.interactZoneRadius = params.interactZoneRadius === undefined ? 2 : params.interactZoneRadius;
-        this.sightDotValue = params.sightDotValue === undefined ? 0.5 : params.sightDotValue;
-        this.moveReachThreshold = params.moveReachThreshold === undefined ? 0.5 : params.moveReachThreshold;
-        this.characterBody = this.body.body;
-        this.normalMoveAnim = params.normalMoveAnim === undefined ? "custom" : params.normalMoveAnim;
-        this.fastMoveAnim = params.fastMoveAnim === undefined ? "custom" : params.fastMoveAnim;
-        this.interactAnim = params.interactAnim === undefined ? "custom" : params.interactAnim;
-        this.idleAnim = params.idleAnim === undefined ? "custom" : params.idleAnim;
-        this.alertAnim = params.alertAnim === undefined ? "custom" : params.alertAnim;
-        this.throwAnim = params.throwAnim === undefined ? "custom" : params.throwAnim;
-        this.talkAnim = params.talkAnim === undefined ? "custom" : params.talkAnim;
-        this.alertCooldown = params.alertCooldown === undefined ? 3 : params.alertCooldown;
-        this.alertWarmUp = params.alertWarmUp === undefined ? 0.25 : params.alertWarmUp;
-
-        /*** MODscript Fields ***/
-        this.lookAtTarget = params.lookAtTarget === undefined ? Helpers.oneVector.applyQuaternion(this.body.body.getRotation()) : params.lookAtTarget;
-        this.movementForce = params.movementForce === undefined ? 30 : params.movementForce;
-        this.maxNormalSpeed = params.maxNormalSpeed === undefined ? 5 : params.maxNormalSpeed;
-        this.maxFastSpeed = params.maxFastSpeed === undefined ? 7.5 : params.maxFastSpeed;
-    }
-
-    onInit(): void {
-
-    }
-
-    onStart(): void {
-        this.body.body.lockRotation(true, false, true);
-        this.body.body.setAngularVelocity(Helpers.zeroVector);
-        this.body.body.setVelocity(Helpers.zeroVector);
-    }
-
-    protected playerInSight(): boolean {
-        const player = GameplayScene.instance.memory.player;
-        if (player === undefined)
-            return false;
-        const enemyFwd = Helpers.forwardVector.applyQuaternion(this.characterBody.getRotation());
-        const dotCheck = enemyFwd.dot(player.body.getPosition().clone().sub(this.characterBody.getPosition()).normalize());
-        return dotCheck > this.sightDotValue;
-    }
-
-    protected playerInAlertRange(): boolean {
-        const player = GameplayScene.instance.memory.player;
-        if (player === undefined)
-            return false;
-        return this.characterBody.getPosition().distanceTo(player.body.getPosition()) < this.alertZoneRadius;
-    }
-
-    protected playerInInteractRange(): boolean {
-        const player = GameplayScene.instance.memory.player;
-        if (player === undefined)
-            return false;
-        return this.characterBody.getPosition().distanceTo(player.body.getPosition()) < this.interactZoneRadius;
-    }
-
-    onUpdate(dt: number): void {
-        super.onUpdate(dt);
-        if (this.characterBody.getPosition().y < -1) {
-            for (let body of this.body.bodyGroup)
-                GameplayScene.instance.destroyBody(body);
-        }
-        if (this.transitionManager !== undefined)
-            this.transitionManager.evaluate(this);
-
-        if (this.currentState !== undefined && this.currentState.name === CharacterStates.alert
-            && !this.alertIsCoolingDown && this.alertCooldownCriteria()) {
-            this.initiateAlertCooldown();
-        }
-        this.manageAlertTimers(dt);
-    }
-
-    alertCooldownCriteria(): boolean {
-        return !this.playerInAlertRange();
-    }
-
-    initiateAlertWarmup(): void {
-        this.alertWarmUpTimer = this.alertWarmUp;
-        this.alertIsWarmingUp = true;
-        this.alertIsCoolingDown = false;
-
-    }
-
-    initiateAlertCooldown(): void {
-        this.alertCooldownTimer = this.alertCooldown;
-        this.alertIsCoolingDown = true;
-        this.alertIsWarmingUp = false;
-
-    }
-
-    manageAlertTimers(dt: number): void {
-        if (this.alertIsWarmingUp) {
-
-            this.alertWarmUpTimer -= dt;
-            if (this.alertWarmUpTimer <= 0) {
-                this.alertIsWarmingUp = false;
-            }
-        }
-        if (this.alertIsCoolingDown) {
-            this.alertCooldownTimer -= dt;
-            if (this.alertCooldownTimer <= 0) {
-                this.alertIsCoolingDown = false;
-            }
-        }
-    }
-
-    /*** MODscript Functions ***/
-    startState(actionId: string, state: CharacterStates, lookAtTarget: Vector3 | undefined): void {
-        if (lookAtTarget !== undefined)
-            this.lookAtTarget = lookAtTarget;
-
-        this.activeActionId = actionId;
-
-        this.switchState(state);
-    }
-
-    markComplete() {
-        this.FinishedActionsMap.set(this.activeActionId, true);
-        this.switchState(CharacterStates.idle);
-    }
-
-    markFailed() {
-        this.FinishedActionsMap.set(this.activeActionId, false);
-    }
-
-    stateIsComplete(actionId: string): boolean {
-        return this.FinishedActionsMap.has(actionId) && this.FinishedActionsMap.get(actionId) === true;
-    }
-
-    stateIsFailed(actionId: string): boolean {
-        return this.FinishedActionsMap.has(actionId) && this.FinishedActionsMap.get(actionId) === false;
-    }
-
 }
 
 export abstract class CharacterStateBase extends AnimatedState implements UpdateHandler {
@@ -351,7 +181,7 @@ export class characterIdleState extends CharacterStateBase {
     private idleTimer: number = 0;
 
     constructor(stateMachine: CharacterStateMachineLMent, animName: string = "idle", animBlendTime: number = 0.25) {
-        super(CharacterStates.idle, stateMachine, animName, animBlendTime);
+        super(CharacterStateNames.idle, stateMachine, animName, animBlendTime);
     }
 
     onEnterState(previousState: State | undefined): void {
@@ -370,7 +200,7 @@ export class characterIdleState extends CharacterStateBase {
 export class characterAlertState extends CharacterStateBase {
 
     constructor(stateMachine: CharacterStateMachineLMent, animName: string = "alert", animBlendTime: number = 0.25) {
-        super(CharacterStates.alert, stateMachine, animName, animBlendTime);
+        super(CharacterStateNames.alert, stateMachine, animName, animBlendTime);
     }
 
     onEnterState(previousState: State | undefined): void {
@@ -399,7 +229,7 @@ export class characterInteractState extends CharacterStateBase {
 
 
     constructor(stateMachine: CharacterStateMachineLMent, animName: string = "interact", animBlendTime: number = 0.25) {
-        super(CharacterStates.interactWithPlayer, stateMachine, animName, animBlendTime);
+        super(CharacterStateNames.interactWithPlayer, stateMachine, animName, animBlendTime);
     }
 
     onEnterState(previousState: State | undefined): void {
@@ -438,7 +268,7 @@ export class characterPatrolState extends CharacterStateBase implements Collisio
     get activePoint() { return this.points[this.currentPointIndex] };
 
     constructor(stateMachine: CharacterStateMachineLMent, points: Vector3[], patrolWait: number, patrolAnimName: string = "walk", waitAnimName: string = "idle", animBlendTime: number = 0.25  ) {
-        super(CharacterStates.patrol, stateMachine, patrolAnimName, animBlendTime,Constants.MoveAudio);
+        super(CharacterStateNames.patrol, stateMachine, patrolAnimName, animBlendTime,Constants.MoveAudio);
         this.points = points;
         this.patrolWait = patrolWait;
         this.waitAnimName = waitAnimName;

@@ -1368,9 +1368,10 @@ export class AdventurerAvatar extends AvatarBase
     {
       this.myGuideElement = this.cameraGuide.getElement(GuideBody);
       this.camGuide = this.myGuideElement;
-      if (this.camGuide)
+      if (this.camGuide !== undefined)
       {
         this.camTarget = this.camGuide.body.getElement(CameraTarget);
+        this.camGuide.updateOffsetVector(0, 1.5, 0);
       }
     }
 

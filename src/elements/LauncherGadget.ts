@@ -101,6 +101,7 @@ export class LauncherGadget extends AbstractGadget {
       }
 
       projectile.body.setVelocity(direction);
+      playerBody.body.applyCentralForce(Helpers.forwardVector.multiplyScalar(-1).add(Helpers.upVector).applyQuaternion(playerBody.body.getRotation()).multiplyScalar(200));
       return direction.setY(0).normalize();
     }
     return undefined;
