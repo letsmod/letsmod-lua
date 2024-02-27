@@ -135,9 +135,11 @@ export class GuideBody extends LMent implements UpdateHandler {
     }
 
     updateOffsetVector(x: number, y: number, z: number, additive: boolean = true) {
+
         if (additive) ///---> Adding to the original offset OR set a completely new offset.
-            this.offsetVector.set(this.offset.x + x, this.offset.y + y, this.offset.z + z);
-        else this.offsetVector.set(x, y, z);
+                this.offsetVector.set(this.offset.x + x, this.offset.y + y, this.offset.z + z);
+        else
+            this.offsetVector.set(x, y, z);
     }
 
     updateTargetPosition(dt?: number) {
@@ -207,7 +209,6 @@ export class GuideBody extends LMent implements UpdateHandler {
         {
             this.updateTargetOrientation();
         }
-
 
         if (this.targetBody !== undefined && this.leader !== undefined && this.follower !== undefined)
         {
