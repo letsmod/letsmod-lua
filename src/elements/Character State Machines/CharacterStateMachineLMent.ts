@@ -81,7 +81,6 @@ export class CharacterStateMachineLMent extends StateMachineLMent {
 
     onStart(): void {
         this.body.body.lockRotation(true, false, true);
-        this.body.body.setAngularVelocity(Helpers.zeroVector);
         this.body.body.setVelocity(Helpers.zeroVector);
     }
 
@@ -122,6 +121,7 @@ export class CharacterStateMachineLMent extends StateMachineLMent {
             this.initiateAlertCooldown();
         }
         this.manageAlertTimers(dt);
+        this.body.body.setAngularVelocity(Helpers.zeroVector);
     }
 
     alertCooldownCriteria(): boolean {
