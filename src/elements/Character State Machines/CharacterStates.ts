@@ -104,7 +104,6 @@ export abstract class CharacterStateBase extends AnimatedState implements Update
             newVelo = this.stateMachine.characterBody.getVelocity().clone().multiply(Helpers.upVector);
 
         this.stateMachine.body.body.setVelocity(newVelo);
-        this.stateMachine.body.body.setAngularVelocity(Helpers.zeroVector);
     }
 
     moveForwradFast() {
@@ -129,7 +128,6 @@ export abstract class CharacterStateBase extends AnimatedState implements Update
         if (currentVelo.length() < speed) {
             let force = forwardDirection.multiplyScalar(this.moveForce);
             thisBody.applyCentralForce(force)
-            thisBody.setAngularVelocity(Helpers.zeroVector);
         }
     }
 
