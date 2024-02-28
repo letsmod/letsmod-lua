@@ -30,15 +30,16 @@ export class DestroyOnZeroHP extends LMent implements HitPointChangeHandler {
   onHitPointChange(source: BodyHandle, previousHP: number, currentHP: number): void {
     if (source == this.body && currentHP <= 0 && !this.destroyed) {
       if (this.destructionDelay <= 0) {
-        const sound = this.body.getElementByName(Constants.DeathAudio) as SfxPlayer;
-        if (sound !== undefined) {
-          sound.playAudio();
-        }
         this.doDestroy();
       }
       else {
         GameplayScene.instance.dispatcher.queueDelayedFunction(undefined, this.doDestroy.bind(this), this.destructionDelay);
       }
+      const sound = this.body.getElementByName(Constants.DeathAudio) as SfxPlayer;
+        if (sound !== undefined) {
+          console.log("Playing death sound");
+          sound.playAudio();
+        }
       this.destroyed = true;
     }
   }
