@@ -24,7 +24,7 @@ export class NavigateOutput extends GenericAction {
             return;
         }
 
-        this.navigateState.setNavTarget(triggerOutput.body.getPosition());
+        this.navigateState.setNavTarget(triggerOutput.body.getPosition(), triggerOutput.body.getBoundingSphere().radius);
         this.parentEvent.stateMachine.startState(this.ActionId, CharacterStateNames.navigate, triggerOutput.body.getPosition());
 
     }
