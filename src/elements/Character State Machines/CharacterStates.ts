@@ -9,6 +9,8 @@ import { Vector3 } from "three";
 import { GroundCheck } from "elements/GroundCheck";
 import { SfxPlayer } from "elements/SfxPlayer";
 import { CharacterStateMachineLMent } from "./CharacterStateMachineLMent";
+import { MODscriptEvent } from "MODScript/MODscriptEvent";
+import { MODscriptState } from "./MODscriptStates";
 
 export enum CharacterStateNames {
     idle = "idle",
@@ -167,7 +169,11 @@ export abstract class CharacterStateBase extends AnimatedState implements Update
 
     onEnterState(previousState: State | undefined): void { 
         super.onEnterState(previousState);
-        if(this.sound !== undefined)
+        this.playStateSound();
+     }
+
+     playStateSound(){
+        if(this.sound !== undefined )
             this.sound.playAudio();
      }
 
