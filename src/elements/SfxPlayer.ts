@@ -52,7 +52,10 @@ export class SfxPlayer extends LMent implements UpdateHandler, TriggerHandler {
     }
 
     onStart(): void {
-
+        if(this.audioId !== "")
+            {
+                this.audioId = this.audioId +  this.id;
+            }
     }
 
     onUpdate(dt?: number): void {
