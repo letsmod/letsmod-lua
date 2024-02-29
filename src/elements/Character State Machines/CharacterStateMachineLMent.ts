@@ -27,6 +27,7 @@ export class CharacterStateMachineLMent extends StateMachineLMent {
     talkAnim: string;
     alertCooldown: number;
     alertWarmUp: number;
+    defaultState: string;
 
     protected MODscriptStates: { [key: string]: State | undefined };
     protected transitionManager: StateTransitionManager | undefined;
@@ -59,6 +60,7 @@ export class CharacterStateMachineLMent extends StateMachineLMent {
         this.talkAnim = params.talkAnim === undefined ? "custom" : params.talkAnim;
         this.alertCooldown = params.alertCooldown === undefined ? 3 : params.alertCooldown;
         this.alertWarmUp = params.alertWarmUp === undefined ? 0.25 : params.alertWarmUp;
+        this.defaultState = params.defaultState === undefined ? CharacterStateNames.idle : params.defaultState;
 
         /*** MODscript Fields ***/
         this.lookAtTarget = params.lookAtTarget === undefined ? Helpers.oneVector.applyQuaternion(this.body.body.getRotation()) : params.lookAtTarget;

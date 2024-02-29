@@ -62,6 +62,7 @@ export class Zombie extends AbstractEnemyLMent implements UpdateHandler {
         super(body, id, params);
         this.patrolWait = params.patrolWait === undefined ? 1 : params.patrolWait;
         this.patrolDistance = params.patrolDistance === undefined ? 5 : params.patrolDistance;
+        this.moveReachThreshold = 1;
 
         const rules: StateTransitionRule[] = [
             {
