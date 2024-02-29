@@ -26,7 +26,6 @@ export class SkullEnemy extends AbstractEnemyLMent {
     constructor(body: BodyHandle, id: number, params: Partial<Slime> = {}) {
         super(body, id, params);
         this.movementForce = 100;
-        this.moveReachThreshold = 0.5;
 
         const rules: StateTransitionRule[] = [
             {

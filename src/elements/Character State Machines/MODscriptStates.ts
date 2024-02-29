@@ -15,6 +15,7 @@ export abstract class MODscriptState extends CharacterStateBase {
 export class MODscriptNavigateState extends MODscriptState{
 
     navTarget: Vector3 = Helpers.zeroVector;
+    targetRadius: number = 0;
 
     constructor(stateMachine: CharacterStateMachineLMent, animName: string = "walk", animBlendTime: number = 0.25) {
         super(CharacterStateNames.navigate, stateMachine, animName, animBlendTime);
@@ -36,15 +37,17 @@ export class MODscriptNavigateState extends MODscriptState{
         let distance = this.stateMachine.body.body.getPosition().clone().multiply(Helpers.xzVector).distanceTo(this.navTarget.clone().multiply(Helpers.xzVector));
         if (this.stateMachine.has3DMovement)
             distance = this.stateMachine.body.body.getPosition().distanceTo(this.navTarget);
-        if (distance <= this.stateMachine.moveReachThreshold)
+        if (distance <= this.targetRadius+this.stateMachine.moveReachThreshold)
             this.stateMachine.markComplete();
         else if (this.lookAtElement && this.lookAtElement.lookAtComplete(0.1))
             this.moveForwardNormally();
     }
 
 
-    setNavTarget(target: Vector3) {
+    setNavTarget(target: Vector3, radius: number) {
         this.navTarget = target;
+        console.log("Setting radius: "+radius);
+        this.targetRadius = radius;
     }
 }
 
