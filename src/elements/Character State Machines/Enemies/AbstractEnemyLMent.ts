@@ -11,6 +11,7 @@ export abstract class AbstractEnemyLMent extends CharacterStateMachineLMent {
     constructor(body: BodyHandle, id: number, params: Partial<AbstractEnemyLMent> = {}) {
         super(body, id, params);
         this.attackAnim = params.attackAnim === undefined ? "custom" : params.attackAnim;
+        this.defaultState = CharacterStateNames.patrol;
     }
 
     onInit() {

@@ -25,7 +25,6 @@ export class IdleNPC extends CharacterStateMachineLMent {
     constructor(body: BodyHandle, id: number, params: Partial<IdleNPC> = {}) {
         super(body, id, params);
         this.sightDotValue = 0.2;
-        this.moveReachThreshold = 2;
     }
 
     onInit() {

@@ -2,7 +2,7 @@
 # https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
 
 # All PRs should be reviewed by the DevOps team
-* @sir-aureus @letsAhmad
+* @sir-aureus @NeiratAhmad
 
 # GitHub Actions workflows should be reviewed by the DevOps team
 .github/workflows/* @LetsMOD/DevOps
