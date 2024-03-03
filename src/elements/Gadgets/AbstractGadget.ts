@@ -17,6 +17,7 @@ export class AbstractGadget extends LMent implements InteractHandler, UpdateHand
   // internal
   protected lastActivationTime : number;
   protected lastActivationBuffer : number;
+  protected isPickedUp : boolean = false;
 
   constructor(body: BodyHandle, id: number, params: Partial<AbstractGadget> = {})
   {
@@ -70,6 +71,10 @@ export class AbstractGadget extends LMent implements InteractHandler, UpdateHand
     return false;
   }
 
+  highlightInteractable(): void {
+    this.body.body.showHighlight();
+  }
+
   activate() : Vector3 | undefined
   {
     if (this.lastActivationTime >= this.activationCooldown)
@@ -90,6 +95,16 @@ export class AbstractGadget extends LMent implements InteractHandler, UpdateHand
   {
     // intentionally left blank; this is a hook for derived classes
     return undefined;
+  }
+
+  pickup() : void
+  {
+    this.isPickedUp = true;
+  }
+
+  drop() : void
+  {
+    this.isPickedUp = false;
   }
 
   onUpdate(dt : number): void {

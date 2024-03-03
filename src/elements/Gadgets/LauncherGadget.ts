@@ -4,14 +4,18 @@ import { Helpers } from "engine/Helpers";
 import { AbstractGadget } from "./AbstractGadget";
 import { Vector3 } from "three";
 import { DamageTeam, HitPoints } from "../HitPoints";
+import { SpecialGadget } from "./SpecialGadget";
+import { ScaleWaypoint } from "elements/ScaleWaypoint";
 
-export class LauncherGadget extends AbstractGadget {
+export class LauncherGadget extends SpecialGadget {
   launchSpeedHorizontal : number;
   launchSpeedVertical : number;
   autoAimMinDotProduct : number;
   prefabName : string;
   spawnOffset : Vector3;
   gravityConstant : number;
+  smallMuzzleEffect: ScaleWaypoint | undefined;
+  bigMuzzleEffect: ScaleWaypoint | undefined;
 
   constructor(body: BodyHandle, id: number, params: Partial<LauncherGadget> = {})
   {
@@ -32,6 +36,14 @@ export class LauncherGadget extends AbstractGadget {
 
   onStart(): void {
     super.onStart();
+    const smallMuzzleEffectBody = this.body.bodyGroup.find((b) => b.body.name === "MuzzleEffect");
+    const bigMuzzleEffectBody = this.body.bodyGroup.find((b) => b.body.name === "BigMuzzleEffect");
+    this.smallMuzzleEffect = smallMuzzleEffectBody?.getElement(ScaleWaypoint);
+    this.bigMuzzleEffect = bigMuzzleEffectBody?.getElement(ScaleWaypoint);
+  }
+
+  onUpdate(dt: number): void {
+    super.onUpdate(dt);
   }
 
   doActivate() {
@@ -100,6 +112,8 @@ export class LauncherGadget extends AbstractGadget {
         direction.y = this.launchSpeedVertical;
       }
 
+      this.smallMuzzleEffect?.startOver();
+      this.bigMuzzleEffect?.startOver();
       projectile.body.setVelocity(direction);
       playerBody.body.applyCentralForce(Helpers.forwardVector.multiplyScalar(-1).add(Helpers.upVector).applyQuaternion(playerBody.body.getRotation()).multiplyScalar(200));
       return direction.setY(0).normalize();
