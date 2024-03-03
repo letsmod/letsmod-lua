@@ -87,6 +87,8 @@ export interface InteractHandler extends GenericHandler
   isInInteractionRange(interactor : BodyHandle) : boolean;
 
   onInteract(interactor : BodyHandle) : boolean;
+
+  highlightInteractable?() : void;
 }
 
 export interface ActorDestructionHandler extends GenericHandler

@@ -66,3 +66,5 @@ export {Throwable} from "./Throwable";
 export {LauncherGadget} from "./Gadgets/LauncherGadget";
 export {Zombie} from "./Character State Machines/Enemies/Zombie";
 export {GroundCheck} from "./GroundCheck";
+export {SpecialGadget as FlashingGadget } from "./Gadgets/SpecialGadget";
+export {AutoShow} from "./AutoShow";

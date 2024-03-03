@@ -15,7 +15,8 @@ export class GuideBody extends LMent implements UpdateHandler {
     targetContext: "group" | "global"; /* To tell whether to look for the target in the entire scene or just the body group */
 
     offset: { x: number, y: number, z: number }; /* The position offset from target */
-    private offsetVector; /* To generate a Vector3 from the previous param*/
+    public get offsetVector() { return this._offsetVector; }
+    private _offsetVector; /* To generate a Vector3 from the previous param*/
 
     rotationOffset: { x: number, y: number, z: number };
     private rotationOffsetQuaternion; /* To contain the quaternion value of the given axis angle */
@@ -45,7 +46,7 @@ export class GuideBody extends LMent implements UpdateHandler {
         this.guideName = params.guideName === undefined ? Helpers.NA : params.guideName;
         this.mode = params.mode === undefined ? "follow" : params.mode;
         this.offset = params.offset === undefined ? { x: 0, y: 0, z: 0 } : params.offset;
-        this.offsetVector = Helpers.NewVector3(this.offset.x, this.offset.y, this.offset.z);
+        this._offsetVector = Helpers.NewVector3(this.offset.x, this.offset.y, this.offset.z);
         this.move = params.move === undefined ? true : params.move;
 
         this.rotationOffset = params.rotationOffset === undefined ? { x: 0, y: 0, z: 0 } : params.rotationOffset;
@@ -134,12 +135,20 @@ export class GuideBody extends LMent implements UpdateHandler {
         }, 2 / 30)
     }
 
+    updateRotationOffset(x: number, y: number, z: number) {
+        this.rotationOffset = { x: x, y: y, z: z };
+        this.rotationOffsetQuaternion = Helpers.NewQuatFromEuler(Helpers.Rad(x), Helpers.Rad(y), Helpers.Rad(z));
+    }
+
     updateOffsetVector(x: number, y: number, z: number, additive: boolean = true) {
 
         if (additive) ///---> Adding to the original offset OR set a completely new offset.
-                this.offsetVector.set(this.offset.x + x, this.offset.y + y, this.offset.z + z);
+                this._offsetVector.set(this.offset.x + x, this.offset.y + y, this.offset.z + z);
         else
-            this.offsetVector.set(x, y, z);
+            {
+                this.offset = { x: x, y: y, z: z };
+                this._offsetVector.set(x, y, z);
+            }
     }
 
     updateTargetPosition(dt?: number) {
@@ -148,10 +157,9 @@ export class GuideBody extends LMent implements UpdateHandler {
             return;
         }
 
-        let offset = this.offsetVector.clone();
-
+        let offset = this._offsetVector.clone();
         if (this.offsetSpace.toLowerCase() === "local")
-            offset.copy(this.offsetVector.clone().applyQuaternion(this.leader.body.getRotation()));
+            offset.copy(this._offsetVector.clone().applyQuaternion(this.leader.body.getRotation()));
         let leaderPosition = this.leader.body.getPosition();
         let targetVector = leaderPosition.clone().add(offset);
 

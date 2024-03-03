@@ -870,6 +870,10 @@ export class IdleHoldingState extends StaggerableState
     }
     else
     {
+      const liftedGadget = this.liftedItem?.getElement(AbstractGadget);
+      if(liftedGadget)
+        liftedGadget.drop();
+      this.stateMachine.resetCamGuide();
       this.stateMachine.switchState("place");
     }
   }
@@ -1250,6 +1254,8 @@ export class AdventurerAvatar extends AvatarBase
   cameraGuide: BodyHandle | undefined = undefined;
   liftedItem: BodyHandle | undefined = undefined;
   myGuideElement: GuideBody | undefined = undefined;
+  private defaultRotationOffset: {x: number, y: number, z: number} = {x: 0, y: 0, z: 0};
+  private defaultPositionOffset: {x: number, y: number, z: number} = {x: 0, y: 0, z: 0};
 
   cameraRotationDelayTimer: number = 0;
 
@@ -1297,6 +1303,7 @@ export class AdventurerAvatar extends AvatarBase
     this.clamberDetectorPrefab = params.clamberDetectorPrefab ?? "ClamberDetector";
     this.jumpDetectorPrefab = params.jumpDetectorPrefab ?? "JumpDetector";
     this.cameraGuidePrefab = params.cameraGuidePrefab ?? "CameraGuide_v2";
+
   }
 
   accelerateWithParams(acceleration: number, smoothFactor: number, maxSpeed: number, dt: number)
@@ -1368,10 +1375,8 @@ export class AdventurerAvatar extends AvatarBase
     {
       this.myGuideElement = this.cameraGuide.getElement(GuideBody);
       this.camGuide = this.myGuideElement;
-      if (this.camGuide !== undefined)
-      {
+      if (this.camGuide !== undefined){
         this.camTarget = this.camGuide.body.getElement(CameraTarget);
-        this.camGuide.updateOffsetVector(0, 1.5, 0);
       }
     }
 
@@ -1400,6 +1405,10 @@ export class AdventurerAvatar extends AvatarBase
 
   onStart(): void {
     super.onStart();
+    if (this.camGuide !== undefined){
+      this.defaultPositionOffset = this.camGuide.offset;
+      this.defaultRotationOffset = this.camGuide.rotationOffset;
+    }
   }
 
   canInteract(): boolean
@@ -1423,9 +1432,10 @@ export class AdventurerAvatar extends AvatarBase
       }
     }
 
-    if (selectedInteractable instanceof LMent)
+    if (selectedInteractable !== undefined && selectedInteractable instanceof LMent)
     {
-      selectedInteractable.body.body.showHighlight();
+      if(selectedInteractable.highlightInteractable !== undefined)
+        selectedInteractable.highlightInteractable();
     }
   }
 
@@ -1435,8 +1445,20 @@ export class AdventurerAvatar extends AvatarBase
     {
       return;
     }
+    item.pickup();
     this.liftedItem = item.body;
     this.switchState("lift");
+    if(this.camGuide !== undefined){
+      this.camGuide.updateRotationOffset(40, 0, 0);
+      this.camGuide.updateOffsetVector(0, 5, -4,false);
+    }
+  }
+
+  resetCamGuide(){
+    if(this.camGuide !== undefined){
+      this.camGuide.updateRotationOffset(this.defaultRotationOffset.x, this.defaultRotationOffset.y, this.defaultRotationOffset.z);
+      this.camGuide.updateOffsetVector(this.defaultPositionOffset.x, this.defaultPositionOffset.y, this.defaultPositionOffset.z,false);
+    }
   }
 
   onCollision(info: CollisionInfo): void {
