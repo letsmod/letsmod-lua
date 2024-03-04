@@ -24,10 +24,10 @@ export class LauncherGadget extends SpecialGadget {
     this.launchSpeedVertical = params.launchSpeedVertical ?? 2;
     this.autoAimMinDotProduct = params.autoAimMinDotProduct ?? 0.85;
     this.gravityConstant = params.gravityConstant ?? -9.81 * 2.5;
-    this.prefabName = params.prefabName ?? "StoneProjectile_Lua";
+    this.prefabName = params.prefabName ?? "Cannonball";
     this.spawnOffset = params.spawnOffset ?
       Helpers.NewVector3(params.spawnOffset.x, params.spawnOffset.y, params.spawnOffset.z)
-      : Helpers.NewVector3(0, 0, 0.5);
+      : Helpers.NewVector3(0, 0, 1);
   }
 
   onInit(): void {
