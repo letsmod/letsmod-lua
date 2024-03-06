@@ -31,7 +31,7 @@ export class NavigateOther extends GenericAction {
             return;
         }
 
-        this.navigateState.setNavTarget(this.targetActor.body.getPosition(), this.targetActor.body.getBoundingSphere().radius);
+        this.navigateState.setNavigateSpecs(this.targetActor.body.getPosition(), this.targetActor.body.getBoundingSphere().radius, this.parentEvent.Repeatable);
         this.parentEvent.stateMachine.startState(this.ActionId, CharacterStateNames.navigate, this.targetActor.body.getPosition());
     }
 
