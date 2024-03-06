@@ -49,7 +49,7 @@ export class MODscriptNavigateState extends MODscriptState {
     }
 
     fakeIdle(){
-        this.shape?.playAnimation("temp_idle", 0.25);
+        this.shape?.playAnimation(this.stateMachine.idleAnim, 0.25);
     }
 
     override moveForwardNormally(): void {

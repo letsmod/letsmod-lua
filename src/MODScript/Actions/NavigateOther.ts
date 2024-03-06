@@ -38,7 +38,7 @@ export class NavigateOther extends GenericAction {
     monitorAction(): void {
         if (!this.parentEvent || !this.parentEvent.stateMachine) return;
 
-        if (this.parentEvent.stateMachine.stateIsComplete(this.ActionId))
+        if (this.parentEvent.stateMachine.stateIsComplete(this.ActionId) && !this.parentEvent.Repeatable)
             this.actionFinished();
         else if (this.parentEvent.stateMachine.stateIsFailed(this.ActionId))
             this.actionFailed();

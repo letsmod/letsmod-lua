@@ -152,11 +152,20 @@
 
         .toggle-button {
             background-color: green;
-            right: 90px;
+            right: 185px;
         }
 
         .toggle-button:hover {
             background-color: rgb(55, 182, 55);
+        }
+
+        .duplicate-button {
+            background-color: #ef7218;
+            right: 90px;
+        }
+
+        .duplicate-button:hover {
+            background-color: #ff8c00;
         }
 
         .form-section {
@@ -310,7 +319,7 @@
                 "SeenOther": '<div class="sub-argument"><label for="actorName">Actor Name:</label><input type="text" id="actorName"></div>'
             }
 
-            var triggerMaxDistanceHTML = '<div class="sub-argument"><label for="maxDistance">Max Distance:</label><input type="number" id="maxDistance"></div>';
+            var triggerMaxDistanceHTML = '<div class="sub-argument"><label for="maxDistance">Max Distance:</label><input type="number" id="maxDistance" value="3"></div>';
             var triggerEventIdHTML = '<div class="sub-argument"><label for="eventId">Event ID:</label><input type="number" id="eventId"></div>';
             var triggerConditionHTML = createConditionHTML();
 
@@ -328,11 +337,11 @@
 
             var actorNameHTML = '<div class="sub-argument" ><label for="actorName">Actor Name:</label><input type="text" id="actorName"></div>';
             var prefabIdHTML = '<div class="sub-argument" ><label for="prefabId">Prefab ID:</label><input type="text" id="prefabId"></div>';
-            var sayArgsHTML = '<div class="sub-argument" ><label for="sentence">Sentence:</label><input type="text" id="sentence"></div><div class="sub-argument" ><label for="audioId">Audio ID:</label><input type="text" id="audioId"></div><div class="sub-argument" ><label for="image">Image:</label><input type="text" id="image"></div><div class="sub-argument" ><label for="audioGapMs">Audio Gap (ms):</label><input type="number" id="audioGapMs"></div><div class="sub-argument" ><label for="durationMs">Duration (ms):</label><input type="number" id="durationMs"></div>'
+            var sayArgsHTML = '<div class="sub-argument" ><label for="sentence">Sentence:</label><input type="text" id="sentence" value="Hello!"></div><div class="sub-argument" ><label for="audioId">Audio ID:</label><input type="text" id="audioId"></div><div class="sub-argument" ><label for="image">Image:</label><input type="text" id="image"></div><div class="sub-argument" ><label for="audioGapMs">Audio Gap (ms):</label><input type="number" id="audioGapMs" value="100"></div><div class="sub-argument" ><label for="durationMs">Duration (ms):</label><input type="number" id="durationMs" value="1000"></div>'
             var stateHTML = '<div class="sub-argument" ><label for="stateId">State ID:</label><input type="text" id="stateId"></div>';
-            var waitArgsHTML = '<div class="sub-argument" ><label for="timeToWait">Time to Wait:</label><input type="number" id="timeToWait"></div><div class="sub-argument" ><label for="eventIdToWaitFor">Event ID to wait for:</label><input type="number" id="eventIdToWaitFor"></div>';
+            var waitArgsHTML = '<div class="sub-argument" ><label for="timeToWait">Time to Wait (sec):</label><input type="number" id="timeToWait" value="1"></div><div class="sub-argument" ><label for="eventIdToWaitFor">Event ID to wait for:</label><input type="number" id="eventIdToWaitFor"></div>';
             var eventIdHTML = '<div class="sub-argument" ><label for="eventId">Event ID:</label><input type="number" id="eventId"></div>';
-            var positionHTML = '<div class="sub-argument" ><label for="position">Position:</label><input type="text" id="position"></div>';
+            var positionHTML = '<div class="sub-argument" ><label for="position">Position:</label><input type="text" id="position" value=\'{"x":0,"y":0,"z":0}\'></div>';
 
             var actionArgs = {
                 '': '',
@@ -404,13 +413,20 @@
             }
 
             function createEventForm() {
-                var formHTML = '<form class="event-form"><div class="form-header"><h3>Event ID:<span id="eventId">' + lastEventId + '</span></h3><button class="toggle-button" type="button">toggle</button><button class="delete-button" type="button">delete</button></div><div class="form-body">';
+                var formHTML = '<form class="event-form"><div class="form-header"><h3>Event ID:<span id="eventId">' + lastEventId + '</span></h3><button class="toggle-button" type="button">toggle</button><button class="duplicate-button" type="button">duplicate</button><button class="delete-button" type="button">delete</button></div><div class="form-body">';
                 formHTML += createEventPropsSection();
                 formHTML += createTriggerSection();
                 formHTML += createActionSection();
                 lastEventId++;
 
                 return formHTML + '</div></form>';
+            }
+
+            function duplicateEventForm(eventForm) {
+                var newEventForm = eventForm.clone();
+                newEventForm.find('#eventId').text(lastEventId);
+                lastEventId++;
+                $('#events-container').append(newEventForm);
             }
 
             function updateTriggerArgs(eventObject) {
@@ -554,6 +570,10 @@
 
             $("#events-container").on("click", '.toggle-button', function () {
                 $(this).parent().siblings('.form-body').toggle("fast");
+            });
+
+            $("#events-container").on("click", '.duplicate-button', function () {
+                duplicateEventForm($(this).closest('.event-form'));
             });
 
             $('#addEvent').click(function () {
