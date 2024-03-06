@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MODscript Generator</title>
+    <style type="text/css">
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #eceff1;
+            margin: 0;
+            padding: 20px;
+        }
+
+        #event-editor {
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            padding: 20px;
+            margin-bottom: 20px;
+            max-width: 550px;
+            min-width: 500px;
+            height: 680px;
+            flex: 1;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        #events-container {
+            height: 500px;
+            padding-right: 20px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+        }
+
+        .event-form {
+            border: 1px solid #cfd8dc;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            padding: 10px;
+        }
+
+        button {
+            background-color: #29b6f6;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background-color: #039be5;
+        }
+
+        .json-button {
+            width: 100%;
+            margin-top: 5px;
+        }
+
+        .mini-json-button {
+            width: auto;
+            flex-grow: 1;
+        }
+
+        #beautifyJSON {
+            margin-right: 5px;
+        }
+
+        #commonJSONButtons {
+            margin-top:5px;
+            display: flex;
+            justify-content: space-between;
+            
+        }
+
+        input[type="text"],
+        input[type="number"],
+        select {
+            width: calc(100% - 22px);
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #cfd8dc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        input[type="checkbox"] {
+            margin-right: 5px;
+            margin-left: 0px;
+        }
+
+        #addEvent {
+            display: block;
+            margin-bottom: 20px;
+            font-size: 24px;
+            font-weight: bold;
+            line-height: 24px;
+            text-align: center;
+            background-color: #eceff1;
+            color: #29b6f6;
+            box-shadow: none;
+            width: 100%;
+        }
+
+        #addEvent:hover {
+            color: #039be5;
+            background-color: #cfd8dc;
+        }
+
+        button:disabled,
+        button:disabled:hover {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+
+        .event-form {
+            background-color: #FFFFFF;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            padding: 15px;
+            margin-bottom: 10px;
+            position: relative;
+        }
+
+        .event-form h3 {
+            font-size: 18px;
+            margin: 0;
+            display: inline-block;
+        }
+
+        .form-header button {
+            position: absolute;
+            top: 15px;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 5px 10px;
+            cursor: pointer;
+        }
+
+        .delete-button {
+            background-color: #FF4136;
+            right: 15px;
+        }
+
+        .delete-button:hover {
+            background-color: #FF5736;
+        }
+
+        .toggle-button {
+            background-color: green;
+            right: 90px;
+        }
+
+        .toggle-button:hover {
+            background-color: rgb(55, 182, 55);
+        }
+
+        .form-section {
+            margin-bottom: 15px;
+            border: 1px solid #999999;
+        }
+
+        label {
+            font-weight: bold;
+            margin-bottom: 5px;
+            width: 180px;
+            display: inline-block;
+            margin: 10px 0 5px;
+            color: #333;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        select {
+            width: 200px;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #CCCCCC;
+            border-radius: 4px;
+            box-sizing: border-box;
+            display: inline-block;
+        }
+
+        .event-prop-div {
+            width: 50%;
+            display: inline-block;
+        }
+
+        .event-prop-div label {
+            width: 45%;
+        }
+
+        #eventActorType {
+            width: 55%;
+        }
+
+        #eventActorName {
+            width: 40%;
+        }
+
+        .trigger-section {
+            background-color: #F5F5F5;
+            padding: 10px;
+        }
+
+        .condition {
+            background-color: #E5E5E5;
+            padding: 10px;
+            margin-top: 10px;
+        }
+
+        .action-section {
+            background-color: #F5F5F5;
+            padding: 10px;
+        }
+
+        .args-title {
+            width: 100%+20px;
+            height: 20px;
+            background-color: #BBBBBB;
+            text-align: center;
+            color: white;
+            margin-left: -10px;
+            margin-right: -10px;
+            padding-top: 2px;
+        }
+
+        .section-title {
+            background-color: #999999;
+            color: white;
+            font-size: 20px;
+            width: 20%;
+            padding: 2px 0px 2px 5px;
+        }
+
+        .event-props {
+            margin-top: 10px;
+        }
+
+        #container {
+            display: flex;
+            justify-content: center;
+            min-height: 500px;
+            width: 100%;
+        }
+
+        #jsonOutputContainer {
+            margin-left: 20px;
+            width: 500px;
+            min-width: 500px;
+            height: 680px;
+        }
+
+        #jsonOutput {
+            width: 100%;
+            height: 540px;
+            border: 1px solid #cfd8dc;
+            border-radius: 4px;
+            font-family: 'Courier New', Courier, monospace;
+            background-color: #fafafa;
+            resize: none;
+            overflow: scroll;
+        }
+
+        .form-header {
+            height: 30px;
+            background-color: beige;
+            margin: -10px;
+            padding: 10px;
+            border-radius: 5px;
+        }
+
+        #editorHeader {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+    </style>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+
+    <script type="text/javascript">
+
+
+        $(document).ready(function () {
+
+            var lastEventId = 0;
+
+            var actorAliasNames = ["X", "Y", "Z", "C", "B", "V", "W"];
+            var actorTypes = ["Young Man", "Young Woman", "Old Man", "Old Woman", "Young Boy", "Young Girl", "Zombie", "Slime", "Skull", "Mosquito"];
+
+            var conditionArgs = {
+                "True": '',
+                "IsPlayer": '',
+                "HasElement": '<div class="sub-argument"><label for="elementId">Element ID:</label><input type="text" id="elementId"></div>',
+                "HasTag": '<div class="sub-argument"><label for="tagId">Tag ID:</label><input type="text" id="tagId"></div>',
+                "IsOnTeam": '<div class="sub-argument"><label for="teamId">Team ID:</label><input type="number" id="teamId"></div>',
+                "MinMass": '<div class="sub-argument"><label for="minMass">Min Mass:</label><input type="number" id="minMass"></div>',
+                "MaxMass": '<div class="sub-argument"><label for="maxMass">Max Mass:</label><input type="number" id="maxMass"></div>',
+                "MinSize": '<div class="sub-argument"><label for="minSize">Min Size:</label><input type="number" id="minSize"></div>',
+                "MaxSize": '<div class="sub-argument"><label for="maxSize">Max Size:</label><input type="number" id="maxSize"></div>',
+                "AndCond": '',
+                "OrCond": '',
+                "NotCond": '',
+                "IsOther": '<div class="sub-argument"><label for="actorName">Actor Name:</label><input type="text" id="actorName"></div>',
+                "SeenOther": '<div class="sub-argument"><label for="actorName">Actor Name:</label><input type="text" id="actorName"></div>'
+            }
+
+            var triggerMaxDistanceHTML = '<div class="sub-argument"><label for="maxDistance">Max Distance:</label><input type="number" id="maxDistance"></div>';
+            var triggerEventIdHTML = '<div class="sub-argument"><label for="eventId">Event ID:</label><input type="number" id="eventId"></div>';
+            var triggerConditionHTML = createConditionHTML();
+
+            var triggerArgs = {
+                "": '',
+                "Nearby": triggerMaxDistanceHTML + triggerConditionHTML,
+                "Hear": triggerMaxDistanceHTML + triggerConditionHTML,
+                "Touched": triggerConditionHTML,
+                "Damaged": '',
+                "Destroyed": '',
+                "OtherDamaged": triggerMaxDistanceHTML + triggerConditionHTML,
+                "OtherDestroyed": triggerMaxDistanceHTML + triggerConditionHTML,
+                "CompletedEvent": triggerEventIdHTML
+            }
+
+            var actorNameHTML = '<div class="sub-argument" ><label for="actorName">Actor Name:</label><input type="text" id="actorName"></div>';
+            var prefabIdHTML = '<div class="sub-argument" ><label for="prefabId">Prefab ID:</label><input type="text" id="prefabId"></div>';
+            var sayArgsHTML = '<div class="sub-argument" ><label for="sentence">Sentence:</label><input type="text" id="sentence"></div><div class="sub-argument" ><label for="audioId">Audio ID:</label><input type="text" id="audioId"></div><div class="sub-argument" ><label for="image">Image:</label><input type="text" id="image"></div><div class="sub-argument" ><label for="audioGapMs">Audio Gap (ms):</label><input type="number" id="audioGapMs"></div><div class="sub-argument" ><label for="durationMs">Duration (ms):</label><input type="number" id="durationMs"></div>'
+            var stateHTML = '<div class="sub-argument" ><label for="stateId">State ID:</label><input type="text" id="stateId"></div>';
+            var waitArgsHTML = '<div class="sub-argument" ><label for="timeToWait">Time to Wait:</label><input type="number" id="timeToWait"></div><div class="sub-argument" ><label for="eventIdToWaitFor">Event ID to wait for:</label><input type="number" id="eventIdToWaitFor"></div>';
+            var eventIdHTML = '<div class="sub-argument" ><label for="eventId">Event ID:</label><input type="number" id="eventId"></div>';
+            var positionHTML = '<div class="sub-argument" ><label for="position">Position:</label><input type="text" id="position"></div>';
+
+            var actionArgs = {
+                '': '',
+                "LookOther": actorNameHTML,
+                "LookOutput": '',
+                "NavigateOther": actorNameHTML,
+                "NavigateOutput": '',
+                "ThrowOther": actorNameHTML + prefabIdHTML,
+                "ThrowOutput": prefabIdHTML,
+                "Say": sayArgsHTML,
+                "SetState": stateHTML,
+                "DestroyOther": actorNameHTML,
+                "DestroyOutput": '',
+                "Wait": waitArgsHTML,
+                "EnableEvent": eventIdHTML,
+                "DisableEvent": eventIdHTML,
+                "Instantiate": positionHTML,
+                "SimultaneousActions": ''
+            }
+
+            function addEvent() {
+                var newEventForm = createEventForm();
+                $('#events-container').append(newEventForm);
+            }
+
+            function createEventPropsSection() {
+
+                var eventPropsHTML = '<div class="event-props">';
+
+                eventPropsHTML += '<div class="event-prop-div"><label for="eventEnabled">Enabled</label><input type="checkbox" id="eventEnabled" checked></div><div class="event-prop-div"><label for="eventRepeatable">Repeatable</label><input type="checkbox" id="eventRepeatable"></div>';
+
+                eventPropsHTML += '<div class="event-prop-div"><label id="eventActorNameLabel" for="actorName">Actor Name</label><input type="text" id="eventActorName">';
+
+                eventPropsHTML += '</div><div class="event-prop-div"><label id="eventActorTypeLabel" for="actorName">Actor Type</label><select id="eventActorType">';
+
+                for (var key of actorTypes)
+                    eventPropsHTML += key + '<option value="' + key + '">' + key + '</option>';
+
+                eventPropsHTML += '</select></div>';
+
+                return eventPropsHTML + "</div>";
+            }
+
+            function createConditionHTML() {
+                var conditionHTML = '<div class="condition"><label for="conditionType">Condition:</label><select id="conditionType">';
+                for (var key in conditionArgs) {
+                    conditionHTML += '<option value="' + key + '">' + key + '</option>';
+                }
+                conditionHTML += '</select><div class="condition-args"></div></div>';
+                return conditionHTML;
+            }
+
+            function createTriggerSection() {
+                var triggerSectionHTML = '<div class="section-title">Trigger</div><div class="form-section trigger-section" id="eventTrigger"><label for="triggerType">Trigger Type:</label><select id="triggerType">'
+                for (var key in triggerArgs) {
+                    triggerSectionHTML += '<option value="' + key + '">' + key + '</option>';
+                }
+                triggerSectionHTML += '</select><div class="arguments"></div></div>';
+                return triggerSectionHTML;
+            }
+
+            function createActionSection() {
+                var actionSectionHTML = '<div class="section-title">Action</div><div class="form-section action-section" id="eventAction"><label for="actionType">Type:</label><select id="actionType">';
+                for (var key in actionArgs) {
+                    actionSectionHTML += '<option value="' + key + '">' + key + '</option>';
+                }
+                actionSectionHTML += '</select><div class="arguments"><div class="args-title">Args</div></div>';
+                return actionSectionHTML;
+            }
+
+            function createEventForm() {
+                var formHTML = '<form class="event-form"><div class="form-header"><h3>Event ID:<span id="eventId">' + lastEventId + '</span></h3><button class="toggle-button" type="button">toggle</button><button class="delete-button" type="button">delete</button></div><div class="form-body">';
+                formHTML += createEventPropsSection();
+                formHTML += createTriggerSection();
+                formHTML += createActionSection();
+                lastEventId++;
+
+                return formHTML + '</div></form>';
+            }
+
+            function updateTriggerArgs(eventObject) {
+                var triggerName = eventObject.val();
+                var argsObject = eventObject.siblings(".arguments");
+                argsObject.html('<div class="args-title">Args</div>');
+                argsObject.append(triggerArgs[triggerName]);
+            }
+
+            function updateConditionArgs(eventObject) {
+                var conditionName = eventObject.val();
+                var argsObject = eventObject.siblings(".condition-args");
+                argsObject.html(conditionArgs[conditionName]);
+            }
+
+            function updateActionArgs(eventObject) {
+                var actionName = eventObject.val();
+                var argsObject = eventObject.siblings(".arguments");
+                argsObject.html('<div class="args-title">Args</div>');
+                argsObject.append(actionArgs[actionName]);
+            }
+
+            function generateJSON() {
+                var eventsArray = [];
+
+                $('.event-form').each(function () {
+                    var $form = $(this);
+                    var eventId = parseInt($form.find('#eventId').text().trim());
+                    var actorName = $form.find('.event-props #eventActorName').val();
+                    var actorType = $form.find('.event-props #eventActorType').val();
+                    var triggerType = $form.find('.trigger-section #triggerType').val();
+                    var actionType = $form.find('.action-section #actionType').val();
+                    var repeatable = $form.find('.event-props #eventRepeatable').is(':checked');
+                    var enabled = $form.find('.event-props #eventEnabled').is(':checked');
+
+                    var eventObj = {
+                        'id': parseInt(eventId),
+                        'order': parseInt(eventId),
+                        'actorName': actorName,
+                        'actorType': actorType,
+                        'trigger': {
+                            'triggerType': triggerType,
+                            'args': {}
+                        },
+                        'action': {
+                            'actionType': actionType,
+                            'args': {}
+                        },
+                        'repeatable': repeatable,
+                        'enabled': enabled
+                    };
+
+                    $form.find('.trigger-section .sub-argument').each(function () {
+                        if (!$(this).closest('.condition').length) {
+                            var argName = $(this).find('input, select').attr('id').replace(/[0-9]/g, '');
+                            var argValue = $(this).find('input, select').val();
+                            if ($(this).find('input').attr('type') === 'number')
+                                argValue = parseFloat(argValue);
+                            eventObj.trigger.args[argName] = argValue;
+                        }
+                    });
+
+                    if ($form.find('.condition').length > 0) {
+                        var conditionType = $form.find('.condition #conditionType').val();
+                        var conditionArgs = {};
+
+                        $form.find('.condition .sub-argument').each(function () {
+                            var argName = $(this).find('input, select').attr('id').replace(/[0-9]/g, '');
+                            var argValue = $(this).find('input, select').val();
+
+                            if ($(this).find('input').attr('type') === 'number')
+                                argValue = parseFloat(argValue);
+
+                            conditionArgs[argName] = argValue;
+                        });
+
+                        eventObj.trigger.args['condition'] = {
+                            'conditionType': conditionType,
+                            'args': conditionArgs
+                        };
+                    }
+
+                    $form.find('.action-section .sub-argument').each(function () {
+                        var argName = $(this).find('input, select').attr('id').replace(/[0-9]/g, '');
+                        var argValue = $(this).find('input, select').val();
+                        if ($(this).find('input').attr('type') === 'number')
+                            argValue = parseFloat(argValue);
+                        eventObj.action.args[argName] = argValue;
+                    });
+
+                    eventsArray.push(eventObj);
+                });
+
+                var json = JSON.stringify(eventsArray, null, 4);
+                $('#jsonOutput').prop("wrap", "off");
+                $('#jsonOutput').val(json);
+
+            }
+
+            function MODscriptJSON() {
+                var currentJson = $('#jsonOutput').val();
+                var minifiedJson = JSON.stringify(JSON.parse(currentJson));
+                var modifiedJson = minifiedJson.replace(/"/g, "'");
+                modifiedJson = '{"json":"' + modifiedJson + '"}';
+                $('#jsonOutput').prop("wrap", "on");
+                $('#jsonOutput').val(modifiedJson);
+                navigator.clipboard.writeText(modifiedJson).then(function () {
+                    alert('MODscript JSON copied to clipboard');
+                }, function (err) {
+                    alert('Error copying to clipboard');
+                });
+            }
+
+            function disableOtherJSONButtons() {
+                $('#modscriptJSON').prop('disabled', true);
+                $('#beautifyJSON').prop('disabled', true);
+                $('#minifyJSON').prop('disabled', true);
+            }
+
+            function enableOtherJSONButtons() {
+                $('#modscriptJSON').prop('disabled', false);
+                $('#beautifyJSON').prop('disabled', false);
+                $('#minifyJSON').prop('disabled', false);
+            }
+
+            $("#events-container").on('change', '#triggerType', function () {
+                updateTriggerArgs($(this));
+            });
+
+            $("#events-container").on('change', '#conditionType', function () {
+                updateConditionArgs($(this));
+            });
+
+            $("#events-container").on('change', '#actionType', function () {
+                updateActionArgs($(this));
+            });
+
+            $("#events-container").on("click", '.delete-button', function () {
+                $(this).closest('.event-form').remove();
+            });
+
+            $("#events-container").on("click", '.toggle-button', function () {
+                $(this).parent().siblings('.form-body').toggle("fast");
+            });
+
+            $('#addEvent').click(function () {
+                addEvent();
+            });
+
+            $('#generateJSON').click(function () {
+                generateJSON();
+                $('#jsonOutput').trigger('input');
+            });
+
+            $('#modscriptJSON').click(function () {
+                MODscriptJSON();
+            });
+
+            $('#collapseAllButton').click(function () {
+                $("#events-container").find('.form-body').hide("fast");
+            })
+
+            $('#beautifyJSON').click(function () {
+                var currentJson = $('#jsonOutput').val();
+                var beautifiedJson = JSON.stringify(JSON.parse(currentJson), null, 4);
+                $('#jsonOutput').prop("wrap", "off");
+                $('#jsonOutput').val(beautifiedJson);
+            });
+
+            $('#minifyJSON').click(function () {
+                var currentJson = $('#jsonOutput').val();
+                var minifiedJson = JSON.stringify(JSON.parse(currentJson));
+                $('#jsonOutput').prop("wrap", "on");
+                $('#jsonOutput').val(minifiedJson);
+            });
+
+            $('#jsonOutput').on('input', function () {
+                if ($(this).val().length > 0) {
+                    enableOtherJSONButtons();
+                } else {
+                    disableOtherJSONButtons();
+                }
+            });
+
+            disableOtherJSONButtons();
+        });
+
+    </script>
+</head>
+
+<body>
+    <h1 style="text-align:center">MODscript Generator</h1>
+    <div id="container">
+        <div id="event-editor">
+            <div id="editorHeader">
+                <h2>Events List</h2>
+                <button id="collapseAllButton">Hide All</button>
+            </div>
+            <div id="events-container">
+            </div>
+            <button id="addEvent">Add New Event</button>
+        </div>
+        <div id="jsonOutputContainer">
+            <textarea id="jsonOutput" wrap="off"></textarea>
+            <button id="generateJSON" class="json-button">Generate JSON</button>
+            <button id="modscriptJSON" class="json-button">For MODscript LMent</button>
+            <div id="commonJSONButtons">
+                <button id="beautifyJSON" class="mini-json-button">Beautify</button>
+                <button id="minifyJSON" class="mini-json-button">Minify</button>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
