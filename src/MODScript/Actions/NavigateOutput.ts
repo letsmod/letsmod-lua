@@ -24,14 +24,14 @@ export class NavigateOutput extends GenericAction {
             return;
         }
 
-        this.navigateState.setNavTarget(triggerOutput.body.getPosition(), triggerOutput.body.getBoundingSphere().radius);
+        this.navigateState.setNavigateSpecs(triggerOutput.body.getPosition(), triggerOutput.body.getBoundingSphere().radius,this.parentEvent.Repeatable);
         this.parentEvent.stateMachine.startState(this.ActionId, CharacterStateNames.navigate, triggerOutput.body.getPosition());
 
     }
 
     monitorAction(): void {
         if (!this.parentEvent || !this.parentEvent.stateMachine) return;
-        if (this.parentEvent.stateMachine.stateIsComplete(this.ActionId))
+        if (this.parentEvent.stateMachine.stateIsComplete(this.ActionId) && !this.parentEvent.Repeatable)
             this.actionFinished();
         else if (this.parentEvent.stateMachine.stateIsFailed(this.ActionId))
             this.actionFailed();
