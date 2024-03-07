@@ -43,9 +43,11 @@ export class SimultaneousAction extends GenericAction {
             this.actionFailed();
             return;
         }
-
-        if (this.genericAction1.ActionIsFinished)
+        this.genericAction1.monitorAction();
+        if (this.genericAction1.ActionIsFinished) {
             this.genericAction2.performAction(this.triggerOutput);
+            this.genericAction2.monitorAction();
+        }
 
         if (this.genericAction1.ActionIsFinished && this.genericAction2.ActionIsFinished)
             this.actionFinished();
