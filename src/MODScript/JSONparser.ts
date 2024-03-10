@@ -137,11 +137,11 @@ export class JSONparser {
         return args;
     }
 
-    static parseActionArgs(actionStr: string): { [key: string]: number | string | ActionDefinition } {
+    static parseActionArgs(actionStr: string): { [key: string]: number | string | ActionDefinition | Vector3 } {
         let argsString = this.getStringBetween(actionStr, '{', '}');
 
         const keyValues = argsString.split(',').map(kv => kv.split(':').map(s => s.trim()));
-        let args: { [key: string]: number | string | ActionDefinition } = {}
+        let args: { [key: string]: number | string | ActionDefinition | Vector3 } = {}
 
         for (const [key, value] of keyValues) {
             if (key.includes("actorName")) {
@@ -178,9 +178,28 @@ export class JSONparser {
                 args.action1 = this.parseActionDefinition("",this.getStringBetween(actionStr, '"action1":{', '}'));
             else if (key.includes("action2"))
                 args.action2 = this.parseActionDefinition("",this.getStringBetween(actionStr, '"action2":{', '}'));           
+            else if (key.includes("position"))
+                {
+                    let vectorString = this.getStringBetween(argsString, '{', '}');
+                    args.position = this.parseVector3Value(vectorString.split('"').join(''));
+                }
 
         }
         return args;
+    }
+
+    static parseVector3Value(str: string): Vector3 {
+        const keyValues = str.split(',').map(kval => kval.split(':').map(s => s.trim()));
+        let vector:Vector3 = {x:0,y:0,z:0};
+        for (const [key, value] of keyValues) {
+            if(key.includes("x"))
+                vector.x = Number(value);
+            else if(key.includes("y"))
+                vector.y = Number(value);
+            else if(key.includes("z"))
+                vector.z = Number(value);
+        }
+        return vector;
     }
 
     static parseNumberValue(str: string, key: string): number {
