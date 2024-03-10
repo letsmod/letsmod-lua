@@ -131,7 +131,8 @@ export class JSONparser {
             else if (key.includes("condition2"))
                  args.condition2 = this.parseConditionDefinition(this.getStringBetween(argsString, '{', '}'));
             else if (key.includes("condition"))
-                 args.condition = this.parseConditionDefinition(this.getStringBetween(argsString, '{', '}'));                
+                 args.condition = this.parseConditionDefinition(this.getStringBetween(argsString, '{', '}'));        
+            // else if Position
         }
         return args;
     }
@@ -152,9 +153,9 @@ export class JSONparser {
             else if (key.includes("actorId"))
                 args.actorId = Number(value);
             else if (key.includes("sentence"))
-                args.sentence = value;
+                args.sentence = value.split('"').join('');
             else if (key.includes("speakId"))
-                args.speakId = value;
+                args.speakId =value.split('"').join('');
             else if (key.includes("audioId"))
                 args.audioId = value.replace('https','https:');
             else if(key.includes("image"))
@@ -166,7 +167,7 @@ export class JSONparser {
             else if (key.includes("prefabId"))
                 args.prefabId = Number(value);
             else if (key.includes("prefabName"))
-                args.prefabId = value;
+                args.prefabName = value.split('"').join('');
             else if (key.includes("timeToWait"))
                 args.timeToWait = Number(value);
             else if (key.includes("eventId"))
@@ -186,6 +187,7 @@ export class JSONparser {
         const value = this.findValueForKey(str, key);
         return value !== null ? parseInt(value, 10) : 0; // or handle error
     }
+    
 
     static parseStringValue(str: string, key: string): string {
         const value = this.findValueForKey(str, key);
