@@ -365,12 +365,12 @@
             }
 
             var actorNameHTML = '<div class="sub-argument" ><label for="actorName">Actor Name:</label><input type="text" id="actorName"></div>';
-            var prefabIdHTML = '<div class="sub-argument" ><label for="prefabId">Prefab ID:</label><input type="text" id="prefabId"></div>';
+            var prefabNameHTML = '<div class="sub-argument" ><label for="prefabName">Prefab Name:</label><input type="text" id="prefabName"></div>';
             var sayArgsHTML = '<div class="sub-argument" ><label for="sentence">Sentence:</label><input type="text" id="sentence" value="Hello!"></div><div class="sub-argument" ><label for="audioId">Audio ID:</label><input type="text" id="audioId"></div><div class="sub-argument" ><label for="image">Image:</label><input type="text" id="image"></div><div class="sub-argument" ><label for="audioGapMs">Audio Gap (ms):</label><input type="number" id="audioGapMs" value="100"></div><div class="sub-argument" ><label for="durationMs">Duration (ms):</label><input type="number" id="durationMs" value="1000"></div>'
             var stateHTML = '<div class="sub-argument" ><label for="stateId">State ID:</label><input type="text" id="stateId"></div>';
             var waitArgsHTML = '<div class="sub-argument" ><label for="timeToWait">Time to Wait (sec):</label><input type="number" id="timeToWait" value="1"></div><div class="sub-argument" ><label for="eventIdToWaitFor">Event ID to wait for:</label><input type="number" id="eventIdToWaitFor"></div>';
             var eventIdHTML = '<div class="sub-argument" ><label for="eventId">Event ID:</label><input type="number" id="eventId"></div>';
-            var positionHTML = '<div class="sub-argument" ><label for="position">Position:</label><input type="text" id="position" value=\'{"x":0,"y":0,"z":0}\'></div>';
+            var positionHTML = '<div class="sub-argument" ><label for="position">Position:</label><input type="vector3" id="position" value={\'x\':0,\'y\':0,\'z\':0}></div>';
             var nestedActionsWarning = '<div class="warning">Nested actions are not supported, please add them manually</div>';
             var actionArgs = {
                 '': '',
@@ -378,8 +378,8 @@
                 "LookOutput": '',
                 "NavigateOther": actorNameHTML,
                 "NavigateOutput": '',
-                "ThrowOther": actorNameHTML + prefabIdHTML,
-                "ThrowOutput": prefabIdHTML,
+                "ThrowOther": actorNameHTML + prefabNameHTML,
+                "ThrowOutput": prefabNameHTML,
                 "Say": sayArgsHTML,
                 "SetState": stateHTML,
                 "DestroyOther": actorNameHTML,
@@ -387,7 +387,7 @@
                 "Wait": waitArgsHTML,
                 "EnableEvent": eventIdHTML,
                 "DisableEvent": eventIdHTML,
-                "Instantiate": positionHTML,
+                "Instantiate": positionHTML + prefabNameHTML,
                 "SimultaneousActions": nestedActionsWarning
             }
 

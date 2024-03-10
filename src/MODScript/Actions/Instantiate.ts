@@ -12,8 +12,7 @@ export class Instantiate extends GenericAction {
     constructor(parentEvent: MODscriptEvent, args: Partial<Instantiate>) {
         super(parentEvent, CATs.Instantiate);
         this.prefabName = args.prefabName ?? "";
-        this.position = args.position ?? Helpers.NewVector3(5,5,5);
-        console.log(args.position);
+        this.position = args.position === undefined? Helpers.NewVector3(5,5,5): Helpers.ParamToVec3(args.position);
     }
 
     performAction(triggerOutput?: BodyHandle | undefined): void {
@@ -22,6 +21,7 @@ export class Instantiate extends GenericAction {
             let obj = GameplayScene.instance.clonePrefab(this.prefabName);
             if (obj){
                 obj.body.setPosition(this.position);
+                console.log('Instantiated prefab with name ' + this.prefabName + ' in scene at position ' + this.position.x + ', ' + this.position.y + ', ' + this.position.z);
                 this.actionFinished();
             }
             else {

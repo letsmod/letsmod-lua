@@ -97,7 +97,7 @@ export declare type TriggerDefinition = {
 
 export declare type ActionDefinition = {
     actionType: string;
-    args: { [key: string]: number | string | ActionDefinition };
+    args: { [key: string]: number | string | ActionDefinition | Vector3 };
 }
 
 export declare type EventDefinition = {
