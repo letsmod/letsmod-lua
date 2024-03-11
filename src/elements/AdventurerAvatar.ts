@@ -6,10 +6,11 @@ import { Quaternion, Vector3 } from "three";
 import { Helpers } from "engine/Helpers";
 import { GameplayScene } from "engine/GameplayScene";
 import { LMent } from "engine/LMent";
-import { Throwable } from "./Throwable";
 import { GuideBody } from "./GuideBody";
 import { CameraTarget } from "./CameraTarget";
 import { Fragile } from "./Fragile";
+import { Throwable } from "./Throwable";
+import { AbstractGadget } from "./Gadgets/AbstractGadget";
 
 export abstract class AdventurerState extends AnimatedState
 {
@@ -763,11 +764,15 @@ export class ThrowState extends StaggerableState
 
     if (this.timeInThrow >= this.stateMachine.throwReleaseTime && this.liftedItem)
     {
-      let throwable = this.liftedItem.getElement(Throwable);
-      if (throwable)
+      let gadget = this.liftedItem.getElement(AbstractGadget);
+      if (gadget)
       {
         this.stateMachine.body.body.removeHoldConstraintWith(this.liftedItem.body);
-        throwable.doThrow();
+        let direction = gadget.activate();
+        if (direction)
+        {
+          this.stateMachine.setFacingAbsolute(direction.x, direction.z);
+        }
       }
       this.liftedItem = undefined;
     }
@@ -846,10 +851,29 @@ export class IdleHoldingState extends StaggerableState
   {
     if (this.wasJustJogging > 0)
     {
-      this.stateMachine.switchState("throw");
+      if (this.liftedItem?.getElement(Throwable))
+      {
+        this.stateMachine.switchState("throw");
+      }
+      else
+      {
+        let gadget = this.liftedItem?.getElement(AbstractGadget);
+        if (gadget)
+        {
+          let direction = gadget.activate();
+          if (direction)
+          {
+            this.stateMachine.setFacingAbsolute(direction.x, direction.z);
+          }
+        }
+      }
     }
     else
     {
+      const liftedGadget = this.liftedItem?.getElement(AbstractGadget);
+      if(liftedGadget)
+        liftedGadget.drop();
+      this.stateMachine.resetCamGuide();
       this.stateMachine.switchState("place");
     }
   }
@@ -857,7 +881,22 @@ export class IdleHoldingState extends StaggerableState
   onSwipe(dx: number, dy: number)
   {
     this.stateMachine.setFacing(-dx, -dy);
-    this.stateMachine.switchState("throw");
+    if (this.liftedItem?.getElement(Throwable))
+    {
+      this.stateMachine.switchState("throw");
+    }
+    else
+    {
+      let gadget = this.liftedItem?.getElement(AbstractGadget);
+      if (gadget)
+      {
+        let direction = gadget.activate();
+        if (direction)
+        {
+          this.stateMachine.setFacingAbsolute(direction.x, direction.z);
+        }
+      }
+    }
   }
 }
 
@@ -950,13 +989,43 @@ export class JogHoldingState extends StaggerableState
 
   onTap()
   {
-    this.stateMachine.switchState("throw");
+    if (this.liftedItem?.getElement(Throwable))
+    {
+      this.stateMachine.switchState("throw");
+    }
+    else
+    {
+      let gadget = this.liftedItem?.getElement(AbstractGadget);
+      if (gadget)
+      {
+        let direction = gadget.activate();
+        if (direction)
+        {
+          this.stateMachine.setFacingAbsolute(direction.x, direction.z);
+        }
+      }
+    }
   }
 
   onSwipe(dx: number, dy: number)
   {
     this.stateMachine.setFacing(-dx, -dy);
-    this.stateMachine.switchState("throw");
+    if (this.liftedItem?.getElement(Throwable))
+    {
+      this.stateMachine.switchState("throw");
+    }
+    else
+    {
+      let gadget = this.liftedItem?.getElement(AbstractGadget);
+      if (gadget)
+      {
+        let direction = gadget.activate();
+        if (direction)
+        {
+          this.stateMachine.setFacingAbsolute(direction.x, direction.z);
+        }
+      }
+    }
   }
 
   onActorDestroyed(actor: BodyHandle): void {
@@ -1185,6 +1254,8 @@ export class AdventurerAvatar extends AvatarBase
   cameraGuide: BodyHandle | undefined = undefined;
   liftedItem: BodyHandle | undefined = undefined;
   myGuideElement: GuideBody | undefined = undefined;
+  private defaultRotationOffset: {x: number, y: number, z: number} = {x: 0, y: 0, z: 0};
+  private defaultPositionOffset: {x: number, y: number, z: number} = {x: 0, y: 0, z: 0};
 
   cameraRotationDelayTimer: number = 0;
 
@@ -1232,6 +1303,7 @@ export class AdventurerAvatar extends AvatarBase
     this.clamberDetectorPrefab = params.clamberDetectorPrefab ?? "ClamberDetector";
     this.jumpDetectorPrefab = params.jumpDetectorPrefab ?? "JumpDetector";
     this.cameraGuidePrefab = params.cameraGuidePrefab ?? "CameraGuide_v2";
+
   }
 
   accelerateWithParams(acceleration: number, smoothFactor: number, maxSpeed: number, dt: number)
@@ -1303,8 +1375,7 @@ export class AdventurerAvatar extends AvatarBase
     {
       this.myGuideElement = this.cameraGuide.getElement(GuideBody);
       this.camGuide = this.myGuideElement;
-      if (this.camGuide)
-      {
+      if (this.camGuide !== undefined){
         this.camTarget = this.camGuide.body.getElement(CameraTarget);
       }
     }
@@ -1334,6 +1405,10 @@ export class AdventurerAvatar extends AvatarBase
 
   onStart(): void {
     super.onStart();
+    if (this.camGuide !== undefined){
+      this.defaultPositionOffset = this.camGuide.offset;
+      this.defaultRotationOffset = this.camGuide.rotationOffset;
+    }
   }
 
   canInteract(): boolean
@@ -1357,20 +1432,33 @@ export class AdventurerAvatar extends AvatarBase
       }
     }
 
-    if (selectedInteractable instanceof LMent)
+    if (selectedInteractable !== undefined && selectedInteractable instanceof LMent)
     {
-      selectedInteractable.body.body.showHighlight();
+      if(selectedInteractable.highlightInteractable !== undefined)
+        selectedInteractable.highlightInteractable();
     }
   }
 
-  pickUpItem(item: Throwable)
+  pickUpItem(item: AbstractGadget)
   {
     if (!this.canInteract())
     {
       return;
     }
+    item.pickup();
     this.liftedItem = item.body;
     this.switchState("lift");
+    if(this.camGuide !== undefined){
+      this.camGuide.updateRotationOffset(40, 0, 0);
+      this.camGuide.updateOffsetVector(0, 5, -4,false);
+    }
+  }
+
+  resetCamGuide(){
+    if(this.camGuide !== undefined){
+      this.camGuide.updateRotationOffset(this.defaultRotationOffset.x, this.defaultRotationOffset.y, this.defaultRotationOffset.z);
+      this.camGuide.updateOffsetVector(this.defaultPositionOffset.x, this.defaultPositionOffset.y, this.defaultPositionOffset.z,false);
+    }
   }
 
   onCollision(info: CollisionInfo): void {
@@ -1449,6 +1537,13 @@ export class AdventurerAvatar extends AvatarBase
     }
 
     let angle = Math.atan2(dx, dy) + cameraTheta;
+    let quat = Helpers.NewQuaternion().setFromAxisAngle(Helpers.upVector, angle);
+    this.body.body.setRotation(quat);
+  }
+
+  setFacingAbsolute(dx : number, dy: number)
+  {
+    let angle = Math.atan2(dx, dy);
     let quat = Helpers.NewQuaternion().setFromAxisAngle(Helpers.upVector, angle);
     this.body.body.setRotation(quat);
   }

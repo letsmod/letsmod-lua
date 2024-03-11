@@ -67,9 +67,9 @@ export class ScaleWaypoint extends LMent implements PhysicsSubstepHandler {
     }
 
     onEnable(): void {
-        this.startingScale = this.body.body.getScale().clone();
         this.currentScalePointIndex = 0;
         this.timeSinceLastScalePoint = 0;
+        this.startingScale = this.body.body.getScale().clone();
     }
 
     private handleScaleChange(dt: number): void {
@@ -112,5 +112,9 @@ export class ScaleWaypoint extends LMent implements PhysicsSubstepHandler {
             default:
                 return (this.currentScalePointIndex + 1) % this.points.length;
         }
+    }
+
+    public startOver(): void {
+        this.enabled = true;
     }
 }

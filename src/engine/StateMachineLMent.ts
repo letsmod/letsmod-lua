@@ -81,7 +81,7 @@ export abstract class State implements
   hasSubtype?(subtype: string): boolean;
 }
 
-export abstract class AnimatedState extends State
+export abstract class AnimatedState extends State implements UpdateHandler
 {
   animName: string;
   animBlendTime: number;
@@ -91,15 +91,31 @@ export abstract class AnimatedState extends State
   {
     super(name, stateMachine);
     this.shape = shapeToAnimate;
+
+    //By default, use the first shape
+    if(this.shape === undefined)
+      this.shape = this.stateMachine.body.body.getShapes()[0];
+
     this.animName = animName;
     this.animBlendTime = animBlendTime;
   }
 
   onEnterState(previousState: State | undefined): void {
-    if (this.shape)
-    {
-      this.shape.playAnimation(this.animName, this.animBlendTime);
-    }
+    this.playShapeAnimation();
+  }
+
+  playShapeAnimation() {
+    if (this.shape && this.animName !== "custom")
+        this.shape.playAnimation(this.animName, this.animBlendTime);
+  }
+
+  onUpdate(dt?: number | undefined): void {
+    if(this.animName === "custom")
+      this.playCustomAnimation(dt);
+  }
+
+  protected playCustomAnimation(dt: number | undefined) {
+    /* Override by children */
   }
 }
 

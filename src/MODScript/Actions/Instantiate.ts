@@ -10,19 +10,18 @@ export class Instantiate extends GenericAction {
     position: Vector3;
 
     constructor(parentEvent: MODscriptEvent, args: Partial<Instantiate>) {
-        super(parentEvent, CATs.DestroyOther);
+        super(parentEvent, CATs.Instantiate);
         this.prefabName = args.prefabName ?? "";
-        this.position = args.position ?? Helpers.NewVector3(5,5,5);
+        this.position = args.position === undefined? Helpers.NewVector3(5,5,5): Helpers.ParamToVec3(args.position);
     }
 
     performAction(triggerOutput?: BodyHandle | undefined): void {
-            console.log(this.prefabName+"b6a6a");
         if (!this.parentEvent || !this.parentEvent.EventActor) return;
          
             let obj = GameplayScene.instance.clonePrefab(this.prefabName);
-            console.log(obj);
             if (obj){
                 obj.body.setPosition(this.position);
+                console.log('Instantiated prefab with name ' + this.prefabName + ' in scene at position ' + this.position.x + ', ' + this.position.y + ', ' + this.position.z);
                 this.actionFinished();
             }
             else {

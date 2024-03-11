@@ -1,77 +1,90 @@
 import { BodyHandle } from "engine/BodyHandle";
-import { LMent } from "engine/LMent";
-import { InteractHandler } from "engine/MessageHandlers";
-import { AdventurerAvatar } from "./AdventurerAvatar";
 import { GameplayScene } from "engine/GameplayScene";
 import { Helpers } from "engine/Helpers";
+import { AbstractGadget } from "./Gadgets/AbstractGadget";
+import { DamageTeam, HitPoints } from "./HitPoints";
 
-export class Throwable extends LMent implements InteractHandler {
-  interactionNameOrIcon : string;
-  interactionPriority : number;
-  maxInteractionDistance : number;
-  minInteractionDotProduct : number;
+export class Throwable extends AbstractGadget {
   throwSpeedHorizontal : number;
   throwSpeedVertical : number;
   autoAimMinDotProduct : number;
+  gravityConstant : number;
 
   constructor(body: BodyHandle, id: number, params: Partial<Throwable> = {})
   {
     super(body, id, params);
-    this.interactionNameOrIcon = params.interactionNameOrIcon ?? "Pick Up";
-    this.interactionPriority = params.interactionPriority ?? 0;
-    this.maxInteractionDistance = params.maxInteractionDistance ?? 1.5;
-    this.minInteractionDotProduct = params.minInteractionDotProduct ?? 0.707106781186547;
     this.throwSpeedHorizontal = params.throwSpeedHorizontal ?? 9;
     this.throwSpeedVertical = params.throwSpeedVertical ?? 5;
     this.autoAimMinDotProduct = params.autoAimMinDotProduct ?? 0.85;
+    this.gravityConstant = params.gravityConstant ?? -9.81 * 2.5;
   }
 
   onInit(): void {
-    GameplayScene.instance.dispatcher.addListener("interact", this);
+    super.onInit();
   }
 
   onStart(): void {
-    
+    super.onStart();
   }
 
-  isInInteractionRange(interactor: BodyHandle): boolean {
-    let delta = this.body.body.getPosition().clone().sub(interactor.body.getPosition());
-    let distance = delta.length();
-    if (distance < this.maxInteractionDistance)
-    {
-      let direction = delta.normalize();
-      let facing = Helpers.forwardVector.clone().applyQuaternion(interactor.body.getRotation());
-  
-      if (direction.dot(facing) >= this.minInteractionDotProduct)
-      {
-        return true;
-      }
-    }
-
-    return false;
-  }
-
-  onInteract(interactor: BodyHandle): boolean {
-    let playerElem = interactor.getElementByTypeName("AdventurerAvatar") as AdventurerAvatar | undefined;
-
-    if (playerElem && playerElem.canInteract())
-    {
-      playerElem.pickUpItem(this);
-      return true;
-    }
-
-    return false;
-  }
-
-  doThrow() {
+  doActivate() {
     let playerBody = GameplayScene.instance.memory.player;
     if (playerBody)
     {
       let direction = Helpers.forwardVector.applyQuaternion(playerBody.body.getRotation());
       direction.multiplyScalar(this.throwSpeedHorizontal);
-      direction.y = this.throwSpeedVertical;
+
+      let closestTargetScore = Infinity;
+      let closestTarget : BodyHandle | undefined = undefined;
+
+      let hpElements = GameplayScene.instance.findAllElements(HitPoints);
+      for (let hp of hpElements)
+      {
+        if (hp.team !== DamageTeam.player && hp.body !== this.body)
+        {
+          let delta = hp.body.body.getPosition().clone().sub(this.body.body.getPosition());
+          let distance = delta.length();
+          if (distance < this.throwSpeedHorizontal)
+          {
+            let dot = delta.setY(0).normalize().dot(direction);
+            if (dot >= this.autoAimMinDotProduct)
+            {
+              let score = distance;
+              if (score < closestTargetScore)
+              {
+                closestTargetScore = score;
+                closestTarget = hp.body;
+              }  
+            }
+          }
+        }
+      }
+
+      if (closestTarget)
+      {
+        let targetPosition = closestTarget.body.getPosition();
+        let myPosition = this.body.body.getPosition();
+
+        let delta = targetPosition.clone().sub(myPosition);
+        direction.copy(delta).normalize().multiplyScalar(this.throwSpeedHorizontal);
+
+        let timeToTarget = delta.length() / this.throwSpeedHorizontal;
+
+        direction.y += -0.5 * this.gravityConstant * timeToTarget;
+        
+        if (direction.y > this.throwSpeedVertical)
+        {
+          direction.y = this.throwSpeedVertical;
+        }
+      }
+      else
+      {
+        direction.y = this.throwSpeedVertical;
+      }
 
       this.body.body.setVelocity(direction);
+      return direction.setY(0).normalize();
     }
+    return undefined;
   }
 }

@@ -106,6 +106,9 @@ export interface BodyPointer
 
   showHighlight() : void; // highlights the body for one frame
 
+  getBoundingBox() : THREE.Box3;
+  getBoundingSphere() : THREE.Sphere;
+
   // internal use; use gameplayScene.destroyBody / cloneBody instead
   destroyBody() : void;
   cloneBody() : BodyHandle;

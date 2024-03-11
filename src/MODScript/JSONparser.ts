@@ -37,19 +37,16 @@ export class JSONparser {
 
     static parseSingleEvent(eventStr: string): EventDefinition {
         const x = {
-            //actorId: this.parseNumberValue(eventStr, 'actorId'),
+            id: this.parseNumberValue(eventStr, 'id'),
+            order: this.parseNumberValue(eventStr, 'order'),
             actorName: this.parseStringValue(eventStr, 'actorName'),
+            actorType: this.parseStringValue(eventStr, 'actorType'),
             trigger: this.parseTriggerDefinition(eventStr),
             action: this.parseActionDefinition(eventStr),
             repeatable: this.parseBooleanValue(eventStr, 'repeatable'),
             enabled: this.parseBooleanValue(eventStr, 'enabled')
         };
-        /*            actorName: "Lady",
-            trigger: {triggerType: "Nearby", args:{condition:{conditionType:"IsOther", args:{actorName:"Hero"}},maxDistance:3}},
-            action: {actionType: "ThrowOutput", args:{prefabId:"Road Cone",force:400}},
-            repeatable: false,
-            enabled: true
-            */
+
         return x;
     }
 
@@ -134,16 +131,17 @@ export class JSONparser {
             else if (key.includes("condition2"))
                  args.condition2 = this.parseConditionDefinition(this.getStringBetween(argsString, '{', '}'));
             else if (key.includes("condition"))
-                 args.condition = this.parseConditionDefinition(this.getStringBetween(argsString, '{', '}'));                
+                 args.condition = this.parseConditionDefinition(this.getStringBetween(argsString, '{', '}'));        
+            // else if Position
         }
         return args;
     }
 
-    static parseActionArgs(actionStr: string): { [key: string]: number | string | ActionDefinition } {
+    static parseActionArgs(actionStr: string): { [key: string]: number | string | ActionDefinition | Vector3 } {
         let argsString = this.getStringBetween(actionStr, '{', '}');
 
         const keyValues = argsString.split(',').map(kv => kv.split(':').map(s => s.trim()));
-        let args: { [key: string]: number | string | ActionDefinition } = {}
+        let args: { [key: string]: number | string | ActionDefinition | Vector3 } = {}
 
         for (const [key, value] of keyValues) {
             if (key.includes("actorName")) {
@@ -155,11 +153,21 @@ export class JSONparser {
             else if (key.includes("actorId"))
                 args.actorId = Number(value);
             else if (key.includes("sentence"))
-                args.sentence = value;
+                args.sentence = value.split('"').join('');
+            else if (key.includes("speakId"))
+                args.speakId =value.split('"').join('');
+            else if (key.includes("audioId"))
+                args.audioId = value.replace('https','https:');
+            else if(key.includes("image"))
+                args.image = value.replace('https','https:');
+            else if (key.includes("duration"))
+                args.durationMs = Number(value);
+            else if (key.includes("audioGapMs"))
+                args.durationMs = Number(value);
             else if (key.includes("prefabId"))
                 args.prefabId = Number(value);
             else if (key.includes("prefabName"))
-                args.prefabId = value;
+                args.prefabName = value.split('"').join('');
             else if (key.includes("timeToWait"))
                 args.timeToWait = Number(value);
             else if (key.includes("eventId"))
@@ -169,22 +177,36 @@ export class JSONparser {
             else if (key.includes("action1"))
                 args.action1 = this.parseActionDefinition("",this.getStringBetween(actionStr, '"action1":{', '}'));
             else if (key.includes("action2"))
-                args.action2 = this.parseActionDefinition("",this.getStringBetween(actionStr, '"action2":{', '}'));
-            else if (key.includes("audioId"))
-                args.audioId = value;
-            else if (key.includes("durationMs"))
-                args.durationMs = Number(value);
-            else if(key.includes("image"))
-                args.image = value;
+                args.action2 = this.parseActionDefinition("",this.getStringBetween(actionStr, '"action2":{', '}'));           
+            else if (key.includes("position"))
+                {
+                    let vectorString = this.getStringBetween(argsString, '{', '}');
+                    args.position = this.parseVector3Value(vectorString.split('"').join(''));
+                }
 
         }
         return args;
+    }
+
+    static parseVector3Value(str: string): Vector3 {
+        const keyValues = str.split(',').map(kval => kval.split(':').map(s => s.trim()));
+        let vector:Vector3 = {x:0,y:0,z:0};
+        for (const [key, value] of keyValues) {
+            if(key.includes("x"))
+                vector.x = Number(value);
+            else if(key.includes("y"))
+                vector.y = Number(value);
+            else if(key.includes("z"))
+                vector.z = Number(value);
+        }
+        return vector;
     }
 
     static parseNumberValue(str: string, key: string): number {
         const value = this.findValueForKey(str, key);
         return value !== null ? parseInt(value, 10) : 0; // or handle error
     }
+    
 
     static parseStringValue(str: string, key: string): string {
         const value = this.findValueForKey(str, key);

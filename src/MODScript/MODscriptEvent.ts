@@ -2,10 +2,11 @@ import { BodyHandle } from "engine/BodyHandle";
 import { TriggerDefinition, ActionDefinition, GenericTrigger, GenericAction, EventDefinition, ConditionDefinition, GenericCondition, CATs } from "./MODscriptDefs";
 import { ActionFactory } from "./FactoryClasses/ActionsFactory";
 import { TriggerFactory } from "./FactoryClasses/TriggersFactory";
-import { MODscriptStateMachineLMent, MODscriptStates } from "elements/MODScript States/MODscriptStates";
 import { Constants, Helpers } from "engine/Helpers";
 import { GameplayScene } from "engine/GameplayScene";
 import { CollisionInfo } from "engine/MessageHandlers";
+import { CharacterStateNames } from "elements/Character State Machines/CharacterStates";
+import { CharacterStateMachineLMent } from "elements/Character State Machines/CharacterStateMachineLMent";
 
 export class MODscriptEvent {
 
@@ -35,9 +36,9 @@ export class MODscriptEvent {
     public get InvolvedActorBodies(): BodyHandle[] { return this.involvedActorBodies; }
 
 
-    public get stateMachine(): MODscriptStateMachineLMent | undefined {
+    public get stateMachine(): CharacterStateMachineLMent | undefined {
         if (this._stateMachine === undefined && this.EventActor !== undefined) {
-            this._stateMachine = this.EventActor.getElement(MODscriptStateMachineLMent);
+            this._stateMachine = this.EventActor.getElement(CharacterStateMachineLMent);
             if (this._stateMachine === undefined)
                 console.log("Cannot find MODscript State Machine on actor: " + this.actorId);
         }
@@ -52,7 +53,7 @@ export class MODscriptEvent {
     eventDef: EventDefinition | undefined;
 
     //Do not call these properties directly, use the getter instead because it may not be initialized.
-    private _stateMachine: MODscriptStateMachineLMent | undefined;
+    private _stateMachine: CharacterStateMachineLMent | undefined;
     private _eventActor: BodyHandle | undefined;
 
     constructor(id: number, eventDef: EventDefinition) {
@@ -102,19 +103,18 @@ export class MODscriptEvent {
             this.involvedActorBodies.push(this._eventActor);
 
         if (!this.trigger || !this.trigger.args) return;
-       
+
         const condition = this.trigger.args.condition as ConditionDefinition;
-        
-        if(condition)
+
+        if (condition)
             this.extractInvolvedActorsFromCondition(condition);
-        
-        if(this.action)
+
+        if (this.action)
             this.extractInvolvedActorsFromAction(this.action);
-        
-        if(GameplayScene.instance?.eventHandler)
-            {
-                this.involvedActorBodies.push(...GameplayScene.instance.eventHandler.TaggedBodiesList);
-            }
+
+        if (GameplayScene.instance?.eventHandler) {
+            this.involvedActorBodies.push(...GameplayScene.instance.eventHandler.TaggedBodiesList);
+        }
 
     }
 
@@ -133,9 +133,9 @@ export class MODscriptEvent {
                 conditionActorIds.push(player.body.id as number);
             }
         }
-        
+
         this.involvedActorIDs.push(...conditionActorIds);
-        
+
         if (condition.args && "condition" in condition.args) {
             const subCondition = condition.args.condition as ConditionDefinition;
             this.extractInvolvedActorsFromCondition(subCondition);
@@ -153,27 +153,27 @@ export class MODscriptEvent {
     extractInvolvedActorsFromAction(action: ActionDefinition): void {
         if (!action.args || !action.args.actorName) return;
         let body: BodyHandle | undefined;
-            if((action.args.actorName as string) === "Player") 
-                body = GameplayScene.instance.memory.player;
-            else
-                body = Helpers.findBodyInScene(action.args.actorName as string);
-            if (body)
-                this.involvedActorBodies.push(body);
-            this.involvedActorIDs.push(action.args.actorId as number);
+        if ((action.args.actorName as string) === "Player")
+            body = GameplayScene.instance.memory.player;
+        else
+            body = Helpers.findBodyInScene(action.args.actorName as string);
+        if (body)
+            this.involvedActorBodies.push(body);
+        this.involvedActorIDs.push(action.args.actorId as number);
 
         //TODO: Make it recursive in case action type is simultaneuos.
     }
 
 
-    checkEvent(info?:CollisionInfo): void {
+    checkEvent(info?: CollisionInfo): void {
         if (!this.eventTrigger) return;
 
-        if(info && this.eventTrigger.requiresCollision)
+        if (info && this.eventTrigger.requiresCollision)
             this.handleEventResult(this.eventTrigger.checkTrigger(info));
         else this.handleEventResult(this.eventTrigger.checkTrigger());
     }
-    
-    handleEventResult(result: {didTrigger:boolean, outputActor:BodyHandle | undefined}): void {
+
+    handleEventResult(result: { didTrigger: boolean, outputActor: BodyHandle | undefined }): void {
         if (!this.mainAction || !this.enabled || this.isFinished && !this.repeatable) return;
 
         if (result.didTrigger)
@@ -186,7 +186,7 @@ export class MODscriptEvent {
     completeEvent(): void {
         this.isFinished = true;
         if (!this.repeatable && this.stateMachine !== undefined)
-            this.stateMachine.switchState(MODscriptStates.idle);
+            this.stateMachine.switchState(this.stateMachine.defaultState);
     }
 
     cancelEvent(): void {
@@ -200,6 +200,6 @@ export class MODscriptEvent {
     disableEvent(): void {
         this.enabled = false;
         if (this.stateMachine !== undefined)
-            this.stateMachine.switchState(MODscriptStates.idle);
+            this.stateMachine.switchState(CharacterStateNames.idle);
     }
 }

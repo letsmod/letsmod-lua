@@ -1,6 +1,6 @@
 import { CATs, GenericAction } from "MODScript/MODscriptDefs";
 import { MODscriptEvent } from "MODScript/MODscriptEvent";
-import { MODscriptStates } from "elements/MODScript States/MODscriptStates";
+import { CharacterStateNames } from "elements/Character State Machines/CharacterStates";
 
 import { BodyHandle } from "engine/BodyHandle";
 import { GameplayScene } from "engine/GameplayScene";
@@ -25,7 +25,7 @@ export class LookOther extends GenericAction {
     performAction(triggerOutput?: BodyHandle | undefined): void {
         if(!this.parentEvent || !this.parentEvent.stateMachine|| ! this.targetActor) return;
 
-        this.parentEvent.stateMachine.startState(this.ActionId, MODscriptStates.lookAt, undefined, this.targetActor.body.getPosition());
+        this.parentEvent.stateMachine.startState(this.ActionId, CharacterStateNames.lookAt, this.targetActor.body.getPosition());
         
     }
     

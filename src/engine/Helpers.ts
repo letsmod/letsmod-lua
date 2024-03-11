@@ -106,6 +106,10 @@ export class Helpers{
         console.log("x: "+v.x+", y:"+v.y+", z:"+v.z);
     }
 
+    static randomRange(min: number, max: number) {
+        return Math.random() * (max - min) + min;
+    }
+
     //Not recommended to use this continuously.
     static findBodyInScene(name: string): BodyHandle | undefined {
         let body = GameplayScene.instance.bodies.find(b => b.body.name == name);
@@ -225,6 +229,8 @@ export const Constants = {
     /*** Audio Constants ***/
     DeathAudio: "Death",
     MoveAudio: "Move",
+    ChaseAudio: "Chase",
+    ForceAudio: "Force",
 
     
   };

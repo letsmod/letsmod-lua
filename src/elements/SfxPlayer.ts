@@ -8,9 +8,11 @@ export class SfxPlayer extends LMent implements UpdateHandler, TriggerHandler {
 
     playDistance: number;
     audio: string;
+    audioId: string = "";
     loop: boolean = true;
     delay: number = 0;
     triggerId: string;
+    stopTriggerId: string;
     randomMax: number | undefined;
     randomMin: number | undefined;
     receivesTriggersWhenDisabled?: boolean | undefined;
@@ -24,17 +26,24 @@ export class SfxPlayer extends LMent implements UpdateHandler, TriggerHandler {
         this.delay = params.delay === undefined ? 1 : params.delay;
         this.enabled = Helpers.ValidateParams(this.audio, this, "audio");
         this.triggerId = params.triggerId === undefined ? Helpers.NA : params.triggerId;
+        this.stopTriggerId = params.stopTriggerId === undefined ? Helpers.NA : params.stopTriggerId;
         this.receivesTriggersWhenDisabled = true;
         this.randomMax = params.randomMax;
         this.randomMin = params.randomMin;
+
+        if (params.audioId !== undefined)
+            this.audioId = params.audioId;
     }
 
     hasSubtype(trigger: string): boolean {
-        return trigger === this.triggerId;
+        return trigger === this.triggerId || trigger === this.stopTriggerId;
     }
 
     onTrigger(source: LMent, triggerId: string): void {
-        this.playAudio();
+        if (triggerId === this.triggerId)
+            this.playAudio();
+        else if (triggerId === this.stopTriggerId)
+            this.stopAudio();
     }
 
     onInit(): void {
@@ -43,7 +52,10 @@ export class SfxPlayer extends LMent implements UpdateHandler, TriggerHandler {
     }
 
     onStart(): void {
-
+        if(this.audioId !== "")
+            {
+                this.audioId = this.audioId +  this.id;
+            }
     }
 
     onUpdate(dt?: number): void {
@@ -67,10 +79,27 @@ export class SfxPlayer extends LMent implements UpdateHandler, TriggerHandler {
         if (distance < this.playDistance && this.loopTimer <= 0) {
             const clientInterface = GameplayScene.instance.clientInterface;
             if (!clientInterface || this.loopTimer > 0) return;
-            this.randomizeAudio();
-            clientInterface.playAudio(this.audio, this.id.toString());
+            if (this.randomMax && this.randomMin)
+                this.randomizeAudio();
+            else if (this.audioId !== "")
+                clientInterface.playAudio(this.audio, this.audioId);
+            else
+                clientInterface.playAudio(this.audio);
             this.loopTimer = this.delay;
         }
+        else if (distance > this.playDistance) {
+            this.stopAudio();
+        }
+    }
+
+    stopAudio() {
+        const clientInterface = GameplayScene.instance.clientInterface;
+        if (!clientInterface) return;
+        if (this.audioId === "") return;
+
+        clientInterface.stopAudio(this.audioId);
+        this.loopTimer = 0;
+
     }
 
     randomizeAudio() {
@@ -78,6 +107,10 @@ export class SfxPlayer extends LMent implements UpdateHandler, TriggerHandler {
         if (!clientInterface) return;
         if (!this.randomMax || !this.randomMin) return;
         const random = Math.floor(Math.random() * (this.randomMax) + (this.randomMin));
-        clientInterface.playAudio(this.audio + random, this.id.toString());
+
+        if (this.audioId !== "")
+            clientInterface.playAudio(this.audio + random, this.audioId);
+        else
+            clientInterface.playAudio(this.audio + random);
     }
 }
