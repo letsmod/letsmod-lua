@@ -6,7 +6,6 @@ import { EventHandler } from "../MODScript/EventHandler";
 import { LMent } from "./LMent";
 import { EventDefinition } from "MODScript/MODscriptDefs";
 import { Helpers } from "./Helpers";
-import { convertArray } from "./helpers/array";
 
 type GamePreferences = {
   defaultPlayDifficulty: "normal" | "hardcore";
@@ -56,11 +55,11 @@ export class GameplayScene {
   }
 
   setGameStory(story: EventDefinition[]) {
-    this.story = convertArray(story) || [];
+    this.story = Helpers.convertArray(story) || [];
   }
 
   setGameStoryActors(actors: GameStoryActors | undefined) {
-    this.gameStoryActors = convertArray(actors);
+    this.gameStoryActors = Helpers.convertArray(actors);
   }
 
   addBody(bodyNode: BodyPointer) {

@@ -1,5 +1,6 @@
 import { EventHandler } from "MODScript/EventHandler";
 import { BodyHandle } from "engine/BodyHandle";
+import { GameplayScene } from "engine/GameplayScene";
 import { LMent } from "engine/LMent";
 
 export class MODscriptOverride extends LMent {
@@ -10,6 +11,7 @@ export class MODscriptOverride extends LMent {
     }
 
     onStart(): void {
+
     }
 
     constructor(body: BodyHandle, id: number, params: Partial<MODscriptOverride> = {}) {

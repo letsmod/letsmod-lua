@@ -108,6 +108,14 @@ export declare type EventDefinition = {
     enabled: boolean;
 }
 
+export declare type PlotletDefinition = {
+    id: number;
+    plotletType: string;
+    args: { [key: string]: number | string };
+    enabled: boolean;
+    outcomes: [{ outcomeId: string, actions:[action:"enable" | "disable", plotletId: string]}];
+}
+
 export const CATs = {
     /*** Conditions ***/
     HasElement: "Element",

@@ -5,6 +5,7 @@ import { BodyHandle } from "engine/BodyHandle";
 import { GameplayScene } from "engine/GameplayScene";
 import { SayAction } from "./Actions/SayAction";
 import { JSONparser } from "./JSONparser";
+import { Helpers } from "engine/Helpers";
 
 export class EventHandler implements UpdateHandler {
     jsonData: string = "";
@@ -71,22 +72,9 @@ export class EventHandler implements UpdateHandler {
 
     //For debugging purposes.
     printEventDefinition(eventDef: EventDefinition) {
-        this.printObject(eventDef, "");
+        Helpers.printObject(eventDef, "");
     }
 
-    //For debugging purposes.
-    printObject(obj: any, indent: string) {
-        for (const key in obj) {
-            if (!obj.hasOwnProperty(key)) continue;
-
-            if (typeof obj[key] === "object" && obj[key] !== null) {
-                console.log(`${indent}${key}:`);
-                this.printObject(obj[key], indent + "  ");
-            } else {
-                console.log(`${indent}${key}: ${obj[key]}`);
-            }
-        }
-    }
     /*******************************************************************************************/
 
     playAudioAction(sayAction: SayAction): boolean {

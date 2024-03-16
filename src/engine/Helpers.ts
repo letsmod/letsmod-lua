@@ -7,73 +7,63 @@ import { BodyHandle } from "./BodyHandle";
 export type InterpolationType = "easein" | "easeout" | "ease" | "linear" | "elastic" | "overshoot" | "bounce" | "easesqrt" | "easeinsqrt" | "easeoutsqrt";
 export type MotionPattern = "loop" | "ping-pong" | "once";
 
-export class Helpers{
+export class Helpers {
 
-    static get zeroVector() {return js_new(global.THREE.Vector3,0,0,0);}
-    static get oneVector() {return js_new(global.THREE.Vector3,1,1,1);}
-    static get upVector() {return js_new(global.THREE.Vector3,0,1,0);}
-    static get downVector() {return js_new(global.THREE.Vector3,0,-1,0);}
-    static get rightVector() {return js_new(global.THREE.Vector3,1,0,0);}
-    static get leftVector() {return js_new(global.THREE.Vector3,-1,0,0);}
-    static get forwardVector(){return js_new(global.THREE.Vector3,0,0,1);}
-    static get backwardVector(){return js_new(global.THREE.Vector3,0,0,-1);}
-    static get xzVector() {return js_new(global.THREE.Vector3,1,0,1);}
-    static get xyVector() {return js_new(global.THREE.Vector3,1,1,0);}
-    static get yzVector() {return js_new(global.THREE.Vector3,0,1,1);}
+    static get zeroVector() { return js_new(global.THREE.Vector3, 0, 0, 0); }
+    static get oneVector() { return js_new(global.THREE.Vector3, 1, 1, 1); }
+    static get upVector() { return js_new(global.THREE.Vector3, 0, 1, 0); }
+    static get downVector() { return js_new(global.THREE.Vector3, 0, -1, 0); }
+    static get rightVector() { return js_new(global.THREE.Vector3, 1, 0, 0); }
+    static get leftVector() { return js_new(global.THREE.Vector3, -1, 0, 0); }
+    static get forwardVector() { return js_new(global.THREE.Vector3, 0, 0, 1); }
+    static get backwardVector() { return js_new(global.THREE.Vector3, 0, 0, -1); }
+    static get xzVector() { return js_new(global.THREE.Vector3, 1, 0, 1); }
+    static get xyVector() { return js_new(global.THREE.Vector3, 1, 1, 0); }
+    static get yzVector() { return js_new(global.THREE.Vector3, 0, 1, 1); }
     static readonly NA = "N/A";
 
-    static get deltaTime() {return 1/GameplayScene.instance.memory.frameRate;}
+    static get deltaTime() { return 1 / GameplayScene.instance.memory.frameRate; }
 
-    static NumLerp(a:number,b:number,t:number):number
-    {
+    static NumLerp(a: number, b: number, t: number): number {
         return a + (b - a) * t;
     }
 
-    static NewVector3(x:number,y:number,z:number)
-    {
-        return js_new(global.THREE.Vector3,x,y,z);
+    static NewVector3(x: number, y: number, z: number) {
+        return js_new(global.THREE.Vector3, x, y, z);
     }
 
-    static ParamToVec3(param:{x:number,y:number,z:number})
-    {
-        return js_new(global.THREE.Vector3,param.x,param.y,param.z);
+    static ParamToVec3(param: { x: number, y: number, z: number }) {
+        return js_new(global.THREE.Vector3, param.x, param.y, param.z);
     }
 
-    static NewQuaternion()
-    {
+    static NewQuaternion() {
         return js_new(global.THREE.Quaternion);
     }
 
-    static NewQuatFromEuler(x:number,y:number,z:number)
-    {
-        return js_new(global.THREE.Quaternion).setFromEuler(js_new(global.THREE.Euler,x,y,z));
+    static NewQuatFromEuler(x: number, y: number, z: number) {
+        return js_new(global.THREE.Quaternion).setFromEuler(js_new(global.THREE.Euler, x, y, z));
     }
 
-    static Rad(degreeAngle:number):number
-    {
-        return degreeAngle*Math.PI/180;
+    static Rad(degreeAngle: number): number {
+        return degreeAngle * Math.PI / 180;
     }
 
-    static Deg(radianAngle:number):number
-    {
-        return this.RoundToDecimal(radianAngle*180/Math.PI,2);
+    static Deg(radianAngle: number): number {
+        return this.RoundToDecimal(radianAngle * 180 / Math.PI, 2);
     }
 
-    static RoundToDecimal(num:number,decimal:number)
-    {
+    static RoundToDecimal(num: number, decimal: number) {
         return parseFloat(num.toFixed(decimal));
     }
 
-    static GetYaw(q:Quaternion)
-    {
+    static GetYaw(q: Quaternion) {
         let siny_cosp = 2 * (q.w * q.y + q.z * q.x)
         let cosy_cosp = 1 - 2 * (q.x * q.x + q.y * q.y)
         return Math.atan2(siny_cosp, cosy_cosp);
 
     }
 
-    static GetRoll(q:Quaternion)
-    {
+    static GetRoll(q: Quaternion) {
 
         const sinr_cosp = 2 * (q.w * q.z + q.x * q.y);
         const cosr_cosp = 1 - 2 * (q.y * q.y + q.z * q.z);
@@ -81,8 +71,7 @@ export class Helpers{
         return roll;
     }
 
-    static GetPitch(q:Quaternion)
-    {
+    static GetPitch(q: Quaternion) {
         let sinp = 2 * (q.w * q.x - q.z * q.y);
         let pitch: number;
         if (Math.abs(sinp) >= 1) {
@@ -93,22 +82,47 @@ export class Helpers{
         return pitch;
     }
 
-    static ValidateParams(paramVal:any|undefined,element:LMent,param:string=""):boolean
-    {
-        param = param == ""?"":" \""+param+"\"";
-        if(paramVal !== undefined && paramVal !== Helpers.NA) return true;
-        console.log(element.constructor.name+" requires a param"+param+" to be included in the params list.");
+    static ValidateParams(paramVal: any | undefined, element: LMent, param: string = ""): boolean {
+        param = param == "" ? "" : " \"" + param + "\"";
+        if (paramVal !== undefined && paramVal !== Helpers.NA) return true;
+        console.log(element.constructor.name + " requires a param" + param + " to be included in the params list.");
         return false;
     }
 
-    static LogVector(v:Vector3)
-    {
-        console.log("x: "+v.x+", y:"+v.y+", z:"+v.z);
+    static LogVector(v: Vector3) {
+        console.log("x: " + v.x + ", y:" + v.y + ", z:" + v.z);
     }
 
     static randomRange(min: number, max: number) {
         return Math.random() * (max - min) + min;
     }
+
+    static printObject(obj: any, indent: string) {
+        for (const key in obj) {
+            if (!obj.hasOwnProperty(key)) continue;
+
+            if (typeof obj[key] === "object" && obj[key] !== null) {
+                console.log(`${indent}${key}:`);
+                this.printObject(obj[key], indent + "  ");
+            } else {
+                console.log(`${indent}${key}: ${obj[key]}`);
+            }
+        }
+    }
+
+    static convertArray<T>(arr: { [key: number]: T } | undefined): T[] | undefined {
+        if (arr === undefined) {
+            return undefined;
+        }
+
+        let result = [];
+
+        for (let key in arr) {
+            result.push(arr[key]);
+        }
+        return result;
+    }
+
 
     //Not recommended to use this continuously.
     static findBodyInScene(name: string): BodyHandle | undefined {
@@ -120,10 +134,10 @@ export class Helpers{
         return body;
     }
 
-    static findBodyWithinGroup(sibling: BodyHandle,name: string): BodyHandle | undefined {
+    static findBodyWithinGroup(sibling: BodyHandle, name: string): BodyHandle | undefined {
         let body = sibling.bodyGroup.find(b => b.body.name == name);
         if (body === undefined) {
-            console.log("No body named: " + name + " was found in the body group of "+sibling.body.name+".")
+            console.log("No body named: " + name + " was found in the body group of " + sibling.body.name + ".")
             return undefined;
         }
         return body;
@@ -196,7 +210,7 @@ export class Helpers{
             return (Math.pow(2 * t, 2) * ((overshootfactor + 1) * 2 * t - overshootfactor)) / 2;
         return (Math.pow(2 * t - 2, 2) * ((overshootfactor + 1) * (t * 2 - 2) + overshootfactor) + 2) / 2;
     }
-    
+
 }
 
 
@@ -213,7 +227,7 @@ export const Constants = {
     Male: "male",
     Female: "female",
     FemaleAvatarSuffix: " Girl",
-    
+
     /*** Avatar Prefabs ***/
     WingSuitAvatar: "Wingsuit",
     SlingshotAvatar: "Slingshot",
@@ -232,5 +246,5 @@ export const Constants = {
     ChaseAudio: "Chase",
     ForceAudio: "Force",
 
-    
-  };
+
+};
