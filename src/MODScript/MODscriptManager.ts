@@ -14,6 +14,8 @@ export class MODscriptManager implements UpdateHandler {
 
     private collisionEventBodyMap: { event: MODscriptEvent; bodyId: number }[] = [];
     private taggedBodiesList: BodyHandle[] = [];
+    public ScriptletOverrideData: string = "";
+    public PlotletOverrideData: string = "";
 
     static _instance: MODscriptManager;
     static get instance() {

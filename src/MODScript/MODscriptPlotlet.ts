@@ -5,7 +5,6 @@ import { PlotletOutcome, PlotletDefinition, Scriptlets, EventDefinition, Plotlet
 import { MODscriptEvent } from "./MODscriptEvent";
 
 export class MODscriptPlotlet implements UpdateHandler {
-    public static scriptletOverrideData: string = "";
     events: MODscriptEvent[] = [];
 
     public id = 0;
@@ -29,8 +28,10 @@ export class MODscriptPlotlet implements UpdateHandler {
         this.enabled = plotletDef.enabled;
         this.outcomes = plotletDef.outcomes;
         this.args = plotletDef.args;
-        this.scriptlet = this.refreshScriptlet(Scriptlets[this.plotletType]);
-        MODscriptPlotlet.scriptletOverrideData = "";
+        
+        //Hack: This is to allow overriding.
+        if(this.plotletType !== Scriptlets.scriptletTest)
+            this.scriptlet = this.refreshScriptlet(Scriptlets[this.plotletType]);
     }
 
     initCATs(): void {
@@ -39,7 +40,7 @@ export class MODscriptPlotlet implements UpdateHandler {
 
         let eventDefs = Helpers.convertArray(GameplayScene.instance.clientInterface?.jsonParse<EventDefinition[]>(this.scriptlet))||[];
         
-        if (MODscriptPlotlet.scriptletOverrideData != "")
+        if (GameplayScene.instance.modscriptManager?.ScriptletOverrideData !== "")
             eventDefs = this.overrideEventDefs();
 
         this.events = this.generateEventObjects(eventDefs);
@@ -60,13 +61,18 @@ export class MODscriptPlotlet implements UpdateHandler {
     }
 
     overrideEventDefs(): EventDefinition[] {
+        if(!GameplayScene.instance.modscriptManager) return [];
+
         console.log("           !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! NOT A JOKE !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
         console.log("WARNING 3 :: JSON data is overridden by the MODscriptOverride Element, Make sure to delete that element from the scene to use the real MODscript.")
         console.log("WARNING 2 :: JSON data is overridden by the MODscriptOverride Element, Make sure to delete that element from the scene to use the real MODscript.")
         console.log("WARNING 1 :: JSON data is overridden by the MODscriptOverride Element, Make sure to delete that element from the scene to use the real MODscript.")
         console.log("                                                              **********")
-        MODscriptPlotlet.scriptletOverrideData = this.refreshScriptlet(MODscriptPlotlet.scriptletOverrideData);
-        const overrideEventDefs = Helpers.convertArray(GameplayScene.instance.clientInterface?.jsonParse<EventDefinition[]>(MODscriptPlotlet.scriptletOverrideData));
+
+
+
+        GameplayScene.instance.modscriptManager.ScriptletOverrideData = this.refreshScriptlet(GameplayScene.instance.modscriptManager.ScriptletOverrideData);
+        const overrideEventDefs = Helpers.convertArray(GameplayScene.instance.clientInterface?.jsonParse<EventDefinition[]>(GameplayScene.instance.modscriptManager.ScriptletOverrideData));
         if (overrideEventDefs === undefined) {
             console.log("JSON parse failed for the event definitions.");
             return [];
