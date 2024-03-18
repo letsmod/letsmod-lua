@@ -20,7 +20,7 @@ export class PlotletGraph implements UpdateHandler {
         if (this.plotletsInitialized) return;
         this.plotletsInitialized = true;
         let plotletDefs: PlotletDefinition[] = GameplayScene.instance.plotletDefs;
-        if (GameplayScene.instance.modscriptManager?.PlotletOverrideData !== "")
+        if (GameplayScene.instance.modscriptManager?.graphJsonOverride !== "")
             plotletDefs = this.overridePlotletDefs();
 
         this.plotlets = this.generatePlotlets(plotletDefs);
@@ -35,7 +35,7 @@ export class PlotletGraph implements UpdateHandler {
         console.log("WARNING 1 :: JSON data is overridden by the PlotletOverride Element, Make sure to delete that element from the scene to use the real Plotlet Graph.")
         console.log("                                                              **********")
 
-        const overridePlotletDefs = Helpers.convertArray(GameplayScene.instance.clientInterface?.jsonParse<PlotletDefinition[]>(GameplayScene.instance.modscriptManager.PlotletOverrideData));
+        const overridePlotletDefs = Helpers.convertArray(GameplayScene.instance.clientInterface?.jsonParse<PlotletDefinition[]>(GameplayScene.instance.modscriptManager.graphJsonOverride));
         
         if (overridePlotletDefs === undefined) {
             console.log("JSON parse failed for the plotlet graph.");

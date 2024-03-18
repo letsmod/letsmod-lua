@@ -115,11 +115,9 @@ export const CATs = {
 };
 
 export const PlotletTypes = {
-    scriptletTest: "scriptletTest", ///<<---- USE ONLY IN THE OVERRIDE ELEMENT TESTING
     talkToNPC: "talkToNpc",
 }
 
 export const Scriptlets: { [key: string]: string } = {
-    [PlotletTypes.scriptletTest] : '[]',
     [PlotletTypes.talkToNPC]: '[{"id":0,"order":0,"actorName":"<X>","actorType":"<X_type>","trigger":{"triggerType":"Nearby","args":{"maxDistance":<maxDistance>,"condition":{"conditionType":"IsPlayer","args":{}}}},"action":{"actionType":"Say","args":{"sentence":"<sentence>","audioId":"<X_type>"}},"repeatable":false,"enabled":true}]'
 }
