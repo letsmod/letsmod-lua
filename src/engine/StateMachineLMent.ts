@@ -100,8 +100,11 @@ export abstract class AnimatedState extends State implements UpdateHandler
 
     this.animName = animName;
     const avatarStateMachine = this.stateMachine as AdventurerAvatar;
+    
+    //Hack [Ahmad]: This is temporary because we have two different rigs for each of the male/female
     if(avatarStateMachine && avatarStateMachine.gender === Constants.Male)
       this.animName = animName.replace("_v2", "");
+
     this.animBlendTime = animBlendTime;
   }
 
