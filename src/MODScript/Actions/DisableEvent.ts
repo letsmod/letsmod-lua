@@ -1,8 +1,7 @@
-import { EventHandler } from "MODScript/EventHandler";
-import { CATs, GenericAction } from "MODScript/MODscriptDefs";
+import { GenericAction } from "MODScript/MODscriptGenericCATs";
+import { CATs } from "MODScript/MODscriptDefs";
 import { MODscriptEvent } from "MODScript/MODscriptEvent";
 import { BodyHandle } from "engine/BodyHandle";
-import { GameplayScene } from "engine/GameplayScene";
 
 export class DisableEvent extends GenericAction {
     eventId: number;
@@ -12,11 +11,13 @@ export class DisableEvent extends GenericAction {
     }
 
     performAction(triggerOutput?: BodyHandle | undefined): void {
-        const eventHandler = GameplayScene.instance.eventHandler;
-        if (!triggerOutput || !this.parentEvent || !this.parentEvent.EventActor || !eventHandler) return;
-        if(eventHandler.HasEvent(this.eventId))
+
+        const plotlet = this.parentEvent.plotlet;
+
+        if (!triggerOutput || !this.parentEvent || !this.parentEvent.EventActor || plotlet === undefined) return;
+        if(plotlet.hasEvent(this.eventId))
         {
-            eventHandler.DisableEvent(this.eventId);
+            plotlet.disableEvent(this.eventId);
             this.actionFinished();
         }
         else

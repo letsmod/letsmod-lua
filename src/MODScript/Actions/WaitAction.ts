@@ -1,6 +1,6 @@
-import { EventHandler } from "MODScript/EventHandler";
-import { CATs, GenericAction } from "MODScript/MODscriptDefs";
+import { CATs } from "MODScript/MODscriptDefs";
 import { MODscriptEvent } from "MODScript/MODscriptEvent";
+import { GenericAction } from "MODScript/MODscriptGenericCATs";
 import { BodyHandle } from "engine/BodyHandle";
 import { GameplayScene } from "engine/GameplayScene";
 
@@ -13,9 +13,8 @@ export class WaitAction extends GenericAction {
         super(parentEvent, CATs.Wait);
         this.timeToWait = args.timeToWait ?? 0;
         this.eventIdToWaitFor = args.eventIdToWaitFor === undefined ? -1 : args.eventIdToWaitFor;
-        const eventHandler = GameplayScene.instance.eventHandler;
-        if (eventHandler)
-            this.event = eventHandler.getEvent(this.eventIdToWaitFor);
+        
+        this.event = this.parentEvent.plotlet?.getEvent(this.eventIdToWaitFor);
     }
 
     performAction(triggerOutput?: BodyHandle | undefined): void {

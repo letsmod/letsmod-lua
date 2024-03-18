@@ -1,9 +1,9 @@
 import { BodyHandle } from "engine/BodyHandle";
-import { ConditionDefinition, GenericCondition, GenericTrigger } from "../MODscriptDefs";
-import { CollisionHandler, CollisionInfo } from "engine/MessageHandlers";
+import { ConditionDefinition } from "../MODscriptDefs";
+import { CollisionInfo } from "engine/MessageHandlers";
 import { MODscriptEvent } from "MODScript/MODscriptEvent";
-import { ConditionFactory } from "MODScript/FactoryClasses/ConditionsFactory";
-import { GameplayScene } from "engine/GameplayScene";
+import { ConditionFactory } from "MODScript/_FactoryClasses/ConditionsFactory";
+import { GenericCondition, GenericTrigger } from "MODScript/MODscriptGenericCATs";
 
 export class Touched extends GenericTrigger {
 

@@ -1,4 +1,5 @@
-import { EventHandler } from "MODScript/EventHandler";
+import { GenericPlotlet } from "MODScript/MODscriptGenericCATs";
+import { MODscriptManager } from "MODScript/MODscriptManager";
 import { GameplayScene } from "engine/GameplayScene";
 
 export * as Elements from "elements/_ElementTypes";
@@ -7,7 +8,7 @@ export { BodyHandle } from "engine/BodyHandle";
 
 export const scene = GameplayScene.instance;
 
-scene.eventHandler = EventHandler.instance;
+scene.modscriptManager = MODscriptManager.instance;
 
 // export const testArray = [1, 2, 3];
 

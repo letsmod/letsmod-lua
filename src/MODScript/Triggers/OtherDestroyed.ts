@@ -1,8 +1,8 @@
 import { BodyHandle } from "engine/BodyHandle";
-import { ConditionDefinition, GenericCondition, GenericTrigger } from "../MODscriptDefs";
-import { HitPoints } from "elements/HitPoints";
+import { ConditionDefinition } from "../MODscriptDefs";
 import { MODscriptEvent } from "MODScript/MODscriptEvent";
-import { ConditionFactory } from "MODScript/FactoryClasses/ConditionsFactory";
+import { ConditionFactory } from "MODScript/_FactoryClasses/ConditionsFactory";
+import { GenericCondition, GenericTrigger } from "MODScript/MODscriptGenericCATs";
 
 export class OtherDestroyed extends GenericTrigger {
     maxDistance: number;

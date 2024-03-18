@@ -2,10 +2,10 @@ import { BodyPointer, BodyHandle } from "./BodyHandle";
 import { MessageDispatcher } from "engine/MessageDispatcher";
 import { GameplayMemory } from "engine/GameplayMemory";
 import { LuaClientInterface } from "./LuaClientInterface";
-import { EventHandler } from "../MODScript/EventHandler";
 import { LMent } from "./LMent";
-import { EventDefinition } from "MODScript/MODscriptDefs";
+import { EventDefinition, PlotletDefinition } from "MODScript/MODscriptDefs";
 import { Helpers } from "./Helpers";
+import { MODscriptManager } from "MODScript/MODscriptManager";
 
 type GamePreferences = {
   defaultPlayDifficulty: "normal" | "hardcore";
@@ -33,14 +33,16 @@ export class GameplayScene {
   memory: GameplayMemory = new GameplayMemory();
   clientInterface: LuaClientInterface | undefined = undefined;
   currentDt: number = 0;
-  eventHandler: EventHandler | undefined;
+  modscriptManager: MODscriptManager | undefined;
   gamePreferences: GamePreferences = {
     defaultPlayDifficulty: "normal",
   };
   story: EventDefinition[] = [];
+  plotletDefs: PlotletDefinition[] = [];
   gameStoryActors: GameStoryActors | undefined = undefined;
 
-  private constructor() {}
+  private constructor() {
+  }
 
   setClientInterface(clientInterface: LuaClientInterface) {
     this.clientInterface = clientInterface;
@@ -55,11 +57,15 @@ export class GameplayScene {
   }
 
   setGameStory(story: EventDefinition[]) {
-    this.story = Helpers.convertArray(story) || [];
+    //this.story = Helpers.convertArray(story) || [];
+  }
+
+  setGamePlotlets(plotlets: PlotletDefinition[]) {
+    //this.plotletDefs = Helpers.convertArray(plotlets) || [];
   }
 
   setGameStoryActors(actors: GameStoryActors | undefined) {
-    this.gameStoryActors = Helpers.convertArray(actors);
+    //this.gameStoryActors = Helpers.convertArray(actors);
   }
 
   addBody(bodyNode: BodyPointer) {
@@ -121,7 +127,8 @@ export class GameplayScene {
 
   initializeMemory(memoryOverride: Partial<GameplayMemory>) {
     this.memory = { ...new GameplayMemory(), ...memoryOverride };
-    if (this.eventHandler) this.eventHandler.initialize();
+    if (this.modscriptManager) 
+      this.modscriptManager.initialize();
   }
 
   preUpdate(dt: number) {
@@ -140,9 +147,9 @@ export class GameplayScene {
 
   update() {
     this.dispatcher.onUpdate(this.currentDt);
-    if (!this.eventHandler) return;
-    this.eventHandler.initCATs();
-    this.eventHandler.onUpdate(this.currentDt);
+    
+    if (this.modscriptManager)
+      this.modscriptManager.onUpdate(this.currentDt);
   }
 
   cloneBody(body: BodyHandle): BodyHandle | undefined {
@@ -181,13 +188,6 @@ export class GameplayScene {
       body.body.destroyBody();
       body.isInScene = false;
     }
-
-    //ASK DON: This should still be in the involvedActors to know when it gets destroyed, otherwise the OtherDestroyed trigger won't work.
-    // if (this.eventHandler !== undefined)
-    //   for (let e of this.eventHandler.events) {
-    //     if (e.InvolvedActorIDs.includes(body.body.id))
-    //       e.removeInvolvedActor(body);
-    //   }
   }
 
   testErrorHandler() {

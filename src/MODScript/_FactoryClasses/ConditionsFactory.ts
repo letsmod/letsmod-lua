@@ -1,7 +1,8 @@
 import { AndCond, HasTag, IsHologram, IsKinematic, IsOnTeam, IsOther, IsPhysical, IsPlayer, IsTrue, MaxMass, MinMass, MinSize, NotCond, OrCond, SeenOther } from "MODScript/Conditions";
 import { HasElement } from "MODScript/Conditions";
 
-import { CATs, ConditionDefinition, GenericCondition } from "MODScript/MODscriptDefs";
+import { CATs, ConditionDefinition } from "MODScript/MODscriptDefs";
+import { GenericCondition } from "MODScript/MODscriptGenericCATs";
 
 export class ConditionFactory {
 

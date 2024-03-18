@@ -10,7 +10,7 @@ export class Tag extends LMent {
     }
 
     onStart(): void {
-        GameplayScene.instance?.eventHandler?.cacheTaggedBody(this.body);
+        GameplayScene.instance?.modscriptManager?.cacheTaggedBody(this.body);
     }
 
     constructor(body: BodyHandle, id: number, params: Partial<Tag> = {}) {

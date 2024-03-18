@@ -1,6 +1,6 @@
-import { EventHandler } from "MODScript/EventHandler";
-import { TriggerDefinition, GenericTrigger, CATs } from "MODScript/MODscriptDefs";
+import { TriggerDefinition, CATs } from "MODScript/MODscriptDefs";
 import { MODscriptEvent } from "MODScript/MODscriptEvent";
+import { GenericTrigger } from "MODScript/MODscriptGenericCATs";
 import { CompletedEvent } from "MODScript/Triggers/CompletedEvent";
 import { Damaged } from "MODScript/Triggers/Damaged";
 import { Destroyed } from "MODScript/Triggers/Destroyed";
@@ -22,7 +22,7 @@ export class TriggerFactory {
             case CATs.Hear:
                 return new Hear(parentEvent, triggerDef.args);
             case CATs.Touched:
-                GameplayScene.instance.eventHandler?.addEventBodyMapEntry(parentEvent, parentEvent.EventActorID);
+                GameplayScene.instance.modscriptManager?.addEventBodyMapEntry(parentEvent, parentEvent.EventActorID);
                 return new Touched(parentEvent, triggerDef.args);
             case CATs.OtherDestroyed:
                 return new OtherDestroyed(parentEvent, triggerDef.args);

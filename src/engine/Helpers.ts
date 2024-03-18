@@ -97,19 +97,6 @@ export class Helpers {
         return Math.random() * (max - min) + min;
     }
 
-    static printObject(obj: any, indent: string) {
-        for (const key in obj) {
-            if (!obj.hasOwnProperty(key)) continue;
-
-            if (typeof obj[key] === "object" && obj[key] !== null) {
-                console.log(`${indent}${key}:`);
-                this.printObject(obj[key], indent + "  ");
-            } else {
-                console.log(`${indent}${key}: ${obj[key]}`);
-            }
-        }
-    }
-
     static convertArray<T>(arr: { [key: number]: T } | undefined): T[] | undefined {
         if (arr === undefined) {
             return undefined;
@@ -122,7 +109,6 @@ export class Helpers {
         }
         return result;
     }
-
 
     //Not recommended to use this continuously.
     static findBodyInScene(name: string): BodyHandle | undefined {
@@ -143,6 +129,7 @@ export class Helpers {
         return body;
     }
 
+    //#region Interpolation
     static validateInterpolateType(fx: InterpolationType): boolean {
         const typesArray = ["easein", "easeout", "ease", "linear", "elastic", "overshoot", "bounce", "easesqrt", "easeinsqrt", "easeoutsqrt"];
         return typesArray.includes(fx);
@@ -210,7 +197,7 @@ export class Helpers {
             return (Math.pow(2 * t, 2) * ((overshootfactor + 1) * 2 * t - overshootfactor)) / 2;
         return (Math.pow(2 * t - 2, 2) * ((overshootfactor + 1) * (t * 2 - 2) + overshootfactor) + 2) / 2;
     }
-
+    //#endregion
 }
 
 

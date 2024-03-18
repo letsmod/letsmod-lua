@@ -1,16 +1,16 @@
-import { EventHandler } from "MODScript/EventHandler";
-import { AudioDefinition, CATs, GenericAction } from "MODScript/MODscriptDefs";
+import { GenericAction } from "MODScript/MODscriptGenericCATs";
+import { AudioDefinition, CATs } from "MODScript/MODscriptDefs";
 import { MODscriptEvent } from "MODScript/MODscriptEvent";
 import { CharacterStateNames } from "elements/Character State Machines/CharacterStates";
 import { SfxPlayer } from "elements/SfxPlayer";
 import { BodyHandle } from "engine/BodyHandle";
 import { GameplayScene } from "engine/GameplayScene";
-import { Helpers } from "engine/Helpers";
+import { MODscriptManager } from "MODScript/MODscriptManager";
 
 export class SayAction extends GenericAction {
     sentence: string;
     audioHasPlayed: boolean = false;
-    eventHandler: EventHandler | undefined;
+    modscriptManager: MODscriptManager | undefined;
 
 
     durationMs: number;
@@ -33,16 +33,16 @@ export class SayAction extends GenericAction {
         this.image = args.image ?? "";
         this.audioGapMs = args.audioGapMs ?? 0.5;
 
-        const eventHandler = GameplayScene.instance.eventHandler;
-        this.eventHandler = eventHandler;
+        const modscriptManager = GameplayScene.instance.modscriptManager;
+        this.modscriptManager = modscriptManager;
     }
 
     performAction(triggerOutput?: BodyHandle | undefined): void {
-        if (!this.eventHandler) {
+        if (!this.modscriptManager) {
             this.actionFailed();
             return;
         }
-        this.audioHasPlayed = this.eventHandler.playAudioAction(this)
+        this.audioHasPlayed = this.modscriptManager.playAudioAction(this)
 
         if (!this.audioHasPlayed)
             this.actionFailed();
@@ -54,7 +54,7 @@ export class SayAction extends GenericAction {
     }
 
     monitorAction(): void {
-        if (!this.eventHandler) {
+        if (!this.modscriptManager) {
             this.actionFailed();
             return;
         }

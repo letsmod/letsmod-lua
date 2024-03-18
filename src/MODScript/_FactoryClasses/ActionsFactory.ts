@@ -1,7 +1,6 @@
 import { LookOther } from "MODScript/Actions/LookOther";
 import { DestroyOther } from "MODScript/Actions/DestroyOther";
-import { JumpUpAction } from "../Actions/JumpUpAction";
-import { ActionDefinition, CATs, ConditionDefinition, GenericAction, GenericCondition, GenericTrigger, TriggerDefinition } from "../MODscriptDefs";
+import { ActionDefinition, CATs } from "../MODscriptDefs";
 import { LookOutput } from "MODScript/Actions/LookOutput";
 import { DisableEvent } from "MODScript/Actions/DisableEvent";
 import { EnableEvent } from "MODScript/Actions/EnableEvent";
@@ -14,14 +13,13 @@ import { DestroyOutput } from "MODScript/Actions/DestroyOutput";
 import { ThrowOutput } from "MODScript/Actions/ThrowOutput";
 import { SimultaneousAction } from "MODScript/Actions/SimultaneousAction";
 import { Instantiate } from "MODScript/Actions/Instantiate";
+import { GenericAction } from "MODScript/MODscriptGenericCATs";
 
 export class ActionFactory {
 
     public static createAction(parentEvent: any, actionDef: ActionDefinition): GenericAction | undefined {
 
         switch (actionDef.actionType) {
-            case CATs.JumpUpAction:
-                return new JumpUpAction(parentEvent, actionDef.args);
             case CATs.LookOther:
                 return new LookOther(parentEvent, actionDef.args);
             case CATs.LookOutput:

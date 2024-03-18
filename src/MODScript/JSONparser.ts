@@ -1,4 +1,3 @@
-import { ActionFactory } from "./FactoryClasses/ActionsFactory";
 import { ActionDefinition, CATs, ConditionDefinition, EventDefinition, TriggerDefinition, Vector3 } from "./MODscriptDefs";
 
 export class JSONparser {

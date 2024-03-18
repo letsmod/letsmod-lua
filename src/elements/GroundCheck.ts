@@ -18,7 +18,7 @@ export class GroundCheck extends LMent implements CollisionHandler, UpdateHandle
     }
 
     onStart(): void {
-        GameplayScene.instance?.eventHandler?.cacheTaggedBody(this.body);
+
     }
 
     constructor(body: BodyHandle, id: number, params: Partial<GroundCheck> = {}) {

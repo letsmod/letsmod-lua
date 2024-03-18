@@ -1,12 +1,10 @@
-import { ConditionDefinition, GenericCondition } from "MODScript/MODscriptDefs";
 import { BodyHandle } from "engine/BodyHandle";
 import { GameplayScene } from "engine/GameplayScene";
 import { MODscriptEvent } from "./MODscriptEvent";
 import { Helpers } from "engine/Helpers";
-import { Vector3 } from "three";
 import { Tag } from "elements/Tag";
 import { HitPoints } from "elements/HitPoints";
-import { EventHandler } from "./EventHandler";
+import { GenericCondition } from "./MODscriptGenericCATs";
 
 export class HasElement implements GenericCondition {
     elementId: string;
@@ -110,24 +108,24 @@ export class MaxMass implements GenericCondition {
 }
 
 export class MinSize implements GenericCondition {
-    minSize: Vector3;
+    minSize: number;
     constructor(args: Partial<MinSize>) {
-        this.minSize = args.minSize ?? Helpers.NewVector3(0, 0, 0);
+        this.minSize = args.minSize ?? 0;
     }
 
     checkConditionOnActor(actor: BodyHandle): boolean {
-        return actor.body.getScale() >= this.minSize;
+        return actor.body.getScale().x >= this.minSize;
     }
 }
 
 export class MaxSize implements GenericCondition {
-    maxSize: Vector3;
+    maxSize: number;
     constructor(args: Partial<MaxSize>) {
-        this.maxSize = args.maxSize ?? Helpers.NewVector3(1, 1, 1);
+        this.maxSize = args.maxSize ?? 1;
     }
 
     checkConditionOnActor(actor: BodyHandle): boolean {
-        return actor.body.getScale() <= this.maxSize;
+        return actor.body.getScale().x <= this.maxSize;
     }
 }
 
@@ -178,13 +176,13 @@ export class NotCond implements GenericCondition {
 }
 
 export class IsOther implements GenericCondition {
-    //actorId: number = -1;
+    actorId: number = -1;
     actorName: string = "";
     targetActor: BodyHandle | undefined;
     constructor(args: Partial<IsOther>) {
         this.actorName = args.actorName ?? "";
         this.targetActor = Helpers.findBodyInScene(this.actorName);
-        //this.actorId = this.targetActor ? this.targetActor.body.id : -1;
+        this.actorId = this.targetActor ? this.targetActor.body.id : -1;
 
     }
 
@@ -210,6 +208,7 @@ export class SeenOther implements GenericCondition {
         const myFwd = Helpers.forwardVector.applyQuaternion(actor.body.getRotation());
         const dotCheck = myFwd.dot(targetActor.body.getPosition().clone().sub(actor.body.getPosition()).normalize());
         return dotCheck > 0.75;
+        return false;
     }
 }
 

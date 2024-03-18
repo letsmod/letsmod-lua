@@ -1,93 +1,28 @@
 import { BodyHandle } from "engine/BodyHandle";
 import { MODscriptEvent } from "./MODscriptEvent";
-import { CollisionInfo } from "engine/MessageHandlers";
 
-export interface eventCollisionHandler{
+export interface eventCollisionHandler {
     handleCollision(event: MODscriptEvent, collidedActor: BodyHandle): void;
-}
-
-export abstract class GenericTrigger {
-    requiresCollision: boolean = false;
-    parentEvent: MODscriptEvent;
-    
-    constructor(parentEvent: MODscriptEvent) {
-        this.parentEvent = parentEvent;
-    }
-
-    abstract checkTrigger(info?:CollisionInfo): { didTrigger: boolean; outputActor: BodyHandle | undefined; }
-}
-
-export abstract class GenericAction{
-
-    parentEvent: MODscriptEvent;
-    public actionType: string = "";
-    public get ActionId() { return this._actionId; }
-    public get ActionIsFinished() { return this.actionIsFinished; }
-    private _actionId: string = "";
-    private static actionIdCounter: number = 0;
-    protected actionIsFinished: boolean = false;
-    private actionStarted: boolean = false;
-    
-    constructor(parentEvent: MODscriptEvent, actionType: string) {
-        this.parentEvent = parentEvent;
-        if(parentEvent.action)
-        {
-            this.actionType = actionType;
-            this._actionId = this.parentEvent.EventId+"_"+(++GenericAction.actionIdCounter);
-            this.parentEvent.addAction(this);
-        }
-    }
-    abstract performAction(triggerOutput?: BodyHandle | undefined): void
-    abstract monitorAction():void
-    
-    actionUpdate(): void{
-        if(this.actionStarted)
-            this.monitorAction();
-    }
-
-    startAction(triggerOutput?: BodyHandle | undefined): void{
-        if(this.actionStarted || this.actionIsFinished && !this.parentEvent.Repeatable) return;
-        this.actionStarted = true;
-        this.performAction(triggerOutput);
-    }
-
-    actionFinished(): void{
-        if(this.actionIsFinished) return;
-        this.actionIsFinished = true;
-        this.actionStarted = false;
-        this.parentEvent.checkActionsStatus();
-    }
-
-    actionFailed(): void{
-        if(this.actionIsFinished) return;
-        if(this.actionStarted)
-            this.parentEvent.cancelEvent();
-        this.actionStarted = false;
-    }
-}
-
-export interface GenericCondition {
-    checkConditionOnActor(actor: BodyHandle, parentEvent: MODscriptEvent): boolean;
 }
 
 export declare type Vector3 = {
     x: number;
     y: number;
     z: number;
-  }
-
-export declare type ConditionDefinition = {
-    conditionType: string;
-    args: { [key: string]: number | Vector3 | ConditionDefinition | string};
 }
 
 export declare type AudioDefinition = {
     audioActionId: string;
     audioDuration: number;
     filePath: string;
-    actorThumbPath:string;
-    audioGap:number;
+    actorThumbPath: string;
+    audioGap: number;
     isPlaying: boolean;
+}
+
+export declare type ConditionDefinition = {
+    conditionType: string;
+    args: { [key: string]: number | Vector3 | ConditionDefinition | string };
 }
 
 export declare type TriggerDefinition = {
@@ -101,6 +36,7 @@ export declare type ActionDefinition = {
 }
 
 export declare type EventDefinition = {
+    id: number;
     actorName: string;
     trigger: TriggerDefinition;
     action: ActionDefinition;
@@ -110,10 +46,23 @@ export declare type EventDefinition = {
 
 export declare type PlotletDefinition = {
     id: number;
-    plotletType: string;
-    args: { [key: string]: number | string };
+    type: string;
     enabled: boolean;
-    outcomes: [{ outcomeId: string, actions:[action:"enable" | "disable", plotletId: string]}];
+    args: PlotletArgs;
+    outcomes: [];
+}
+
+export declare type PlotletArgs = { [key: string]: number | string | Vector3 | boolean };
+
+export declare type PlotletOutcome = {
+    outcomeType: "success" | "partialSuccess" | "failure";
+    actions: [action: "enable" | "disable", plotletId: number]
+}
+
+export const plotletOutcomeTypes = {
+    success: "success",
+    partialSuccess: "partialSuccess",
+    failure: "failure"
 }
 
 export const CATs = {
@@ -135,7 +84,7 @@ export const CATs = {
     IsOther: "IsOther",
     SeenOther: "SeenOther",
     IsTrue: "True",
-    
+
     /*** Actions ***/
     JumpUpAction: "JumpUpAction",
     DestroyOther: "DestroyOther",
@@ -162,5 +111,13 @@ export const CATs = {
     OtherDamaged: "OtherDamaged",
     Damaged: "Damaged",
     Destroyed: "Destroyed",
-       
-  };
+
+};
+
+export const PlotletTypes = {
+    talkToNPC: "talkToNpc",
+}
+
+export const Scriptlets: { [key: string]: string } = {
+    [PlotletTypes.talkToNPC]: '[{"id":0,"order":0,"actorName":"<X>","actorType":"<X_type>","trigger":{"triggerType":"Nearby","args":{"maxDistance":<maxDistance>,"condition":{"conditionType":"IsPlayer","args":{}}}},"action":{"actionType":"Say","args":{"sentence":"<sentence>","audioId":"<X_type>"}},"repeatable":false,"enabled":true}]'
+}

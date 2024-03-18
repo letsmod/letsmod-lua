@@ -1,9 +1,7 @@
-import { EventHandler } from "MODScript/EventHandler";
-import { ActionFactory } from "MODScript/FactoryClasses/ActionsFactory";
-import { ActionDefinition, CATs, GenericAction } from "MODScript/MODscriptDefs";
+import { CATs } from "MODScript/MODscriptDefs";
 import { MODscriptEvent } from "MODScript/MODscriptEvent";
+import { GenericAction } from "MODScript/MODscriptGenericCATs";
 import { BodyHandle } from "engine/BodyHandle";
-import { GameplayScene } from "engine/GameplayScene";
 
 export class SimultaneousAction extends GenericAction {
 

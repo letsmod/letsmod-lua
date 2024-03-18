@@ -1,7 +1,7 @@
 import { BodyHandle } from "engine/BodyHandle";
-import { ConditionDefinition, GenericCondition, GenericTrigger } from "../MODscriptDefs";
 import { HitPoints } from "elements/HitPoints";
 import { MODscriptEvent } from "MODScript/MODscriptEvent";
+import { GenericTrigger } from "MODScript/MODscriptGenericCATs";
 
 export class Damaged extends GenericTrigger {
 

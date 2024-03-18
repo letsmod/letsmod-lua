@@ -1,10 +1,9 @@
-import { CATs, GenericAction } from "MODScript/MODscriptDefs";
+import { CATs } from "MODScript/MODscriptDefs";
 import { MODscriptEvent } from "MODScript/MODscriptEvent";
-import { ThrowState } from "elements/AdventurerAvatar";
+import { GenericAction } from "MODScript/MODscriptGenericCATs";
 import { CharacterStateNames } from "elements/Character State Machines/CharacterStates";
 import { MODscriptThrowState } from "elements/Character State Machines/MODscriptStates";
 import { BodyHandle } from "engine/BodyHandle";
-import { GameplayScene } from "engine/GameplayScene";
 
 export class ThrowOther extends GenericAction {
     prefabId: string;

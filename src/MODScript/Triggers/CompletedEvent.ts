@@ -1,8 +1,7 @@
 import { BodyHandle } from "engine/BodyHandle";
-import { GenericTrigger } from "../MODscriptDefs";
-import { EventHandler } from "MODScript/EventHandler";
 import { MODscriptEvent } from "MODScript/MODscriptEvent";
 import { GameplayScene } from "engine/GameplayScene";
+import { GenericTrigger } from "MODScript/MODscriptGenericCATs";
 
 export class CompletedEvent extends GenericTrigger {
 
@@ -15,9 +14,9 @@ export class CompletedEvent extends GenericTrigger {
 
     checkTrigger(): { didTrigger: boolean, outputActor: BodyHandle | undefined } {
 
-        const eventHandler = GameplayScene.instance.eventHandler;
-        if(eventHandler){
-            const event = eventHandler.getEvent(this.eventId);
+        const plotlet = this.parentEvent.plotlet;
+        if(plotlet){
+            const event = plotlet.getEvent(this.eventId);
             if (event && event.IsFinished)
                 return { didTrigger: true, outputActor: undefined };
         }

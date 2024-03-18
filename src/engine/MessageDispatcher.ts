@@ -1,5 +1,4 @@
 
-import { js_new, global } from "js";
 import {
   CollisionHandler,
   CollisionInfoFactory,
@@ -9,7 +8,6 @@ import {
 import { LMent } from "./LMent";
 import { BodyHandle } from "./BodyHandle";
 import { GameplayScene } from "./GameplayScene";
-import { EventHandler } from "MODScript/EventHandler";
 
 export type ListenerType<key extends keyof HandlerTypeMap> = LMent & HandlerTypeMap[key];
 
@@ -256,8 +254,8 @@ export class MessageDispatcher
       }
     }
 
-    if(this.scene.eventHandler)
-      this.scene.eventHandler.onCollision(infoFactory);
+    if(this.scene.modscriptManager)
+      this.scene.modscriptManager.onCollision(infoFactory);
   }
 
   // ButtonHandler

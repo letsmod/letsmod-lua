@@ -1,5 +1,6 @@
-import { CATs, GenericAction } from "MODScript/MODscriptDefs";
+import { CATs } from "MODScript/MODscriptDefs";
 import { MODscriptEvent } from "MODScript/MODscriptEvent";
+import { GenericAction } from "MODScript/MODscriptGenericCATs";
 import { CharacterStateNames } from "elements/Character State Machines/CharacterStates";
 import { BodyHandle } from "engine/BodyHandle";
 

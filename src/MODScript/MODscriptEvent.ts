@@ -1,17 +1,20 @@
 import { BodyHandle } from "engine/BodyHandle";
-import { TriggerDefinition, ActionDefinition, GenericTrigger, GenericAction, EventDefinition, ConditionDefinition, GenericCondition, CATs } from "./MODscriptDefs";
-import { ActionFactory } from "./FactoryClasses/ActionsFactory";
-import { TriggerFactory } from "./FactoryClasses/TriggersFactory";
-import { Constants, Helpers } from "engine/Helpers";
+import { TriggerDefinition, ActionDefinition, EventDefinition, ConditionDefinition, CATs } from "./MODscriptDefs";
+import { ActionFactory } from "./_FactoryClasses/ActionsFactory";
+import { Helpers } from "engine/Helpers";
 import { GameplayScene } from "engine/GameplayScene";
 import { CollisionInfo } from "engine/MessageHandlers";
 import { CharacterStateNames } from "elements/Character State Machines/CharacterStates";
 import { CharacterStateMachineLMent } from "elements/Character State Machines/CharacterStateMachineLMent";
+import { GenericAction, GenericTrigger } from "./MODscriptGenericCATs";
+import { MODscriptPlotlet } from "./MODscriptPlotlet";
+import { TriggerFactory } from "./_FactoryClasses/TriggersFactory";
 
 export class MODscriptEvent {
 
     trigger: TriggerDefinition | undefined;
     action: ActionDefinition | undefined;
+    plotlet: MODscriptPlotlet | undefined;
 
     private actorId: number = -1;
     private actorName: string = "";
@@ -20,22 +23,18 @@ export class MODscriptEvent {
     private enabled: boolean = true;
     private allEventActions: GenericAction[] = [];
 
-    //Getters
+    //#region Getters
     public get EventActorID() { return this.actorId; }
     public get EventId() { return this.eventId; }
     public get Repeatable() { return this.repeatable; }
     public get IsActive() { return this.enabled && (!this.isFinished || this.isFinished && this.repeatable); }
     public get IsFinished() { return this.isFinished; }
     public get AllEventActions(): GenericAction[] { return this.allEventActions; }
-
     public get EventActor(): BodyHandle | undefined {
         return this._eventActor;
     }
-
     public get InvolvedActorIDs(): number[] { return this.involvedActorIDs; }
     public get InvolvedActorBodies(): BodyHandle[] { return this.involvedActorBodies; }
-
-
     public get stateMachine(): CharacterStateMachineLMent | undefined {
         if (this._stateMachine === undefined && this.EventActor !== undefined) {
             this._stateMachine = this.EventActor.getElement(CharacterStateMachineLMent);
@@ -44,6 +43,7 @@ export class MODscriptEvent {
         }
         return this._stateMachine ?? undefined;
     }
+    //#endregion
 
     private eventTrigger: GenericTrigger | undefined;
     private mainAction: GenericAction | undefined;
@@ -56,9 +56,10 @@ export class MODscriptEvent {
     private _stateMachine: CharacterStateMachineLMent | undefined;
     private _eventActor: BodyHandle | undefined;
 
-    constructor(id: number, eventDef: EventDefinition) {
-        this.eventId = id;
+    constructor(eventDef: EventDefinition, plotlet:MODscriptPlotlet) {
+        this.eventId = eventDef.id;
         this.eventDef = eventDef;
+        this.plotlet = plotlet;
 
         if (!this.eventDef) return;
 
@@ -94,7 +95,6 @@ export class MODscriptEvent {
         return this.involvedActorBodies.find(actor => actor.body.id === actorId);
     }
 
-
     private extractInvolvedActors(): void {
 
         this.involvedActorIDs.push(this.actorId);
@@ -112,8 +112,8 @@ export class MODscriptEvent {
         if (this.action)
             this.extractInvolvedActorsFromAction(this.action);
 
-        if (GameplayScene.instance?.eventHandler) {
-            this.involvedActorBodies.push(...GameplayScene.instance.eventHandler.TaggedBodiesList);
+        if (GameplayScene.instance?.modscriptManager) {
+            this.involvedActorBodies.push(...GameplayScene.instance.modscriptManager.TaggedBodiesList);
         }
 
     }
@@ -163,7 +163,6 @@ export class MODscriptEvent {
 
         //TODO: Make it recursive in case action type is simultaneuos.
     }
-
 
     checkEvent(info?: CollisionInfo): void {
         if (!this.eventTrigger) return;
