@@ -12,6 +12,22 @@ import { Fragile } from "./Fragile";
 import { Throwable } from "./Throwable";
 import { AbstractGadget } from "./Gadgets/AbstractGadget";
 
+export const AvatarAnimNames = {
+  idle: "idle_v2",
+  jog: "jog_v2",
+  jump: "jump_v2",
+  fall: "fall_v2",
+  clamber: "clamber_v2",
+  climb: "climb_v2",
+  lift: "lift_v2",
+  place: "place_v2",
+  throw: "throw_v2",
+  idle_holding: "idle_holding_v2",
+  jog_holding: "jog_holding_v2",
+  fall_holding: "fall_holding_v2",
+  jump_holding: "jump_holding_v2",
+};
+
 export abstract class AdventurerState extends AnimatedState
 {
   stateMachine: AdventurerAvatar; // more specific type than super.stateMachine
@@ -44,7 +60,7 @@ export class IdleState extends StaggerableState
 {
   constructor(stateMachine: AdventurerAvatar, shapeToAnimate: ShapePointer | undefined)
   {
-    super("idle", stateMachine, shapeToAnimate, "idle", stateMachine.idleBlendTime);
+    super("idle", stateMachine, shapeToAnimate, AvatarAnimNames.idle, stateMachine.idleBlendTime);
   }
 
   onEnterState(previousState: State | undefined)
@@ -86,7 +102,7 @@ export class JogState extends StaggerableState
 
   constructor(stateMachine: AdventurerAvatar, shapeToAnimate: ShapePointer | undefined)
   {
-    super("jog", stateMachine, shapeToAnimate, "jog", stateMachine.baseBlendTime);
+    super("jog", stateMachine, shapeToAnimate, AvatarAnimNames.jog, stateMachine.baseBlendTime);
   }
 
   onEnterState(previousState: State | undefined): void {
@@ -192,7 +208,7 @@ export class JumpState extends StaggerableState
 
   constructor(stateMachine: AdventurerAvatar, shapeToAnimate: ShapePointer | undefined)
   {
-    super("jump", stateMachine, shapeToAnimate, "jump", stateMachine.baseBlendTime);
+    super("jump", stateMachine, shapeToAnimate, AvatarAnimNames.jump, stateMachine.baseBlendTime);
     this.timeInJump = 0;
   }
 
@@ -320,7 +336,7 @@ export class FallState extends StaggerableState
   blocked_y_climb: number = 2;
   constructor(stateMachine: AdventurerAvatar, shapeToAnimate: ShapePointer | undefined)
   {
-    super("fall", stateMachine, shapeToAnimate, "fall", stateMachine.baseBlendTime);
+    super("fall", stateMachine, shapeToAnimate, AvatarAnimNames.fall, stateMachine.baseBlendTime);
   }
 
   onEnterState(previousState: State | undefined): void {
@@ -440,7 +456,7 @@ export class ClamberState extends StaggerableState
 
   constructor(stateMachine: AdventurerAvatar, shapeToAnimate: ShapePointer | undefined)
   {
-    super("clamber", stateMachine, shapeToAnimate, "clamber", stateMachine.baseBlendTime);
+    super("clamber", stateMachine, shapeToAnimate, AvatarAnimNames.clamber, stateMachine.baseBlendTime);
     this.lastTargetPosition = Helpers.NewVector3(0, 0, 0);
   }
 
@@ -517,7 +533,7 @@ export class ClimbState extends StaggerableState
 
   constructor(stateMachine: AdventurerAvatar, shapeToAnimate: ShapePointer | undefined)
   {
-    super("climb", stateMachine, shapeToAnimate, "climb", stateMachine.baseBlendTime);
+    super("climb", stateMachine, shapeToAnimate, AvatarAnimNames.climb, stateMachine.baseBlendTime);
     this.lastTargetPosition = Helpers.NewVector3(0, 0, 0);
   }
 
@@ -592,7 +608,7 @@ export class LiftState extends StaggerableState
   wasFragile: boolean = false;
   constructor(stateMachine: AdventurerAvatar, shapeToAnimate: ShapePointer | undefined)
   {
-    super("lift", stateMachine, shapeToAnimate, "lift", /*stateMachine.baseBlendTime*/0.0);
+    super("lift", stateMachine, shapeToAnimate, AvatarAnimNames.lift, /*stateMachine.baseBlendTime*/0.0);
   }
 
   onEnterState(previousState: State | undefined): void {
@@ -654,7 +670,7 @@ export class PlaceState extends StaggerableState
   wasFragile: boolean = false;
   constructor(stateMachine: AdventurerAvatar, shapeToAnimate: ShapePointer | undefined)
   {
-    super("place", stateMachine, shapeToAnimate, "place", stateMachine.baseBlendTime);
+    super("place", stateMachine, shapeToAnimate, AvatarAnimNames.place, stateMachine.baseBlendTime);
   }
 
   onEnterState(previousState: State | undefined): void {
@@ -717,7 +733,7 @@ export class ThrowState extends StaggerableState
   wasFragile: boolean = false;
   constructor(stateMachine: AdventurerAvatar, shapeToAnimate: ShapePointer | undefined)
   {
-    super("throw", stateMachine, shapeToAnimate, "throw", stateMachine.baseBlendTime);
+    super("throw", stateMachine, shapeToAnimate, AvatarAnimNames.throw, stateMachine.baseBlendTime);
   }
 
   onEnterState(previousState: State | undefined): void {
@@ -798,7 +814,7 @@ export class IdleHoldingState extends StaggerableState
 
   constructor(stateMachine: AdventurerAvatar, shapeToAnimate: ShapePointer | undefined)
   {
-    super("idle_holding", stateMachine, shapeToAnimate, "idle_holding", stateMachine.idleBlendTime);
+    super("idle_holding", stateMachine, shapeToAnimate, AvatarAnimNames.idle_holding, stateMachine.idleBlendTime);
   }
 
   onEnterState(previousState: State | undefined): void {
@@ -908,7 +924,7 @@ export class JogHoldingState extends StaggerableState
 
   constructor(stateMachine: AdventurerAvatar, shapeToAnimate: ShapePointer | undefined)
   {
-    super("jog_holding", stateMachine, shapeToAnimate, "jog_holding", stateMachine.baseBlendTime);
+    super("jog_holding", stateMachine, shapeToAnimate, AvatarAnimNames.jog_holding, stateMachine.baseBlendTime);
   }
 
   onEnterState(previousState: State | undefined): void {
@@ -1043,7 +1059,7 @@ export class JumpHoldingState extends StaggerableState
 
   constructor(stateMachine: AdventurerAvatar, shapeToAnimate: ShapePointer | undefined)
   {
-    super("jump_holding", stateMachine, shapeToAnimate, "jump_holding", stateMachine.baseBlendTime);
+    super("jump_holding", stateMachine, shapeToAnimate, AvatarAnimNames.jump_holding, stateMachine.baseBlendTime);
     this.timeInJump = 0;
   }
 
@@ -1129,7 +1145,7 @@ export class FallHoldingState extends StaggerableState
 
   constructor(stateMachine: AdventurerAvatar, shapeToAnimate: ShapePointer | undefined)
   {
-    super("fall_holding", stateMachine, shapeToAnimate, "fall_holding", stateMachine.baseBlendTime);
+    super("fall_holding", stateMachine, shapeToAnimate, AvatarAnimNames.fall_holding, stateMachine.baseBlendTime);
   }
 
   onEnterState(previousState: State | undefined): void {
