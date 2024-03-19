@@ -9,8 +9,8 @@ import { MODscriptPlotlet } from "./MODscriptPlotlet";
 
 export class MODscriptManager implements UpdateHandler {
 
-    plotletGraph: PlotletGraph | undefined;
-    audioManager: MODscriptAudioManager | undefined;
+    plotletGraph: PlotletGraph;
+    audioManager: MODscriptAudioManager;
 
     private collisionEventBodyMap: { event: MODscriptEvent; bodyId: number }[] = [];
     private taggedBodiesList: BodyHandle[] = [];
@@ -30,7 +30,8 @@ export class MODscriptManager implements UpdateHandler {
     }
 
     constructor() {
-        
+        this.plotletGraph = new PlotletGraph();
+        this.audioManager = new MODscriptAudioManager();
     }
 
     initialize(): void {
@@ -41,7 +42,7 @@ export class MODscriptManager implements UpdateHandler {
     }
 
     public onUpdate(dt: number): void {
-        this.plotletGraph?.onUpdate(dt);
+        this.plotletGraph.onUpdate(dt);
     }
 
     //#region collision management
