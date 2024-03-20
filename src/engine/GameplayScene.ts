@@ -10,7 +10,7 @@ import { convertArray } from "./helpers/array";
 
 type GamePreferences = {
   defaultPlayDifficulty: "normal" | "hardcore";
-  avatarType: "female" | "male"
+  avatarType: "Adventurer" | "Adventuress"
 };
 
 type GameStoryActors = {
@@ -39,7 +39,7 @@ export class GameplayScene {
   eventHandler: EventHandler | undefined;
   gamePreferences: GamePreferences = {
     defaultPlayDifficulty: "normal",
-    avatarType:"female"
+    avatarType:"Adventurer"
   };
   story: EventDefinition[] = [];
   gameStoryActors: GameStoryActors | undefined = undefined;
