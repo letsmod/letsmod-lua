@@ -1,7 +1,7 @@
 import { AnimatedState, State } from "engine/StateMachineLMent";
 import { AvatarBase } from "./AvatarBase";
 import { BodyHandle, ShapePointer } from "engine/BodyHandle";
-import { CollisionInfo, InteractHandler } from "engine/MessageHandlers";
+import { ButtonHandler, CollisionInfo, InteractHandler } from "engine/MessageHandlers";
 import { Quaternion, Vector3 } from "three";
 import { Helpers } from "engine/Helpers";
 import { GameplayScene } from "engine/GameplayScene";
@@ -807,7 +807,7 @@ export class ThrowState extends StaggerableState
   }
 }
 
-export class IdleHoldingState extends StaggerableState
+export class IdleHoldingState extends StaggerableState implements ButtonHandler
 {
   liftedItem: BodyHandle | undefined;
   wasJustJogging: number = 0;
@@ -815,6 +815,25 @@ export class IdleHoldingState extends StaggerableState
   constructor(stateMachine: AdventurerAvatar, shapeToAnimate: ShapePointer | undefined)
   {
     super("idle_holding", stateMachine, shapeToAnimate, AvatarAnimNames.idle_holding, stateMachine.idleBlendTime);
+  }
+
+  onButtonPress(button: string): void {
+    if (button == "BButton")
+    {
+      this.stateMachine.switchState("throw");
+    }
+  }
+
+  onButtonHold(button: string): void {
+    
+  }
+
+  onButtonRelease(button: string): void {
+    
+  }
+
+  hasSubtype(subtype: string): boolean {
+    return subtype === "BButton";
   }
 
   onEnterState(previousState: State | undefined): void {
@@ -862,6 +881,8 @@ export class IdleHoldingState extends StaggerableState
       this.stateMachine.switchState("idle");
     }
   }
+
+
 
   onTap()
   {
