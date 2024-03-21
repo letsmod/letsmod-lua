@@ -231,6 +231,12 @@ export const Constants = {
     MoveAudio: "Move",
     ChaseAudio: "Chase",
     ForceAudio: "Force",
-
     
+    /*** Towards Constants ***/
+    Front: "forward",
+    Back: "backward",
+    Left: "left",
+    Right: "right",
+    Up: "up",
+    Down: "down",
   };

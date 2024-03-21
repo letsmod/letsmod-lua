@@ -60,11 +60,10 @@ export class EventHandler implements UpdateHandler {
     /**************** These are for CATs Team to be able to debug MODscript issues ****************/
     parseDummyJson(): MODscriptEvent[] {
 
-        const eventDefs = JSONparser.parseEventDefinitions(this.jsonData.split("'").join('"'));
+        const eventDefs = GameplayScene.instance.clientInterface?.jsonParse(this.jsonData.split("'").join('"'));
         let events: MODscriptEvent[] = [];
         for (let i = 0; i < eventDefs.length; i++) {
             events.push(new MODscriptEvent(i, eventDefs[i]));
-            //this.printEventDefinition(eventDefs[i]);
         }
         return events;
     }
