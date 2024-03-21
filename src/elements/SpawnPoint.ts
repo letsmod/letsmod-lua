@@ -6,6 +6,7 @@ import { LMent } from "engine/LMent";
 export class SpawnPoint extends LMent {
 
     onInit(): void {
+        GameplayScene.instance.memory.player = this.body;
     }
 
     onStart(): void {
@@ -13,8 +14,7 @@ export class SpawnPoint extends LMent {
     }
 
     spawn(): void {
-        const avatarType = GameplayScene.instance.gamePreferences.avatarType;
-        console.log("Spawning: " + avatarType);
+        let avatarType = GameplayScene.instance.gamePreferences?.avatarType;
         let avatar = GameplayScene.instance.clonePrefab(avatarType);
         if (avatar === undefined) {
             console.log("No prefab named: " + avatarType + " exists in the library.");
