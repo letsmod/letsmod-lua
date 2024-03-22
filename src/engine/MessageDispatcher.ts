@@ -520,4 +520,16 @@ export class MessageDispatcher
       }  
     }
   }
+
+  onActorTapped(actor: BodyHandle)
+  {
+    let listeners = this.listeners["actorTapped"].slice();
+    for (let i = 0; i < listeners.length; i++)
+    {
+      let listener = listeners[i];
+      if (listener.enabled) {
+        listener.onActorTapped(actor);
+      }
+    }
+  }
 }
