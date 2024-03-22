@@ -110,6 +110,11 @@ export interface TriggerHandler extends GenericHandler
   onTrigger(source: LMent, triggerId: string) : void;
 }
 
+export interface ActorTappedHandler extends GenericHandler
+{
+  onActorTapped(actor: BodyHandle) : void;
+}
+
 export type HandlerTypeMap = {
   update: UpdateHandler,
   physicsSubstep: PhysicsSubstepHandler,
@@ -124,6 +129,7 @@ export type HandlerTypeMap = {
   actorDestroyed: ActorDestructionHandler,
   hitPointsChanged: HitPointChangeHandler,
   trigger: TriggerHandler,
+  actorTapped: ActorTappedHandler,
 }
 
 export type HandlerKey = keyof HandlerTypeMap;
@@ -142,4 +148,5 @@ export const HandlerTypes : HandlerKey[] = [
   "actorDestroyed",
   "hitPointsChanged",
   "trigger",
+  "actorTapped",
 ]

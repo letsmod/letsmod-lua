@@ -50,4 +50,6 @@ export interface LuaClientInterface {
   // if you are adding to speak object, 
   // don't forget to update  player [LuaClientInterface.ts] to included the new fields
   speak(message: string, options?: { audioId?: string; image?: string }): void;
+
+  jsonParse<T = any>(json: string): T;
 }

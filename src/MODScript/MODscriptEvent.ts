@@ -166,7 +166,7 @@ export class MODscriptEvent {
 
 
     checkEvent(info?: CollisionInfo): void {
-        if (!this.eventTrigger) return;
+        if (!this.EventActor?.isInScene || !this.eventTrigger) return;
 
         if (info && this.eventTrigger.requiresCollision)
             this.handleEventResult(this.eventTrigger.checkTrigger(info));

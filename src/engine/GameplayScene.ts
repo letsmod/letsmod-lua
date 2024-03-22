@@ -10,12 +10,14 @@ import { convertArray } from "./helpers/array";
 
 type GamePreferences = {
   defaultPlayDifficulty: "normal" | "hardcore";
+  avatarType: "Adventurer" | "Adventuress"
 };
 
 type GameStoryActors = {
   name: string;
   type: string;
 }[];
+
 export class GameplayScene {
   static _instance: GameplayScene;
   static get instance() {
@@ -37,6 +39,7 @@ export class GameplayScene {
   eventHandler: EventHandler | undefined;
   gamePreferences: GamePreferences = {
     defaultPlayDifficulty: "normal",
+    avatarType:"Adventurer"
   };
   story: EventDefinition[] = [];
   gameStoryActors: GameStoryActors | undefined = undefined;
@@ -48,7 +51,7 @@ export class GameplayScene {
   }
 
   setGamePreferences(preferences: GamePreferences) {
-    this.gamePreferences = preferences;
+    this.gamePreferences = preferences;    
   }
 
   speak(...args: Parameters<LuaClientInterface["speak"]>) {

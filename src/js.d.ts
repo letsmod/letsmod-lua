@@ -15,4 +15,5 @@ export declare const global : {
     Object3D: THREE.Object3D
     Euler: THREE.Euler
   }
+  RegExp: RegExp
 };

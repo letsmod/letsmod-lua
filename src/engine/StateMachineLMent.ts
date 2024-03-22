@@ -1,3 +1,4 @@
+import { AdventurerAvatar } from "elements/AdventurerAvatar";
 import { BodyHandle, ShapePointer } from "./BodyHandle";
 import { GameplayScene } from "./GameplayScene";
 import { LMent } from "./LMent";
@@ -18,6 +19,7 @@ import {
   CollisionInfo,
   HandlerTypeMap
 } from "./MessageHandlers";
+import { Constants } from "./Helpers";
 
 export abstract class State implements 
   Partial<UpdateHandler>,
@@ -97,6 +99,12 @@ export abstract class AnimatedState extends State implements UpdateHandler
       this.shape = this.stateMachine.body.body.getShapes()[0];
 
     this.animName = animName;
+    const avatarStateMachine = this.stateMachine as AdventurerAvatar;
+    
+    //Hack [Ahmad]: This is temporary because we have two different rigs for each of the male/female
+    if(avatarStateMachine && avatarStateMachine.gender === Constants.Male)
+      this.animName = animName.replace("_v2", "");
+
     this.animBlendTime = animBlendTime;
   }
 
