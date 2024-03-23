@@ -69,3 +69,4 @@ export {GroundCheck} from "./GroundCheck";
 export {SpecialGadget as FlashingGadget } from "./Gadgets/SpecialGadget";
 export {AutoShow} from "./AutoShow";
 export {SpawnPoint} from "./SpawnPoint";
+export {TriggerOnTap} from "./TriggerOnTap";
