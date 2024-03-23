@@ -37,7 +37,6 @@ export class DestroyOnZeroHP extends LMent implements HitPointChangeHandler {
       }
       const sound = this.body.getElementByName(Constants.DeathAudio) as SfxPlayer;
         if (sound !== undefined) {
-          console.log("Playing death sound");
           sound.playAudio();
         }
       this.destroyed = true;

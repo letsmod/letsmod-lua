@@ -7,14 +7,15 @@ export interface eventCollisionHandler{
 }
 
 export abstract class GenericTrigger {
-    requiresCollision: boolean = false;
+    isCollisionListener: boolean = false;
+    isActorTapListener: boolean = false;
     parentEvent: MODscriptEvent;
     
     constructor(parentEvent: MODscriptEvent) {
         this.parentEvent = parentEvent;
     }
 
-    abstract checkTrigger(info?:CollisionInfo): { didTrigger: boolean; outputActor: BodyHandle | undefined; }
+    abstract checkTrigger(info?:CollisionInfo, actorId?:number): { didTrigger: boolean; outputActor: BodyHandle | undefined; }
 }
 
 export abstract class GenericAction{
@@ -154,5 +155,6 @@ export const CATs = {
     OtherDamaged: "OtherDamaged",
     Damaged: "Damaged",
     Destroyed: "Destroyed",
+    Tapped: "Tapped",
        
   };

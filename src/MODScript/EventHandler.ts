@@ -16,6 +16,8 @@ export class EventHandler implements UpdateHandler {
 
     private collisionEventBodyMap: { event: MODscriptEvent; bodyId: number }[] =
         [];
+    private actorTapBodyMap: { event: MODscriptEvent; bodyId: number }[] =
+        [];
     private taggedBodiesList: BodyHandle[] = [];
     private catsInitialized: boolean = false;
     static _instance: EventHandler;
@@ -43,7 +45,7 @@ export class EventHandler implements UpdateHandler {
         if (this.catsInitialized) return;
         this.catsInitialized = true;
         //In case jsonData is not empty, it means that the MODscriptOverride Element is present in the scene which will parse the JSON inside the element instead of the real MODscript.
-        if(this.jsonData != ""){
+        if (this.jsonData != "") {
             console.log("           !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! NOT A JOKE !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
             console.log("WARNING 3 :: JSON data is overridden by the MODscriptOverride Element, Make sure to delete that element from the scene to use the real MODscript.")
             console.log("WARNING 2 :: JSON data is overridden by the MODscriptOverride Element, Make sure to delete that element from the scene to use the real MODscript.")
@@ -51,7 +53,7 @@ export class EventHandler implements UpdateHandler {
             console.log("                                                              **********")
             this.events = this.parseDummyJson();
         } else this.events = this.buildMODScriptFromEvents(GameplayScene.instance.story);
-        
+
         for (let event of this.events) {
             event.setCATs();
         }
@@ -60,11 +62,10 @@ export class EventHandler implements UpdateHandler {
     /**************** These are for CATs Team to be able to debug MODscript issues ****************/
     parseDummyJson(): MODscriptEvent[] {
 
-        const eventDefs = JSONparser.parseEventDefinitions(this.jsonData.split("'").join('"'));
+        const eventDefs = GameplayScene.instance.clientInterface?.jsonParse(this.jsonData.split("'").join('"'));
         let events: MODscriptEvent[] = [];
         for (let i = 0; i < eventDefs.length; i++) {
             events.push(new MODscriptEvent(i, eventDefs[i]));
-            //this.printEventDefinition(eventDefs[i]);
         }
         return events;
     }
@@ -138,8 +139,12 @@ export class EventHandler implements UpdateHandler {
         this.taggedBodiesList.push(body);
     }
 
-    public addEventBodyMapEntry(event: MODscriptEvent, bodyId: number) {
+    public mapCollisionBody(event: MODscriptEvent, bodyId: number) {
         this.collisionEventBodyMap.push({ event: event, bodyId: bodyId });
+    }
+
+    public mapActorTapBody(event: MODscriptEvent, bodyId: number) {
+        this.actorTapBodyMap.push({ event: event, bodyId: bodyId });
     }
 
     public onCollision(infoFactory: CollisionInfoFactory) {
@@ -153,6 +158,13 @@ export class EventHandler implements UpdateHandler {
             } else if (mapItem.bodyId === body2id) {
                 event.checkEvent(infoFactory.makeCollisionInfo("b"));
             }
+        }
+    }
+
+    public onActorTapped(actor: BodyHandle) {
+
+        for (let mapItem of this.actorTapBodyMap) {
+            mapItem.event.checkEvent(undefined, actor.body.id);
         }
     }
 
