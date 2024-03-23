@@ -13,7 +13,7 @@ export class Touched extends GenericTrigger {
     constructor(parentEvent: MODscriptEvent, triggerArgs: Partial<Touched>) {
         super(parentEvent);
         this.condition = triggerArgs.condition;
-        this.requiresCollision = true;
+        this.isCollisionListener = true;
 
         if (this.condition)
             this.conditionInstance = ConditionFactory.createCondition(this.condition);

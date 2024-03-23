@@ -165,11 +165,12 @@ export class MODscriptEvent {
     }
 
 
-    checkEvent(info?: CollisionInfo): void {
+    checkEvent(info?: CollisionInfo, actorId?: number): void {
         if (!this.EventActor?.isInScene || !this.eventTrigger) return;
-
-        if (info && this.eventTrigger.requiresCollision)
+        if (info && this.eventTrigger.isCollisionListener)
             this.handleEventResult(this.eventTrigger.checkTrigger(info));
+        else if(actorId && this.eventTrigger.isActorTapListener)
+            this.handleEventResult(this.eventTrigger.checkTrigger(undefined,actorId));
         else this.handleEventResult(this.eventTrigger.checkTrigger());
     }
 

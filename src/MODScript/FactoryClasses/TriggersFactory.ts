@@ -8,6 +8,7 @@ import { Hear } from "MODScript/Triggers/Hear";
 import { Nearby } from "MODScript/Triggers/Nearby";
 import { OtherDamaged } from "MODScript/Triggers/OtherDamaged";
 import { OtherDestroyed } from "MODScript/Triggers/OtherDestroyed";
+import { Tapped } from "MODScript/Triggers/Tapped";
 import { Touched } from "MODScript/Triggers/Touched";
 import { GameplayScene } from "engine/GameplayScene";
 
@@ -22,7 +23,7 @@ export class TriggerFactory {
             case CATs.Hear:
                 return new Hear(parentEvent, triggerDef.args);
             case CATs.Touched:
-                GameplayScene.instance.eventHandler?.addEventBodyMapEntry(parentEvent, parentEvent.EventActorID);
+                GameplayScene.instance.eventHandler?.mapCollisionBody(parentEvent, parentEvent.EventActorID);
                 return new Touched(parentEvent, triggerDef.args);
             case CATs.OtherDestroyed:
                 return new OtherDestroyed(parentEvent, triggerDef.args);
@@ -32,6 +33,9 @@ export class TriggerFactory {
                 return new Damaged(parentEvent, triggerDef.args);
             case CATs.Destroyed:
                 return new Destroyed(parentEvent, triggerDef.args);
+            case CATs.Tapped:
+                GameplayScene.instance.eventHandler?.mapActorTapBody(parentEvent, parentEvent.EventActorID);
+                return new Tapped(parentEvent, triggerDef.args);
 
             default:
                 return undefined

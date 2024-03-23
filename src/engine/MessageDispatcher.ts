@@ -531,5 +531,7 @@ export class MessageDispatcher
         listener.onActorTapped(actor);
       }
     }
+    if(this.scene.eventHandler)
+      this.scene.eventHandler.onActorTapped(actor);
   }
 }
