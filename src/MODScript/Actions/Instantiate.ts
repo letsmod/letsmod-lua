@@ -9,6 +9,7 @@ export class Instantiate extends GenericAction {
     prefabName: string;
     direction: string;
     offset: number;
+    position: Vector3 = Helpers.zeroVector;
 
     constructor(parentEvent: MODscriptEvent, args: Partial<Instantiate>) {
         super(parentEvent, CATs.Instantiate);
@@ -19,6 +20,8 @@ export class Instantiate extends GenericAction {
 
     performAction(triggerOutput?: BodyHandle | undefined): void {
         if (!this.parentEvent || !this.parentEvent.EventActor) return;
+
+        this.position = this.position.add(this.parentEvent.EventActor.body.getPosition());
          
             let obj = GameplayScene.instance.clonePrefab(this.prefabName);
             if (obj){

@@ -70,3 +70,8 @@ export {SpecialGadget as FlashingGadget } from "./Gadgets/SpecialGadget";
 export {AutoShow} from "./AutoShow";
 export {SpawnPoint} from "./SpawnPoint";
 export {TriggerOnTap} from "./TriggerOnTap";
+export {SpinOnTrigger} from "./SpinOnTrigger";
+export {ResetPosOnTrigger} from "./ResetPosOnTrigger";
+export {ApplyForceOnTrigger} from "./ApplyForceOnTrigger";
+export {ApplyAngularOnTrigger} from "./ApplyAngularOnTrigger";
+export {BottleVictoryTemp} from "./BottleVictoryTemp";
