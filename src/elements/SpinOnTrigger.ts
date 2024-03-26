@@ -32,7 +32,7 @@ export class SpinOnTrigger extends LMent implements TriggerHandler, UpdateHandle
         this.sineValue = params.sineValue ?? 0;
         this.soundChip = this.body.getElementByName("SpinInf") as SfxPlayer;
     }
-
+    
     onInit(): void {
         GameplayScene.instance.dispatcher.addListener("trigger", this);
         GameplayScene.instance.dispatcher.addListener("update", this);
@@ -40,8 +40,9 @@ export class SpinOnTrigger extends LMent implements TriggerHandler, UpdateHandle
             this.body.body.lockRotation(true, false, true);
         }
     }
-
+    
     onStart(): void {
+        this.soundChip = this.body.getElementByName("SpinInf") as SfxPlayer;
         this.startPosition = Helpers.NewVector3(this.startPosition.x, this.startPosition.y, this.startPosition.z);
         this.angularVelocity = Helpers.NewVector3(this.angularVelocity.x, this.angularVelocity.y, this.angularVelocity.z);
     }
@@ -128,7 +129,7 @@ export class SpinOnTrigger extends LMent implements TriggerHandler, UpdateHandle
         if (Helpers.ValidateParams(this.triggerId, this, "triggerId")) {
             GameplayScene.instance.dispatcher.onTrigger(this, this.triggerId, "global");
         }
-        GameplayScene.instance.dispatcher.queueDelayedFunction(this, () => { this.RestAfterSpin() }, 1);
+        GameplayScene.instance.dispatcher.queueDelayedFunction(this, () => { this.RestAfterSpin() }, 28);
     }
 
     //To be removed very specific case
