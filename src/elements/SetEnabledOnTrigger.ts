@@ -41,7 +41,7 @@ export class SetEnabledOnTrigger extends LMent implements TriggerHandler {
         }
         this.doEnable();
     }
-
+    
     doEnable(): void {
         const elements = this.body.getAllElementsByTypeName(this.elementName);
         for (let i = 0; i < elements.length; i++) {

@@ -3,6 +3,7 @@ import { GameplayScene } from "engine/GameplayScene";
 import { Helpers } from "engine/Helpers";
 import { LMent } from "engine/LMent";
 import { TriggerHandler, UpdateHandler } from "engine/MessageHandlers";
+import { PropertyMixer } from "three";
 
 export class SfxPlayer extends LMent implements UpdateHandler, TriggerHandler {
 
@@ -16,6 +17,7 @@ export class SfxPlayer extends LMent implements UpdateHandler, TriggerHandler {
     randomMax: number | undefined;
     randomMin: number | undefined;
     receivesTriggersWhenDisabled?: boolean | undefined;
+    playerProximity: boolean;
     private loopTimer: number = 0;
 
     constructor(body: BodyHandle, id: number, params: Partial<SfxPlayer> = {}) {
@@ -30,6 +32,7 @@ export class SfxPlayer extends LMent implements UpdateHandler, TriggerHandler {
         this.receivesTriggersWhenDisabled = true;
         this.randomMax = params.randomMax;
         this.randomMin = params.randomMin;
+        this.playerProximity = params.playerProximity === undefined ? true : params.playerProximity;
 
         if (params.audioId !== undefined)
             this.audioId = params.audioId;
@@ -71,18 +74,24 @@ export class SfxPlayer extends LMent implements UpdateHandler, TriggerHandler {
 
     playAudio() {
         const player = GameplayScene.instance.memory.player;
+        //had to define those for it not to crash when !playerproximity
+        let playerPos, distance=99;
+        if(this.playerProximity){
 
-        if (!player) return;
-        const playerPos = player.body.getPosition();
-        const distance = playerPos.distanceTo(this.body.body.getPosition());
+            if (!player) return;
+            playerPos = player.body.getPosition();
+            distance = playerPos.distanceTo(this.body.body.getPosition());
+        }
 
-        if (distance < this.playDistance && this.loopTimer <= 0) {
+        if (distance < this.playDistance && this.loopTimer <= 0 || !this.playerProximity) {
             const clientInterface = GameplayScene.instance.clientInterface;
             if (!clientInterface || this.loopTimer > 0) return;
             if (this.randomMax && this.randomMin)
                 this.randomizeAudio();
-            else if (this.audioId !== "")
+            else if (this.audioId !== ""){
+                console.log(this.audioId)
                 clientInterface.playAudio(this.audio, this.audioId);
+            }
             else
                 clientInterface.playAudio(this.audio);
             this.loopTimer = this.delay;
