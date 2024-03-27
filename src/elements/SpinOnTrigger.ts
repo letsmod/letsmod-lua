@@ -140,6 +140,11 @@ export class SpinOnTrigger extends LMent implements TriggerHandler, UpdateHandle
         this.soundChip.stopAudio();
         this.isFinished = true;
         this.body.body.setRotation(Helpers.NewQuatFromEuler(Math.PI * 1.5, Math.PI / 2, -Math.PI / 2))
+        GameplayScene.instance.dispatcher.queueDelayedFunction(this, () => { this.Victory() }, 2)
+    }
+    
+    Victory(): void {
+        GameplayScene.instance.clientInterface?.winMod();
 
     }
 }

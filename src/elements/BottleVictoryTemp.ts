@@ -8,6 +8,7 @@ import { Helpers } from "engine/Helpers";
 
 export class BottleVictoryTemp extends LMent implements UpdateHandler {
     isEnabled: boolean = false;
+    private force: number = 20;
     constructor(body: BodyHandle, id: number, params: Partial<BottleVictoryTemp> = {}) {
         super(body, id, params);
     }
@@ -30,10 +31,15 @@ export class BottleVictoryTemp extends LMent implements UpdateHandler {
         const clientInterface = GameplayScene.instance.clientInterface;
         if (!clientInterface) return;
         clientInterface.playAudio("10fm/6_waterbottle/successsong");
+        GameplayScene.instance.dispatcher.queueDelayedFunction(this, () => { this.Victory() }, 5)
     }
     onUpdate(dt?: number | undefined): void {
         if (!this.isEnabled) return;
         this.body.body.showHighlight();
+    }
+
+    Victory(): void {
+        GameplayScene.instance.clientInterface?.winMod();
     }
 
 
