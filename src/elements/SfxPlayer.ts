@@ -3,7 +3,6 @@ import { GameplayScene } from "engine/GameplayScene";
 import { Helpers } from "engine/Helpers";
 import { LMent } from "engine/LMent";
 import { TriggerHandler, UpdateHandler } from "engine/MessageHandlers";
-import { PropertyMixer } from "three";
 
 export class SfxPlayer extends LMent implements UpdateHandler, TriggerHandler {
 

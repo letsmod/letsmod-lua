@@ -56,8 +56,6 @@ export class SetEnabledOnCollision extends LMent implements CollisionHandler {
         let dotProduct = collisionDirection.dot(adjustedContactDirection);
         if (this.dotMinimum === undefined || dotProduct >= this.dotMinimum) {
             if (impulseSufficient && deltaVSufficient && deltaVNotExceeding && impulseNotExceeding || this.body.body.getPhysicsBodyType() === 2) {
-                    console.log( info.getImpulse().length());
-                    console.log(this.collisionMaxImpulse);
                     let elements = this.body.getAllElementsByTypeName(this.elementName);
                     for (let i = 0; i < elements.length; i++) {
                         if (elements[i].name === this.elementChipName || this.elementChipName === ""){
