@@ -75,4 +75,5 @@ export {ResetPosOnTrigger} from "./ResetPosOnTrigger";
 export {ApplyForceOnTrigger} from "./ApplyForceOnTrigger";
 export {ApplyAngularOnTrigger} from "./ApplyAngularOnTrigger";
 export {BottleVictoryTemp} from "./BottleVictoryTemp";
+export {PlayAnimationOnCollision} from "./PlayAnimationOnCollision";
 export {RandomShapeShow} from "./RandomShapeShow";
